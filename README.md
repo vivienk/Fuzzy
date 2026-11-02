@@ -68,3 +68,17 @@ Capy Post is inspiration only; no ownership or affiliation is claimed. [Reposito
 This repository is private. Reviewers need repository access to use GitHub links; the existing Drive materials are a separate sharing route. No signing keys, credentials, machine-specific SDK paths, or build caches are committed.
 
 The miniature generator offers a ribbon-wrapped gift, little reindeer, or snowman. Existing saved miniature pines migrate to reindeer. The village evergreen trees are unchanged.
+
+### Three winter worlds (website, November 2)
+
+The browser preview now offers Aurora Springs, Moonlit Alpine Village, and
+Enchanted Frost Forest. Frost Forest is the first-visit default; the selected
+world is remembered locally. Each has a distinct GLB scene and starry sky;
+notes, mailbox state, decorations, lights, and atmosphere survive switching.
+The picker thumbnails are concept artwork, not exact screenshots of the models.
+Regenerate the six lit/unlit GLBs and SVG skies with
+`python3 tools/build_winter_worlds.py`.
+
+Verified locally: all three scenes render, selection updates, and existing
+notes/decorations remain visible across switching. The v0.2.2 APK still contains
+the original Christmas village; these three styles are website-only.
