@@ -6,6 +6,9 @@ PALETTES={
  'forest':{'Deep pine':[.32,.29,.60,1],'Cedar':[.23,.12,.24,1],'Sage':[.36,.28,.49,1],'Cranberry':[.54,.16,.38,1],'Lavender slate':[.23,.14,.36,1],'Pearl snow':[.87,.86,1,1],'Glacier blue':[.48,.55,.95,1],'Rose sandstone':[.48,.36,.60,1]},
  'aurora':{'Deep pine':[.04,.33,.30,1],'Cedar':[.30,.16,.10,1],'Sage':[.10,.42,.35,1],'Lavender slate':[.12,.24,.30,1],'Glacier blue':[.06,.73,.64,1],'Pearl snow':[.84,.98,.97,1]},
  'alpine':{'Deep pine':[.05,.18,.27,1],'Cedar':[.42,.19,.10,1],'Sage':[.35,.22,.17,1],'Lavender slate':[.18,.23,.36,1],'Glacier blue':[.24,.50,.79,1],'Pearl snow':[.94,.97,1,1]}}
+PALETTES['forest'].update({'Champagne gold':[.75,.64,.94,1],'Bronze':[.16,.09,.25,1],'Midnight roof':[.25,.14,.42,1]})
+PALETTES['aurora'].update({'Cranberry':[.045,.42,.38,1],'Champagne gold':[.72,.85,.72,1],'Bronze':[.06,.19,.20,1],'Midnight roof':[.05,.23,.25,1],'Rose sandstone':[.28,.43,.42,1]})
+PALETTES['alpine'].update({'Cranberry':[.64,.045,.08,1],'Champagne gold':[.96,.58,.18,1],'Bronze':[.14,.09,.07,1],'Midnight roof':[.13,.20,.32,1],'Rose sandstone':[.52,.37,.30,1]})
 def read(path):
  b=path.read_bytes();n=struct.unpack_from('<I',b,12)[0];g=json.loads(b[20:20+n]);return g,bytearray(b[28+n:])
 def write(path,g,b):
@@ -39,6 +42,63 @@ for style,palette in PALETTES.items():
     idx=len(g['bufferViews']);raw=struct.pack('<'+'f'*len(data)*3,*[v for p in data for v in p]);g['bufferViews'].append({'buffer':0,'byteOffset':len(b),'byteLength':len(raw),'target':34962});b.extend(raw)
     g['accessors'].append({'bufferView':idx,'componentType':5126,'count':len(data),'type':'VEC3','min':[min(p[k] for p in data) for k in range(3)],'max':[max(p[k] for p in data) for k in range(3)]});return len(g['accessors'])-1
    mesh=len(g['meshes']);g['meshes'].append({'primitives':[{'attributes':{'POSITION':attr(verts),'NORMAL':attr(norms)},'material':mat}]});idx=len(g['nodes']);g['nodes'].append({'name':name,'mesh':mesh});g['scenes'][g.get('scene',0)]['nodes'].append(idx)
+  # World-specific architecture, mailbox trims, railings and festive ornaments.
+  trim=material(style+' architectural trim',{'forest':[.68,.49,.87,1],'aurora':[.19,.59,.51,1],'alpine':[.21,.10,.055,1]}[style])
+  accent=material(style+' enchanted accent',{'forest':[.74,.48,1,1],'aurora':[.26,.94,.80,1],'alpine':[1,.67,.24,1]}[style],True)
+  cedar=next(i for i,m in enumerate(g['materials']) if m['name']=='Cedar')
+  # Reuse a unit cube mesh with scale derived from its real accessor bounds.
+  template=next(n for n in g['nodes'] if n.get('name')=='Cottage walls')
+  source_mesh=g['meshes'][template['mesh']]
+  bounds=g['accessors'][source_mesh['primitives'][0]['attributes']['POSITION']]
+  dimensions=[hi-lo for lo,hi in zip(bounds['min'],bounds['max'])]
+  def box(name,x,y,z,w,h,d,mat):
+   mesh=copy.deepcopy(source_mesh)
+   for primitive in mesh['primitives']:primitive['material']=mat
+   mesh_id=len(g['meshes']);g['meshes'].append(mesh)
+   idx=len(g['nodes']);g['nodes'].append({'name':name,'mesh':mesh_id,'translation':[x,y,z],'scale':[w/dimensions[0],h/dimensions[1],d/dimensions[2]]});g['scenes'][g.get('scene',0)]['nodes'].append(idx)
+  cabins=[(-.56,-.20,1.13),(.43,-.49,.80),(-.08,-.62,.66)]
+  if style=='forest':
+   # Replace the ordinary pitched roofs with pointed fairy-cottage crystal roofs.
+   for node in g['nodes']:
+    if node.get('name','').startswith(('Slate roof','Roof snow')):node['scale']=[0,0,0]
+   for x,z,k in cabins:
+    cone('Fairy cottage crystal roof',x,.12+.34*k,z,.30*k,.32*k,trim,6)
+    cone('Fairy cottage frosted crown',x,.12+.56*k,z,.095*k,.12*k,snow,6)
+    cone('Cottage crystal finial',x,.12+.68*k,z,.025*k,.075*k,accent,5)
+    # Small glowing crystals beside each doorway.
+    for dx in [-.10,.10]:cone('Doorway wishing crystal',x+dx*k,.12,z+.22*k,.021*k,.10*k,accent,5)
+   cone('Crystal mailbox canopy',-.34,.378,.68,.085,.075,trim,6)
+   cone('Mailbox crystal seal',-.34,.337,.728,.019,.037,accent,5)
+   for x in [.19,.31,.43]:cone('Crystal bridge finial',x,.27,.61,.014,.065,accent,5)
+  elif style=='aurora':
+   # Cedar log fronts and side walls give the cabins a Nordic spa character.
+   for x,z,k in cabins:
+    for row in range(6):
+     y=.15+row*.05*k
+     for dx in [-.15,.15]:box('Nordic cedar front log',x+dx*k,y,z+.164*k,.065*k,.017*k,.025*k,cedar)
+     box('Nordic cedar side log',x+.195*k,y,z,.022*k,.017*k,.32*k,cedar)
+    box('Nordic turquoise lintel',x,.12+.345*k,z+.175*k,.39*k,.025*k,.03*k,trim)
+   box('Cedar mailbox lid',-.34,.385,.68,.14,.022,.11,cedar)
+   box('Turquoise mailbox stripe',-.34,.34,.724,.09,.014,.008,accent)
+   for x in [.19,.31,.43]:cone('Mineral bridge lantern',x,.27,.61,.019,.047,accent,6,.016)
+  else:
+   # Chalet beams, window shutters and balconies, with traditional red/gold trim.
+   for x,z,k in cabins:
+    for dx in [-.18,0,.18]:box('Chalet timber upright',x+dx*k,.12+.19*k,z+.168*k,.017*k,.36*k,.025*k,trim)
+    for y in [.14,.42]:box('Chalet timber crossbeam',x,y*k+.04,z+.17*k,.39*k,.02*k,.026*k,trim)
+    for dx in [-.125,.125]:
+     for side in [-1,1]:box('Alpine window shutter',x+(dx+side*.055)*k,.12+.23*k,z+.185*k,.025*k,.10*k,.022*k,trim)
+    box('Chalet balcony ledge',x,.15,z+.24*k,.35*k,.025*k,.12*k,cedar)
+   box('Alpine mailbox snow cap',-.34,.39,.68,.15,.028,.12,snow)
+   for dx in [-.038,.038]:box('Alpine mailbox brass trim',-.34+dx,.34,.724,.009,.065,.008,accent)
+   for x in [.19,.31,.43]:cone('Brass bridge finial',x,.27,.61,.017,.035,accent,8)
+  # Individual hanging ornaments and gift seals adopt the world motif.
+  for i in range(12):
+   a=i*2.4;r=.15*1.15;y=.1+(.3+(i%3)*.12)*1.15
+   x=.20+math.cos(a)*r;z=-.07-math.sin(a)*r
+   cone(style+' tree ornament',x,y-.025,z,.021,.05,accent,5 if style=='forest' else 8)
+  for x,z,size in [(.01,.13,.11),(.35,.10,.085),(.39,-.13,.07),(-.71,.03,.075)]:
+   cone(style+' gift seal',x,.13+size*1.14,z,size*.16,size*.27,accent,5 if style=='forest' else 8)
   if style=='forest':
    for i,(x,z,h) in enumerate([(-.99,.25,.58),(-.90,-.32,.72),(-.62,-.69,.63),(.34,-.77,.64),(.82,-.46,.72),(.96,.06,.58)]):
     for tier in range(3):cone('Frost forest canopy',x,.11+tier*h*.24,z,.17-tier*.036,h*.55,pine)

@@ -82,3 +82,11 @@ Regenerate the six lit/unlit GLBs and SVG skies with
 Verified locally: all three scenes render, selection updates, and existing
 notes/decorations remain visible across switching. The v0.2.2 APK still contains
 the original Christmas village; these three styles are website-only.
+
+World elements now follow the selected style: crystal-roof fairy cottages and
+silver/lilac decorations in Frost Forest, cedar-log cabins and mineral/mint
+accents in Aurora Springs, and timber-frame chalets with shutters in Alpine.
+Mailbox trims, bridge finials, tree ornaments, wrapped gifts, note paper and
+added miniatures also change with the theme. Miniature height checks passed for
+all nine style/type combinations (maximum 0.228 m, below the mailbox).
+Browser-checked world switching, generation, and wrapping; APK remains unchanged.
