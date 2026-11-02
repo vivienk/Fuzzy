@@ -37,6 +37,8 @@ The Christmas recipient flow includes unwrap, message reveal, tree lights, islan
 
 The latest release contains the updated APK, source ZIP, model preview, and browser preview. Version 0.2.1 removes the capybara and expands the island into a Christmas village with three cottages, a pond and bridge, sleigh, mailbox, lanterns, and a decorated tree.
 
+The browser preview and Blender presentation render include a starry midnight sky. The native PICO volume remains transparent to the host environment; the sky is presentation styling, not a new headset environment.
+
 Serve `prototype/web` with a local static server to try the browser preview. It uses the same village model as the APK, but does not validate native PICO behavior.
 
 The old v0.2.0 concept PDFs and videos are superseded and retained only as history. They contain the retired character direction and must not be presented as the current design or runtime footage.

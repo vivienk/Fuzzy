@@ -119,7 +119,18 @@ bpy.ops.object.light_add(type='AREA',location=(1,-3,4));bpy.context.object.data.
 bpy.ops.object.light_add(type='AREA',location=(-3,1,2));bpy.context.object.data.energy=170;bpy.context.object.data.color=(.64,.74,1);bpy.context.object.data.size=4
 bpy.ops.object.camera_add(location=(1.9,-3.3,2.35));cam=bpy.context.object;cam.rotation_euler=(Vector((0,0,.18))-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.type='ORTHO';cam.data.ortho_scale=2.85
 scene=bpy.context.scene;scene.camera=cam;scene.render.engine='CYCLES';scene.cycles.samples=128;scene.view_layers[0].cycles.use_denoising=True
-scene.world.use_nodes=True;scene.world.node_tree.nodes['Background'].inputs[0].default_value=(.10,.075,.16,1);scene.world.node_tree.nodes['Background'].inputs[1].default_value=.7
+scene.world.use_nodes=True;scene.world.node_tree.nodes['Background'].inputs[0].default_value=(.006,.012,.035,1);scene.world.node_tree.nodes['Background'].inputs[1].default_value=.7
+# Render-only night-sky backdrop; native volume remains transparent to its host environment.
+sky=mat('Midnight sky',(.006,.012,.035),1)
+star_material=mat('Starlight',(.72,.83,1),3)
+q=cam.rotation_euler.to_quaternion(); center=cam.location+q@Vector((0,0,-6))
+bpy.ops.mesh.primitive_plane_add(size=20,location=center)
+back=bpy.context.object;back.name='Render-only night sky';back.rotation_euler=cam.rotation_euler;finish(back,back.name,sky)
+rng=random.Random(73)
+for i in range(210):
+ pt=center+q@Vector((rng.uniform(-2.1,2.1),rng.uniform(-2.1,2.1),.03))
+ radius=rng.uniform(.0018,.0055)
+ ico('Render-only sky star',pt,(radius,)*3,star_material)
 scene.render.resolution_x=1200;scene.render.resolution_y=1200;scene.render.resolution_percentage=100
 scene.view_settings.view_transform='Standard';scene.view_settings.look='Medium High Contrast';scene.render.filepath=str(ART/'Fuzzy-V2-Christmas-World0001.png')
 bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'Christmas-World.blend'))
