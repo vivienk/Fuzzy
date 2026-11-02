@@ -6,7 +6,7 @@ Messages don't disappear into a chat history. They become playful, persistent pa
 
 ## Start here
 
-- [V2 APK and submission materials](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.1)
+- [V2 APK and submission materials](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.2)
 - [V2 design and scope](docs/V2-DESIGN.md)
 - [Build and install instructions](docs/android-build.md)
 - [Test checklist](TESTING.md) and [verified build results](BUILD-VERIFICATION.md)
@@ -15,9 +15,9 @@ Messages don't disappear into a chat history. They become playful, persistent pa
 
 ## Current status — V2 candidate
 
-Native Android/Kotlin with PICO Spatial SDK 6.1.9, ARM64, Android API 35, PICO OS 6. The APK compiled, six flow tests passed, and the debug signature was verified. **Headset/emulator runtime testing remains pending.** This is not a confirmed build for PICO 4 or older firmware.
+Native Android/Kotlin with PICO Spatial SDK 6.1.9, ARM64, Android API 35, PICO OS 6. The APK compiled, 14 flow/editor/effect tests passed, and the debug signature was verified. **Headset/emulator runtime testing remains pending.** This is not a confirmed build for PICO 4 or older firmware.
 
-The Christmas recipient flow includes unwrap, message reveal, tree lights, island rotation, local keep, and reopening a saved keepsake. It uses prepared low-poly assets and a fixed sample note. Live AI generation and delivery are not implemented. The V1 design describes broader aspirations, not current capabilities.
+The Christmas recipient flow includes unwrap, message reveal, tree lights, island rotation, local keep, and reopening a saved keepsake. It uses prepared low-poly assets, an editable locally saved note, and small selectable decorations. Live AI generation and delivery are not implemented. The V1 design describes broader aspirations, not current capabilities.
 
 ![Christmas model preview — not headset capture](art/Fuzzy-V2-Christmas-World0001.png)
 
@@ -35,9 +35,11 @@ The Christmas recipient flow includes unwrap, message reveal, tree lights, islan
 
 ## Downloadable artifacts
 
-The latest release contains the updated APK, source ZIP, model preview, and browser preview. Version 0.2.1 removes the capybara and expands the island into a Christmas village with three cottages, a pond and bridge, sleigh, mailbox, lanterns, and a decorated tree.
+The latest release contains the updated APK, source ZIP, model preview, and browser preview. Version 0.2.2 removes the capybara and expands the island into a Christmas village with three cottages, a pond and bridge, sleigh, mailbox, lanterns, and a decorated tree.
 
-The browser preview and Blender presentation render include a starry midnight sky. The browser also adds anchored neon-style halos and staggered sparkle animation to all 56 light sources, with pause and reduced-motion support. It also adds drifting smoke to all three chimneys and slow mist over the hot spring. Pause effects stops all decorative animation; reduced-motion preferences use a static atmosphere. The browser editor supports a locally saved note, a mailbox envelope that opens a handwritten-style letter, and up to three procedural miniature decorations. Generated pieces are at most 0.214 m tall, below the mailbox height of 0.2775 m. These effects and editing features are browser-only. The native PICO volume remains transparent to the host environment; the sky is presentation styling, not a new headset environment.
+Version 0.2.2 brings the recent preview features into the native APK: a bounded starry night backdrop, 56 glowing/sparkling light sources, drifting chimney smoke, hot-spring mist, pause/resume, a right-side note editor using PICO text input, a mailbox alert opening a handwritten-style letter, and three miniature slots for gifts, reindeer, or snowmen. Notes and miniature selections save on the device. This is native Spatial SDK code, not a WebView wrapper.
+
+The sky is a backdrop inside the app volume, not a replacement for the entire PICO home environment. The tallest miniature is 0.214 m, below the mailbox height of 0.2775 m. Live AI generation and recipient delivery remain future work. Headset validation is pending.
 
 Serve `prototype/web` with a local static server to try the browser preview. It uses the same village model as the APK, but does not validate native PICO behavior.
 

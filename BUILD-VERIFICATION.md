@@ -1,15 +1,16 @@
-# Fuzzy V2 build verification — November 1, 2026
+# Fuzzy V2.2 build verification — November 2, 2026
 
-- Final build: SUCCESSFUL (:app:assembleDebug).
-- Unit tests: 6 passed, 0 failed, 0 skipped (:app:testDebugUnitTest).
-- APK signature: valid APK Signature Scheme v2, one signer; debug signing.
-- Package: com.fuzzy.christmas, version 0.2.1, versionCode 3.
-- Target/minimum Android API: 35. Native ABI: arm64-v8a.
-- APK size: 32,814,562 bytes.
-- SHA-256: 7d24d7d72dc165982f1f7be240e761c55a7939945501f245392e65ae461f78b1
-- Bundled GLB bytes match the reviewed source assets exactly.
-- World: 8,436 triangles; gift: 76 triangles. Both binary glTF containers passed structural checks.
-- Model preview reviewed from Blender; this is not headset runtime evidence.
-- No PICO device detected over ADB. Headset launch, layout, controls, persistence after restart, and runtime video remain unverified.
+- Android APK compilation: successful.
+- Unit tests: 14 passed, zero failures/errors. Includes recipient flow, note limits and persistence round trips, decoration limits/migration, and finite animation frames/cycle boundaries.
+- Package: com.fuzzy.christmas, version 0.2.2, versionCode 4.
+- PICO Spatial SDK 6.1.9; min/target Android API 35; arm64-v8a.
+- Debug APK signature: valid v2 signature, one signer.
+- APK size: 32,921,405 bytes.
+- SHA-256: 0bda6f5ec8ccdab411d6cf45b6d5d000305c37d46956ffea45eea8257b20a3e0
+- All five bundled GLBs match source bytes and pass container/buffer bounds checks.
+- Native assets: existing 8,436-triangle village; 76-triangle gift; 482-triangle starry backdrop; 138 animated glow/spark/smoke/mist nodes with shared meshes; nine miniature variant groups across three reserved slots.
+- Generated miniature heights: gift 0.128 m, reindeer 0.214 m, snowman 0.194 m; all below the 0.2775 m mailbox height.
+- Native editor, mailbox alert/letter, effects pause, local persistence, and miniature selection are compiled into this APK. It is not a browser wrapper.
+- ADB device inventory: no headset or emulator connected on November 2, 2026.
 
-Tests cover unopened-gift action guards, complete recipient flow, wrapping while preserving the keepsake, failed saves, restored keepsake lighting, and reversible light/rotation toggles. These are state tests, not device integration tests.
+Headset rendering, depth/layout, system keyboard entry, transparency/lighting, runtime frame rate, and persistence after a real app/device restart remain unverified. A successful build and unit tests are not runtime certification. See TESTING.md before submission.

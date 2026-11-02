@@ -1,3 +1,19 @@
+# Fuzzy — V2.2 Christmas native update
+
+November 2, 2026 · PICO OS 6 · Runtime validation pending
+
+The 0.2.2 APK (versionCode 4) now contains the starry night backdrop, animated light halos/sparkles, three chimney smoke streams, hot-spring mist, pause/resume, right-side note editor, mailbox alert with cursive letter, and three miniature slots (gift, reindeer, snowman). The note starts with “A little Christmas warmth from me to you. Wherever we are, you have a place in my world.” Saving a replacement marks the mailbox unread.
+
+Notes and miniatures persist locally after successful writes. Miniatures use procedural source geometry built into the APK; no live AI or network delivery is claimed. The sky is a bounded backdrop within the native app volume. Reindeer is 0.214 m tall, below the 0.2775 m mailbox height.
+
+Compilation, 14 unit tests, signature, and packaged asset checks pass. No headset/emulator is connected; rendering, text input, depth, performance, and device restart persistence remain unverified. See [BUILD-VERIFICATION.md](../BUILD-VERIFICATION.md) and [TESTING.md](../TESTING.md).
+
+Download: https://github.com/vivienk/Fuzzy/releases/tag/v0.2.2
+
+---
+
+The following is the historical November 1 V2 design snapshot. The revision above controls where behavior differs.
+
 Source: https://docs.google.com/document/d/1hh5NGfbJO_NxbJtypNB-LFveUKJAz8GiofLPSrpBtEc
 
 Snapshot: November 1, 2026. 
