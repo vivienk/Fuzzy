@@ -1,5 +1,5 @@
-# Historical asset-generation scripts
+# Asset generation
 
-These scripts preserve how the concept PDFs/video and Christmas geometry were produced. They reference the original authoring workspace layout (`outputs/`, `work/`) and locally installed Blender/Python libraries; they are not required for the Android build and are not turnkey commands from this repository root.
+`build_christmas_models.py` regenerates the current animal-free village, GLBs, editable Blender file, and preview. Run with Blender in background mode; paths resolve relative to this repository. It uses Cycles CPU rendering.
 
-The Android app builds from the checked-in GLBs. Edit `Christmas-World.blend` for geometry changes. Adapt script paths and install their dependencies deliberately before regenerating historical artifacts. `art-prompts.json` preserves the concept illustration prompts.
+All other scripts and prompts are historical V1 concept tooling. They reference the original workspace and retired artwork, and are not part of the current app or preview. The old character direction is superseded. Do not use those scripts to regenerate current submission materials.

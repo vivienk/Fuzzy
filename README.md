@@ -6,7 +6,7 @@ Messages don't disappear into a chat history. They become playful, persistent pa
 
 ## Start here
 
-- [V2 APK and submission materials](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.0)
+- [V2 APK and submission materials](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.1)
 - [V2 design and scope](docs/V2-DESIGN.md)
 - [Build and install instructions](docs/android-build.md)
 - [Test checklist](TESTING.md) and [verified build results](BUILD-VERIFICATION.md)
@@ -29,17 +29,17 @@ The Christmas recipient flow includes unwrap, message reveal, tree lights, islan
 | `Christmas-World.blend` | Editable 3D scene |
 | `app/src/main/assets/` | Bundled Christmas GLB models |
 | `docs/` | V1 and V2 document snapshots and build instructions |
-| `art/` | Concept illustration sheets and model preview |
-| `prototype/web/` | Earlier interactive web concept; simulated AI/delivery |
-| `tools/` | Historical generation scripts and prompts; see tools/README.md |
+| `art/` | Current village model preview |
+| `prototype/web/` | Interactive preview using the current village GLBs |
+| `tools/` | Model generator and archived concept scripts; see tools/README.md |
 
 ## Downloadable artifacts
 
-All exported PDFs, videos, the standalone HTML, source ZIP, and APK are attached to [release v0.2.0](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.0).
+The latest release contains the updated APK, source ZIP, model preview, and browser preview. Version 0.2.1 removes the capybara and expands the island into a Christmas village with three cottages, a pond and bridge, sleigh, mailbox, lanterns, and a decorated tree.
 
-Use `02-Fuzzy-Visual-Storyboard-v3.pdf`, `04-Fuzzy-References-and-Credits-v2.pdf`, and `05-Fuzzy-Animated-Concept-Demo.mp4` for the latest concept package. Earlier versions are retained for history. The video is a concept animation, not footage of this APK. `Fuzzy-V2-Source.zip` is the original pre-repository snapshot; this repository is the source of truth going forward.
+Serve `prototype/web` with a local static server to try the browser preview. It uses the same village model as the APK, but does not validate native PICO behavior.
 
-To run the web concept, download `05-Fuzzy-Animated-Concept-Demo.mp4` from the release into `prototype/web/assets/demo.mp4`, then serve `prototype/web` with a local static server. Alternatively, download and open the self-contained `06-Fuzzy-Interactive-Concept.html` release asset.
+The old v0.2.0 concept PDFs and videos are superseded and retained only as history. They contain the retired character direction and must not be presented as the current design or runtime footage.
 
 ## Build and test
 

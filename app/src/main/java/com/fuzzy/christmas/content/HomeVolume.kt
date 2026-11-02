@@ -93,11 +93,11 @@ fun HomeVolume() {
                     loading = false
                 }
                 attachments.entity("controls")?.let {
-                    it.components[TransformComponent::class.java]?.setPosition(Vector3(0f, -.40f, .35f))
+                    it.components[TransformComponent::class.java]?.setPosition(Vector3(0f, -.65f, .65f))
                     content.addEntity(it)
                 }
                 attachments.entity("title")?.let {
-                    it.components[TransformComponent::class.java]?.setPosition(Vector3(0f, .70f, .10f))
+                    it.components[TransformComponent::class.java]?.setPosition(Vector3(0f, 1.25f, .10f))
                     content.addEntity(it)
                 }
             },
@@ -125,7 +125,7 @@ fun HomeVolume() {
                 AttachmentPanel(id = "controls") {
                     Column(Modifier.width(960.dp).clip(RoundedCornerShape(36.dp)).background(Cream).padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Text(if (opened) "A world made for you." else "Someone is thinking of you.", color = Cocoa, fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                        Text(if (opened) "“A little Christmas warmth from me to you. Wherever we are, you have a place in my world.”" else "Unwrap a tiny snowy world and a note from someone you love.", color = Cocoa, fontSize = 23.sp, textAlign = TextAlign.Center)
+                        Text(if (opened) "“A little Christmas warmth from me to you. Wherever we are, you have a place in my world.”" else "Unwrap a snowy Christmas village and a note from someone you love.", color = Cocoa, fontSize = 23.sp, textAlign = TextAlign.Center)
                         Text(error ?: if (loading) "Preparing your Christmas world…" else status, color = Cranberry, fontSize = 18.sp, textAlign = TextAlign.Center)
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             when {

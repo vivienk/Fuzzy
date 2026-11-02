@@ -20,7 +20,7 @@ V1 concept and longer-term vision
 
 Messages don't disappear into a chat history. They become playful, persistent parts of a world you build together
 
-V2 isolates the recipient’s Christmas experience: open → unwrap → read → play → keep. A small volumetric snowy island contains a timber cottage, capybara, evergreen tree, glowing ornaments, and gifts. The warm cream and cranberry interface supports large native spatial buttons without moving the user through the scene.
+V2 isolates the recipient’s Christmas experience: open → unwrap → read → play → keep. A small volumetric snowy island contains three cottages, a frozen pond and bridge, a sleigh, mailbox, lanterns, decorated evergreens, and gifts. The warm cream and cranberry interface supports large native spatial buttons without moving the user through the scene.
 
 ## Flow and interactions
 
@@ -44,7 +44,7 @@ The AI-generated-world vision remains the product direction. This V2 uses a prep
 
 ## Platform and build
 
-Native Android/Kotlin with PICO Spatial SDK 6.1.9. Package com.fuzzy.christmas; version 0.2.0 (code 2). ARM64; minimum and target Android API 35. Target: PICO OS 6 / Project Swan. Compatibility with PICO 4 or older firmware is not established. Developer debug signing is used for sideload evaluation.
+Native Android/Kotlin with PICO Spatial SDK 6.1.9. Package com.fuzzy.christmas; version 0.2.1 (code 3). ARM64; minimum and target Android API 35. Target: PICO OS 6 / Project Swan. Compatibility with PICO 4 or older firmware is not established. Developer debug signing is used for sideload evaluation.
 
 ## Validation completed
 
