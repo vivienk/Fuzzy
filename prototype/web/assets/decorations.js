@@ -3,7 +3,7 @@ window.FuzzyDecorations=(()=>{
  const slots=[[-.68,.135,.55],[-.46,.135,.58],[-.08,.135,.40]];
  const maxHeight=.24; // Mailbox rises .2775 m above its .10 m base.
  const cache=new Map();
- async function base(url){if(!cache.has(url))cache.set(url,fetch(url+'?v=larger-houses-1').then(r=>{if(!r.ok)throw Error('World unavailable');return r.arrayBuffer()}));return cache.get(url)}
+ async function base(url){if(!cache.has(url))cache.set(url,fetch(url+'?v=snow-walk-1').then(r=>{if(!r.ok)throw Error('World unavailable');return r.arrayBuffer()}));return cache.get(url)}
  function triangles(kind,world){
   const pieces=[];const add=(verts,color)=>pieces.push({verts,color});
   function box(x,y,z,w,h,d,color){const p=[[x-w/2,y,z-d/2],[x+w/2,y,z-d/2],[x+w/2,y+h,z-d/2],[x-w/2,y+h,z-d/2],[x-w/2,y,z+d/2],[x+w/2,y,z+d/2],[x+w/2,y+h,z+d/2],[x-w/2,y+h,z+d/2]];add([...[0,3,2,0,2,1,4,5,6,4,6,7,0,4,7,0,7,3,1,2,6,1,6,5,3,7,6,3,6,2,0,1,5,0,5,4].map(i=>p[i])],color)}
@@ -20,6 +20,9 @@ window.FuzzyDecorations=(()=>{
    for(const x of [-1,1]){ball(x*.019,.148,.06,.004,hoof);box(x*.03,.149,.036,.022,.009,.014,fur);box(x*.015,.162,.036,.005,.052,.005,antler);box(x*.022,.181,.036,.019,.005,.005,antler);box(x*.03,.181,.036,.005,.019,.005,antler);box(x*.011,.199,.036,.014,.005,.005,antler)}
    box(0,.10,.037,.035,.009,.037,red);ball(0,.101,.058,.005,gold);box(0,.08,-.057,.02,.016,.021,cream);
   }
+  else if(kind==='lantern'){box(0,0,0,.10,.025,.10,gold);box(0,.025,0,.06,.09,.06,[1,.72,.25,1]);for(const x of [-.04,.04])for(const z of [-.04,.04])box(x,.025,z,.012,.11,.012,gold);cone(0,.135,0,.07,.055,red)}
+  else if(kind==='igloo'){ball(0,.085,0,.085,white);box(0,0,.075,.045,.06,.035,[.12,.17,.23,1]);box(-.03,0,.08,.018,.07,.05,white);box(.03,0,.08,.018,.07,.05,white);box(0,.06,.08,.075,.02,.05,white)}
+  else if(kind==='candy-cane'){for(let i=0;i<8;i++)box(0,i*.02,0,.018,.02,.018,i%2?white:red);for(let i=0;i<8;i++){const a=i*Math.PI/7;ball(.025-.025*Math.cos(a),.16+.025*Math.sin(a),0,.011,i%2?white:red)}}
   else if(kind==='snowman'){ball(0,.055,0,.055,white);ball(0,.13,0,.037,white);box(0,.155,0,.085,.012,.07,red);box(0,.167,0,.047,.027,.045,red);box(0,.1,.028,.065,.012,.012,red);ball(-.013,.137,.033,.004,[.1,.08,.12,1]);ball(.013,.137,.033,.004,[.1,.08,.12,1])}
   else{box(0,0,0,.11,.10,.10,red);box(0,0,0,.018,.103,.104,gold);box(0,0,0,.114,.103,.018,gold);ball(-.018,.11,0,.018,gold);ball(.018,.11,0,.018,gold)}
   if(world==='forest'){

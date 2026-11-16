@@ -125,3 +125,16 @@ now layers soft filtered wind, occasional light sleigh-bell shakes and short
 clusters of snow-crunch footsteps, with a shared volume slider. It pauses in
 background tabs and releases sound sources when switched off. These are
 procedural sound effects, not character-footfall synchronization. Website only.
+
+November 16 snowy-world update: a continuous 4.96 m by 3.96 m snow blanket
+covers the enlarged terrain, with cooler snow materials and browser exposure
+0.72. A light, pointer-transparent snowfall layer respects reduced motion and
+the effects pause control. Six North Pole animals follow alternating-direction
+32-second looping perimeter routes, with leg motion. This is procedural node
+animation, not Tripo skeletal rigging or collision-aware navigation.
+The generator now supports gift, reindeer, snowman, lantern, igloo and candy
+cane; all 18 world/type combinations pass the mailbox-height check. Live AI
+generation remains unavailable until a Tripo key and server integration exist.
+All six GLBs passed snow coverage checks, and six animal paths have matching
+loop endpoints. Inline JavaScript parses. Browser preview connection timed out;
+interactive acceptance remains unverified. Website-only; APK unchanged.

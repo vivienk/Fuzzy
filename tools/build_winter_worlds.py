@@ -148,7 +148,15 @@ for style,palette in PALETTES.items():
    for x,z,r,h in [(-.83,-.55,.23,.56),(-.42,-.79,.25,.77),(.02,-.86,.21,.59),(.50,-.69,.24,.70),(.86,-.42,.18,.48)]:
     cone('Alpine ridge',x,.05,z,r,h,stone,5);cone('Alpine snow peak',x,.05+h*.57,z,r*.43,h*.43,snow,5)
   if style=='aurora':populate(g,box,cone,ball,material,snow,cedar)
-  # One seamless eight-second GLB clip, preserving all original scene anchors.
+  # A continuous low-poly snow blanket covers the full enlarged terrain.
+  blanket=material('Moonlit snow blanket',[.58,.65,.74,1])
+  cone('Full island snow blanket',0,.025,0,1,.085,blanket,64,1)
+  g['nodes'][-1]['scale']=[2.48,1,1.98]
+  cone('Continuous snow surface',0,.112,0,1,0,blanket,64)
+  g['nodes'][-1]['scale']=[2.48,1,1.98]
+  for m in g['materials']:
+   if m['name']=='Pearl snow':m['pbrMetallicRoughness']['baseColorFactor']=[.68,.73,.81,1]
+
   # Enlarge complete houses around their ground pivots, including themed trim.
   house_prefixes=('Wreath','Porch','Cottage','Slate roof','Roof snow','Chimney','Door','Window','Fairy cottage','Nordic cedar','Nordic turquoise lintel','Chalet','Alpine window','Soft snowy cottage','Workshop peppermint','Workshop roof','SANTA WORKSHOP')
   roots=g['scenes'][g.get('scene',0)]['nodes']; groups=[[],[],[]]
@@ -167,6 +175,13 @@ for style,palette in PALETTES.items():
    idx=len(g['nodes']);g['nodes'].append({'name':'Enlarged house '+str(j),'translation':[pivots[j][k]+shifts[j][k] for k in range(3)],'scale':[1.35]*3,'children':children})
    roots[:]=[i for i in roots if i not in children]+[idx]
   tracks=g.get('extras',{}).pop('lifeTracks',[])
+  animal_names=('Reindeer look around','Moose gentle sway','Polar bear happy bob')
+  animals=[(i,n) for i,n in enumerate(g['nodes']) if n.get('name') in animal_names]
+  tracks=[t for t in tracks if t['node'] not in {i for i,n in animals}]
+  for j,(idx,node) in enumerate(animals):
+   tracks.append({'node':idx,'axis':'route','offset':j*math.tau/6,'direction':1 if j%2==0 else -1,'pivot':[0,.13,0]})
+   legs=[c for c in node['children'] if g['nodes'][c].get('name') in ('Reindeer leg','Moose leg','Polar bear paw')]
+   for k,leg in enumerate(legs):tracks.append({'node':leg,'axis':'x','pivot':[0,0,0],'amplitude':.48,'cycles':24,'phase':math.pi if k in (1,2) else 0})
   if tracks:
    def animation_accessor(values,dimension):
     flat=[v for row in values for v in row];raw=struct.pack('<'+'f'*len(flat),*flat);view=len(g['bufferViews'])
@@ -174,11 +189,24 @@ for style,palette in PALETTES.items():
     item={'bufferView':view,'componentType':5126,'count':len(values),'type':{1:'SCALAR',3:'VEC3',4:'VEC4'}[dimension]}
     if dimension==1:item.update(min=[min(flat)],max=[max(flat)])
     g['accessors'].append(item);return len(g['accessors'])-1
-   times=animation_accessor([[i/8] for i in range(65)],1);clip={'name':'North Pole life','samplers':[],'channels':[]}
+   times=animation_accessor([[i/8] for i in range(257)],1);clip={'name':'North Pole life','samplers':[],'channels':[]}
    for track in tracks:
+    if track['axis']=='route':
+     positions=[];rotations=[]
+     for i in range(257):
+      a=track['offset']+track['direction']*i/256*math.tau
+      positions.append([2.04*math.cos(a),.13,1.60*math.sin(a)])
+      yaw=math.atan2(-2.04*math.sin(a)*track['direction'],1.60*math.cos(a)*track['direction'])
+      q=[0,math.sin(yaw/2),0,math.cos(yaw/2)]
+      if rotations and sum(x*y for x,y in zip(q,rotations[-1]))<0:q=[-v for v in q]
+      rotations.append(q)
+     g['nodes'][track['node']]['translation']=positions[0];g['nodes'][track['node']]['rotation']=rotations[0]
+     for values,channel,dimension in [(positions,'translation',3),(rotations,'rotation',4)]:
+      sampler=len(clip['samplers']);clip['samplers'].append({'input':times,'output':animation_accessor(values,dimension),'interpolation':'LINEAR'});clip['channels'].append({'sampler':sampler,'target':{'node':track['node'],'path':channel}})
+     continue
     values=[]
-    for i in range(65):
-     angle=track['amplitude']*math.sin(i/64*math.tau*track['cycles'])
+    for i in range(257):
+     angle=track['amplitude']*math.sin(i/256*math.tau*track['cycles']+track.get('phase',0))
      if track['axis']=='bob':values.append([track['pivot'][0],track['pivot'][1]+abs(angle),track['pivot'][2]])
      else:
       q=[0,0,0,math.cos(angle/2)];q[{'x':0,'y':1,'z':2}[track['axis']]]=math.sin(angle/2);values.append(q)
