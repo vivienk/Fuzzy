@@ -119,3 +119,9 @@ Syntax, six-model hierarchy/size checks, and mocked audio scheduling/start/stop/
 background pause checks passed. Music controls were visible in Chrome, but the
 browser connection dropped before audible playback could be verified. Native
 APK is unchanged.
+
+November 16 sound update: removed the music-box score. Opt-in winter ambience
+now layers soft filtered wind, occasional light sleigh-bell shakes and short
+clusters of snow-crunch footsteps, with a shared volume slider. It pauses in
+background tabs and releases sound sources when switched off. These are
+procedural sound effects, not character-footfall synchronization. Website only.
