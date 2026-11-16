@@ -71,7 +71,7 @@ The miniature generator offers a ribbon-wrapped gift, little reindeer, or snowma
 
 ### Three winter worlds (website, November 2)
 
-The browser preview now offers Aurora Springs, Moonlit Alpine Village, and
+The browser preview now offers North Pole, Moonlit Alpine Village, and
 Enchanted Frost Forest. Frost Forest is the first-visit default; the selected
 world is remembered locally. Each has a distinct GLB scene and starry sky;
 notes, mailbox state, decorations, lights, and atmosphere survive switching.
@@ -85,7 +85,7 @@ the original Christmas village; these three styles are website-only.
 
 World elements now follow the selected style: crystal-roof fairy cottages and
 silver/lilac decorations in Frost Forest, cedar-log cabins and mineral/mint
-accents in Aurora Springs, and timber-frame chalets with shutters in Alpine.
+accents in North Pole, and timber-frame chalets with shutters in Alpine.
 Mailbox trims, bridge finials, tree ornaments, wrapped gifts, note paper and
 added miniatures also change with the theme. Miniature height checks passed for
 all nine style/type combinations (maximum 0.228 m, below the mailbox).
