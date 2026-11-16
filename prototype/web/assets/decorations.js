@@ -3,7 +3,7 @@ window.FuzzyDecorations=(()=>{
  const slots=[[-.68,.135,.55],[-.46,.135,.58],[-.08,.135,.40]];
  const maxHeight=.24; // Mailbox rises .2775 m above its .10 m base.
  const cache=new Map();
- async function base(url){if(!cache.has(url))cache.set(url,fetch(url+'?v=north-life-1').then(r=>{if(!r.ok)throw Error('World unavailable');return r.arrayBuffer()}));return cache.get(url)}
+ async function base(url){if(!cache.has(url))cache.set(url,fetch(url+'?v=larger-houses-1').then(r=>{if(!r.ok)throw Error('World unavailable');return r.arrayBuffer()}));return cache.get(url)}
  function triangles(kind,world){
   const pieces=[];const add=(verts,color)=>pieces.push({verts,color});
   function box(x,y,z,w,h,d,color){const p=[[x-w/2,y,z-d/2],[x+w/2,y,z-d/2],[x+w/2,y+h,z-d/2],[x-w/2,y+h,z-d/2],[x-w/2,y,z+d/2],[x+w/2,y,z+d/2],[x+w/2,y+h,z+d/2],[x-w/2,y+h,z+d/2]];add([...[0,3,2,0,2,1,4,5,6,4,6,7,0,4,7,0,7,3,1,2,6,1,6,5,3,7,6,3,6,2,0,1,5,0,5,4].map(i=>p[i])],color)}

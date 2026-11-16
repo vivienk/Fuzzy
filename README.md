@@ -109,3 +109,13 @@ respects Pause effects, reduced-motion preference and background tabs. Both
 GLBs passed animation/hierarchy checks. Local Chrome verified scene rendering,
 visible igloos and hats, and pause/resume controls with no console errors.
 The picker uses a fresh render of the actual model. Native APK unchanged.
+
+Clarity, music and house-size update: the browser keeps full render resolution
+and uses smaller light halos. Houses in all three worlds are 35% larger with
+matching architecture, window glow and smoke anchors; shifted outward for room.
+Christmas music is an original Web Audio music-box loop (no external recordings),
+started by an explicit play button, with volume and automatic background pause.
+Syntax, six-model hierarchy/size checks, and mocked audio scheduling/start/stop/
+background pause checks passed. Music controls were visible in Chrome, but the
+browser connection dropped before audible playback could be verified. Native
+APK is unchanged.

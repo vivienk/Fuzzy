@@ -149,6 +149,23 @@ for style,palette in PALETTES.items():
     cone('Alpine ridge',x,.05,z,r,h,stone,5);cone('Alpine snow peak',x,.05+h*.57,z,r*.43,h*.43,snow,5)
   if style=='aurora':populate(g,box,cone,ball,material,snow,cedar)
   # One seamless eight-second GLB clip, preserving all original scene anchors.
+  # Enlarge complete houses around their ground pivots, including themed trim.
+  house_prefixes=('Wreath','Porch','Cottage','Slate roof','Roof snow','Chimney','Door','Window','Fairy cottage','Nordic cedar','Nordic turquoise lintel','Chalet','Alpine window','Soft snowy cottage','Workshop peppermint','Workshop roof','SANTA WORKSHOP')
+  roots=g['scenes'][g.get('scene',0)]['nodes']; groups=[[],[],[]]
+  pivots=[[-.56,.12,-.20],[.43,.12,-.49],[-.08,.12,-.62]]
+  shifts=[[-.12,0,-.10],[.12,0,-.10],[0,0,-.20]]
+  for idx in list(roots):
+   node=g['nodes'][idx]
+   if not node.get('name','').startswith(house_prefixes):continue
+   pos=node.get('translation')
+   if pos is None:
+    acc=g['accessors'][g['meshes'][node['mesh']]['primitives'][0]['attributes']['POSITION']]
+    pos=[(a+b)/2 for a,b in zip(acc['min'],acc['max'])]
+   j=min(range(3),key=lambda j:(pos[0]-pivots[j][0])**2+(pos[2]-pivots[j][2])**2)
+   t=node.get('translation',[0,0,0]);node['translation']=[t[k]-pivots[j][k] for k in range(3)];groups[j].append(idx)
+  for j,children in enumerate(groups):
+   idx=len(g['nodes']);g['nodes'].append({'name':'Enlarged house '+str(j),'translation':[pivots[j][k]+shifts[j][k] for k in range(3)],'scale':[1.35]*3,'children':children})
+   roots[:]=[i for i in roots if i not in children]+[idx]
   tracks=g.get('extras',{}).pop('lifeTracks',[])
   if tracks:
    def animation_accessor(values,dimension):
