@@ -100,3 +100,12 @@ eaves, an ivory-and-brass landmark sign, three igloos, two moose, and a polar
 bear with cub. The workshop and gift-making stages remain. All six GLBs passed
 terrain-scale and structure checks; a direct Blender render verifies the model
 composition. This change does not update the native APK.
+
+North Pole character polish: natural evergreen trees, six elves scattered around
+the island, three larger blue-shadow igloos with dark entrances, and rounder
+polar bears wearing Santa hats. The embedded eight-second animation loop adds
+elf arm gestures and idle movement to elves, moose, reindeer and bears. Playback
+respects Pause effects, reduced-motion preference and background tabs. Both
+GLBs passed animation/hierarchy checks. Local Chrome verified scene rendering,
+visible igloos and hats, and pause/resume controls with no console errors.
+The picker uses a fresh render of the actual model. Native APK unchanged.

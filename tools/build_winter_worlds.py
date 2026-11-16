@@ -148,6 +148,27 @@ for style,palette in PALETTES.items():
    for x,z,r,h in [(-.83,-.55,.23,.56),(-.42,-.79,.25,.77),(.02,-.86,.21,.59),(.50,-.69,.24,.70),(.86,-.42,.18,.48)]:
     cone('Alpine ridge',x,.05,z,r,h,stone,5);cone('Alpine snow peak',x,.05+h*.57,z,r*.43,h*.43,snow,5)
   if style=='aurora':populate(g,box,cone,ball,material,snow,cedar)
+  # One seamless eight-second GLB clip, preserving all original scene anchors.
+  tracks=g.get('extras',{}).pop('lifeTracks',[])
+  if tracks:
+   def animation_accessor(values,dimension):
+    flat=[v for row in values for v in row];raw=struct.pack('<'+'f'*len(flat),*flat);view=len(g['bufferViews'])
+    g['bufferViews'].append({'buffer':0,'byteOffset':len(b),'byteLength':len(raw)});b.extend(raw)
+    item={'bufferView':view,'componentType':5126,'count':len(values),'type':{1:'SCALAR',3:'VEC3',4:'VEC4'}[dimension]}
+    if dimension==1:item.update(min=[min(flat)],max=[max(flat)])
+    g['accessors'].append(item);return len(g['accessors'])-1
+   times=animation_accessor([[i/8] for i in range(65)],1);clip={'name':'North Pole life','samplers':[],'channels':[]}
+   for track in tracks:
+    values=[]
+    for i in range(65):
+     angle=track['amplitude']*math.sin(i/64*math.tau*track['cycles'])
+     if track['axis']=='bob':values.append([track['pivot'][0],track['pivot'][1]+abs(angle),track['pivot'][2]])
+     else:
+      q=[0,0,0,math.cos(angle/2)];q[{'x':0,'y':1,'z':2}[track['axis']]]=math.sin(angle/2);values.append(q)
+    channel='translation' if track['axis']=='bob' else 'rotation'
+    sampler=len(clip['samplers']);clip['samplers'].append({'input':times,'output':animation_accessor(values,3 if channel=='translation' else 4),'interpolation':'LINEAR'})
+    clip['channels'].append({'sampler':sampler,'target':{'node':track['node'],'path':channel}})
+   g['animations']=[clip]
   write(OUT/(style+('-lit' if lit else '')+'.glb'),g,b)
 # Matching lightweight star-filled sky artwork.
 for style in PALETTES:

@@ -5,10 +5,19 @@ def populate(g,box,cone,ball,material,snow,cedar):
  red=material('Santa red',[.48,.07,.07,1]);green=material('Elf evergreen',[.15,.24,.17,1]);gold=material('Workshop brass',[.72,.48,.19,1]);black=material('Boot leather',[.035,.022,.025,1]);white=snow
  skins=[material('Elf skin '+str(i),c) for i,c in enumerate([[.76,.42,.22,1],[.96,.69,.49,1],[.34,.16,.08,1]])]
  fur=material('Reindeer cinnamon',[.38,.17,.07,1])
+ # Each moving character is parented around a local pivot; clips are baked into GLB.
+ def motion(start,name,pivot,axis='y',amplitude=.12,cycles=1):
+  roots=g['scenes'][g.get('scene',0)]['nodes'];children=[i for i in roots if i>=start]
+  for i in children:
+   t=g['nodes'][i].get('translation',[0,0,0]);g['nodes'][i]['translation']=[t[k]-pivot[k] for k in range(3)]
+  idx=len(g['nodes']);g['nodes'].append({'name':name,'translation':list(pivot),'children':children})
+  roots[:]=[i for i in roots if i not in children]+[idx]
+  g.setdefault('extras',{}).setdefault('lifeTracks',[]).append({'node':idx,'pivot':list(pivot),'axis':axis,'amplitude':amplitude,'cycles':cycles})
+  return idx
  # The old spa becomes a gift-making yard; no water or bridge beneath the elves.
  for node in g['nodes']:
   if node.get('name','').startswith(('Frozen pond','Pond snow rim','Bridge','Mineral','Turquoise','Nordic')):node['scale']=[0,0,0]
- soft_palette={'Deep pine':[.16,.23,.19,1],'Sage':[.31,.30,.23,1],'Cranberry':[.48,.07,.07,1],'Cedar':[.34,.22,.14,1],'Champagne gold':[.72,.48,.19,1],'Midnight roof':[.23,.25,.29,1],'Pearl snow':[.92,.93,.95,1],'Lavender slate':[.28,.29,.33,1],'Rose sandstone':[.43,.37,.31,1],'aurora architectural trim':[.31,.32,.23,1],'aurora enchanted accent':[.80,.63,.34,1]}
+ soft_palette={'Deep pine':[.035,.20,.075,1],'Sage':[.31,.30,.23,1],'Cranberry':[.48,.07,.07,1],'Cedar':[.34,.22,.14,1],'Champagne gold':[.72,.48,.19,1],'Midnight roof':[.23,.25,.29,1],'Pearl snow':[.92,.93,.95,1],'Lavender slate':[.28,.29,.33,1],'Rose sandstone':[.43,.37,.31,1],'aurora architectural trim':[.31,.32,.23,1],'aurora enchanted accent':[.80,.63,.34,1]}
  for m in g['materials']:
   if m['name'] in soft_palette:
    m['pbrMetallicRoughness']['baseColorFactor']=soft_palette[m['name']]
@@ -58,6 +67,7 @@ def populate(g,box,cone,ball,material,snow,cedar):
  cone('North Pole brass base',.75,.12,.62,.055,.035,gold,12,.045)
  ball('North Pole golden finial',.75,.61,.62,.055,.055,.055,gold)
  def elf(x,z,index,pose):
+  start=len(g['nodes'])
   skin=skins[index];base=.13
   for dx in [-.024,.024]:
    ball('Elf boots',x+dx,base+.015,z+.012,.029,.03,.055,black);box('Elf leggings',x+dx,base+.06,z,.02,.07,.023,red)
@@ -68,9 +78,12 @@ def populate(g,box,cone,ball,material,snow,cedar):
   for dx in [-.011,.011]:box('Elf eyes',x+dx,base+.188,z+.03,.005,.005,.004,black)
   cone('Elf hat',x,base+.207,z,.043,.071,green,12);ball('Elf hat pom',x+.012,base+.275,z,.030,.030,.030,gold);ball('Elf hat cuff',x,base+.216,z,.087,.023,.073,gold)
   for side in [-1,1]:
+   arm_start=len(g['nodes'])
    shoulder=(x+side*.04,base+.143,z);hand=(x+side*.036,base+(.19 if pose=='carry' else .105),z+.075)
    bar('Elf working arm',shoulder,hand,.019,green);ball('Elf hand',*hand,.021,.021,.021,skin)
+   motion(arm_start,'Elf working arm motion',shoulder,'x',.20,2)
   if pose=='carry':gift(x,base+.17,z+.09,.075)
+  motion(start,'Elf '+pose+' idle',(x,base,z),'y',.12,1)
  # Stage 1: wooden toy train being assembled.
  for x,z,label in [(.17,.35,'MAKE'),(.46,.51,'WRAP')]:
   box(label+' workbench top',x,.225,z,.22,.025,.13,cedar)
@@ -86,8 +99,11 @@ def populate(g,box,cone,ball,material,snow,cedar):
  # Stage 3: an elf carries a parcel toward the loaded dispatch sleigh.
  elf(-.79,.51,2,'carry');gift(-.67,.23,.33,.07);gift(-.57,.23,.33,.065)
  sign('READY',-.66,.33,.43,.17)
+ # Extra elves spread across the expanded island: courier, greeter, and caretaker.
+ elf(-1.00,1.00,1,'carry');elf(1.45,.12,2,'greet');elf(-.40,-1.07,0,'carry')
  # Permanent reindeer pair with antlers and red harnesses, beyond the work yard.
  for x,z in [(.71,-.08),(.89,-.06)]:
+  animal_start=len(g['nodes'])
   for dx in [-.027,.027]:
    for dz in [-.05,.05]:box('Reindeer leg',x+dx,.175,z+dz,.014,.10,.016,fur)
   box('Reindeer body',x,.245,z,.08,.075,.15,fur);box('Reindeer neck',x,.30,z+.055,.04,.10,.04,fur);box('Reindeer head',x,.35,z+.07,.065,.05,.08,fur)
@@ -97,26 +113,30 @@ def populate(g,box,cone,ball,material,snow,cedar):
    bar('Reindeer antler',(x+side*.02,.37,z+.05),(x+side*.04,.46,z+.035),.009,gold)
    bar('Reindeer antler tine',(x+side*.03,.42,z+.04),(x+side*.065,.44,z+.045),.007,gold)
    box('Reindeer eye',x+side*.025,.359,z+.112,.007,.007,.003,black)
+  motion(animal_start,'Reindeer look around',(x,.14,z),'y',.16,1)
 
  # Puffy snow along the workshop eaves softens its storybook silhouette.
  for x,z,k in [(-.56,-.20,1.13),(.43,-.49,.80),(-.08,-.62,.66)]:
   for dx in [-.23,.23]:
    for j in range(5):ball('Soft snowy cottage eave',x+dx*k,.12+.36*k,z+(-.17+j*.085)*k,.10*k,.065*k,.115*k,white)
  # Three igloos on the newly expanded snowfield, made from curved courses of blocks.
- for x,z,r in [(-1.28,.78,.29),(1.22,.79,.32),(.96,-.93,.27)]:
+ ice=material('Igloo pale blue ice',[.60,.77,.86,1]);brick=material('Igloo pearl blocks',[.81,.88,.92,1])
+ for x,z,r in [(-1.35,.87,.36),(1.30,.91,.39),(.96,-.93,.34)]:
+  ball('Igloo continuous ice dome',x,.11,z,r*1.94,r*1.94,r*1.94,ice)
   for row in range(5):
    latitude=(row+.4)/5*math.pi/2;rr=r*math.cos(latitude);count=max(5,round(16*math.cos(latitude)))
    for j in range(count):
     a=j*math.tau/count+(row%2)*math.pi/count
     if row<2 and abs(math.sin(a)-1)<.16:continue
-    box('Igloo snow brick',x+rr*math.cos(a),.11+r*math.sin(latitude),z+rr*math.sin(a),rr*math.tau/count*.90,r*.27,.065,white)
+    box('Igloo snow brick',x+rr*math.cos(a),.11+r*math.sin(latitude),z+rr*math.sin(a),rr*math.tau/count*.90,r*.27,.065,brick)
     angle=math.pi/2-a;g['nodes'][-1]['rotation']=[0,math.sin(angle/2),0,math.cos(angle/2)]
   ball('Igloo snow crown',x,.11+r,z,.13,.055,.13,white)
-  box('Igloo dark doorway',x,.18,z+r*.85,.13,.14,.025,black)
+  box('Igloo dark doorway',x,.18,z+r+.10,.13,.14,.025,black)
   for side in [-1,1]:box('Igloo tunnel wall',x+side*.085,.17,z+r,.055,.15,.19,white)
   ball('Igloo tunnel roof',x,.26,z+r,.23,.08,.20,white)
  # A pair of broad-antlered moose browsing beside the snowy grove.
  for x,z in [(-1.30,-.36),(-1.55,-.06)]:
+  animal_start=len(g['nodes'])
   for dx in [-.055,.055]:
    for dz in [-.09,.09]:ball('Moose leg',x+dx,.21,z+dz,.036,.23,.044,fur)
   ball('Moose round body',x,.35,z,.19,.20,.30,fur);ball('Moose shoulder',x,.41,z+.07,.16,.20,.16,fur)
@@ -127,18 +147,26 @@ def populate(g,box,cone,ball,material,snow,cedar):
    ball('Moose broad antler',x+side*.16,.64,z+.10,.12,.035,.15,gold)
    for j in range(4):cone('Moose antler tine',x+side*(.13+j*.023),.64,z+.04+j*.033,.012,.055,gold,6)
    ball('Moose eye',x+side*.055,.50,z+.20,.012,.012,.008,black)
+  motion(animal_start,'Moose gentle sway',(x,.13,z),'y',.10,1)
  bear_white=material('Polar bear warm ivory',[.86,.84,.78,1])
  # A gentle polar bear and cub on the front snowbank.
  for x,z,k in [(.31,1.14,1),(.66,1.20,.60)]:
+  animal_start=len(g['nodes'])
   for dx in [-.07,.07]:
    for dz in [-.10,.10]:ball('Polar bear paw',x+dx*k,.17,z+dz*k,.09*k,.13*k,.11*k,bear_white)
   ball('Polar bear body',x,.22+.07*k,z,.26*k,.24*k,.39*k,bear_white)
-  ball('Polar bear head',x,.22+.13*k,z+.22*k,.19*k,.17*k,.19*k,bear_white)
+  ball('Polar bear head',x,.22+.13*k,z+.22*k,.23*k,.21*k,.21*k,bear_white)
   ball('Polar bear muzzle',x,.22+.10*k,z+.31*k,.12*k,.08*k,.10*k,bear_white)
   ball('Polar bear nose',x,.22+.11*k,z+.365*k,.045*k,.033*k,.025*k,black)
   for side in [-1,1]:
    ball('Polar bear ear',x+side*.065*k,.22+.215*k,z+.19*k,.055*k,.055*k,.035*k,bear_white)
-   ball('Polar bear eye',x+side*.055*k,.22+.15*k,z+.30*k,.012*k,.012*k,.009*k,black)
+   ball('Polar bear eye',x+side*.055*k,.22+.15*k,z+.30*k,.018*k,.018*k,.012*k,black)
+   ball('Polar bear rosy cheek',x+side*.077*k,.22+.12*k,z+.302*k,.027*k,.018*k,.012*k,skins[1])
+  # Soft red Santa hat with white cuff and a pompom.
+  cone('Polar bear Santa hat',x,.22+.22*k,z+.22*k,.105*k,.17*k,red,16)
+  ball('Polar bear fluffy hat cuff',x,.22+.23*k,z+.22*k,.23*k,.047*k,.21*k,white)
+  ball('Polar bear hat pompom',x+.025*k,.22+.39*k,z+.22*k,.063*k,.063*k,.063*k,white)
+  motion(animal_start,'Polar bear happy bob',(x,.13,z),'bob',.012*k,2)
  # A quiet stepping-stone trail connects the expanded island instead of enlarging props.
  for i in range(17):
   a=.2+i*math.pi/12
