@@ -18,7 +18,13 @@ def write(path,g,b):
 for style,palette in PALETTES.items():
  for lit in [False,True]:
   g,b=read(ROOT/'prototype/web/assets'/('world.glb' if lit else 'world-unlit.glb'))
+  # Double the terrain width/depth only, retaining the scale of buildings and props.
+  for node in g['nodes']:
+   if node.get('name','').startswith(('Floating island','Snow plateau','Snow edge')):
+    scale=node.get('scale',[1,1,1]);node['scale']=[scale[0]*2,scale[1],scale[2]*2]
+    t=node.get('translation',[0,0,0]);node['translation']=[t[0]*2,t[1],t[2]*2]
   for m in g['materials']:
+
    if m['name'] in palette:m['pbrMetallicRoughness']['baseColorFactor']=palette[m['name']]
    if m['name']=='Glacier blue' and style!='alpine':m['emissiveFactor']=[.10,.28,.34] if style=='aurora' else [.22,.12,.38]
   def material(name,color,glow=False):
@@ -57,6 +63,31 @@ for style,palette in PALETTES.items():
    for primitive in mesh['primitives']:primitive['material']=mat
    mesh_id=len(g['meshes']);g['meshes'].append(mesh)
    idx=len(g['nodes']);g['nodes'].append({'name':name,'mesh':mesh_id,'translation':[x,y,z],'scale':[w/dimensions[0],h/dimensions[1],d/dimensions[2]]});g['scenes'][g.get('scene',0)]['nodes'].append(idx)
+  # Shared rounded geometry for storybook characters, snow and sign trim.
+  positions=[];normals=[]
+  def point(i,j):
+   a=i*math.pi/10;c=j*math.tau/16
+   return [math.sin(a)*math.cos(c),math.cos(a),math.sin(a)*math.sin(c)]
+  for i in range(10):
+   for j in range(16):
+    for v in [point(i,j),point(i+1,j+1),point(i+1,j),point(i,j),point(i,j+1),point(i+1,j+1)]:positions.extend(v);normals.extend(v)
+  def sphere_attr(values):
+   raw=struct.pack('<'+'f'*len(values),*values);view=len(g['bufferViews']);g['bufferViews'].append({'buffer':0,'byteOffset':len(b),'byteLength':len(raw),'target':34962});b.extend(raw)
+   g['accessors'].append({'bufferView':view,'componentType':5126,'count':len(values)//3,'type':'VEC3','min':[-1,-1,-1],'max':[1,1,1]});return len(g['accessors'])-1
+  sphere_mesh={'primitives':[{'attributes':{'POSITION':sphere_attr(positions),'NORMAL':sphere_attr(normals)},'material':snow}]};sphere_dims=[2,2,2]
+  def ball(name,x,y,z,w,h,d,mat):
+   mesh=copy.deepcopy(sphere_mesh)
+   for primitive in mesh['primitives']:primitive['material']=mat
+   idx=len(g['meshes']);g['meshes'].append(mesh);node=len(g['nodes'])
+   g['nodes'].append({'name':name,'mesh':idx,'translation':[x,y,z],'scale':[w/sphere_dims[0],h/sphere_dims[1],d/sphere_dims[2]]});g['scenes'][g.get('scene',0)]['nodes'].append(node)
+  # Surrounding snowbanks and a ring of trees make the expanded terrain explorable.
+  for i in range(18):
+   a=i*math.tau/18;ball('Outer soft snowbank',math.cos(a)*1.90,.07,math.sin(a)*1.50,.32,.14,.23,snow)
+  for x,z,k in [(-1.65,-.55,.80),(-1.20,-1.18,.72),(-.53,-1.30,.62),(.37,-1.32,.85),(1.12,-1.05,.75),(1.72,-.50,.65),(-1.75,.39,.60),(1.75,.38,.60)]:
+   if style=='aurora' and x==1.12:continue
+   for tier in range(3):
+    cone('Outer winter pine',x,.12+tier*.19*k,z,(.23-tier*.045)*k,.37*k,pine)
+    cone('Outer thick snow cap',x,.12+(tier*.19+.16)*k,z,(.17-tier*.035)*k,.22*k,snow)
   cabins=[(-.56,-.20,1.13),(.43,-.49,.80),(-.08,-.62,.66)]
   if style=='forest':
    # Replace the ordinary pitched roofs with pointed fairy-cottage crystal roofs.
@@ -116,7 +147,7 @@ for style,palette in PALETTES.items():
    # Faceted alpine ridge on the rear rim; village remains accessible in front.
    for x,z,r,h in [(-.83,-.55,.23,.56),(-.42,-.79,.25,.77),(.02,-.86,.21,.59),(.50,-.69,.24,.70),(.86,-.42,.18,.48)]:
     cone('Alpine ridge',x,.05,z,r,h,stone,5);cone('Alpine snow peak',x,.05+h*.57,z,r*.43,h*.43,snow,5)
-  if style=='aurora':populate(g,box,cone,material,snow,cedar)
+  if style=='aurora':populate(g,box,cone,ball,material,snow,cedar)
   write(OUT/(style+('-lit' if lit else '')+'.glb'),g,b)
 # Matching lightweight star-filled sky artwork.
 for style in PALETTES:

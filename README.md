@@ -92,3 +92,11 @@ all nine style/type combinations (maximum 0.228 m, below the mailbox).
 Browser-checked world switching, generation, and wrapping; APK remains unchanged.
 
 North Pole workshop update: Santa workshop facade, candy canes, three elves at make/wrap/dispatch stations, two permanent reindeer and a 3D North Pole sign. The spa was replaced with a snowy work yard. Both GLBs structurally checked and rendered in Blender; browser interaction QA unavailable during this update. Website-only; native APK unchanged.
+
+November 15: All browser islands now have twice the terrain width and depth
+(four times the footprint), while props retain their scale. North Pole uses a
+muted timber/ivory/pine palette, rounded elf faces and tunics, snowy cottage
+eaves, an ivory-and-brass landmark sign, three igloos, two moose, and a polar
+bear with cub. The workshop and gift-making stages remain. All six GLBs passed
+terrain-scale and structure checks; a direct Blender render verifies the model
+composition. This change does not update the native APK.

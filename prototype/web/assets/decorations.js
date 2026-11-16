@@ -9,7 +9,7 @@ window.FuzzyDecorations=(()=>{
   function box(x,y,z,w,h,d,color){const p=[[x-w/2,y,z-d/2],[x+w/2,y,z-d/2],[x+w/2,y+h,z-d/2],[x-w/2,y+h,z-d/2],[x-w/2,y,z+d/2],[x+w/2,y,z+d/2],[x+w/2,y+h,z+d/2],[x-w/2,y+h,z+d/2]];add([...[0,3,2,0,2,1,4,5,6,4,6,7,0,4,7,0,7,3,1,2,6,1,6,5,3,7,6,3,6,2,0,1,5,0,5,4].map(i=>p[i])],color)}
   function cone(x,y,z,r,h,color){let v=[];for(let i=0;i<10;i++){let a=i*Math.PI/5,b=(i+1)*Math.PI/5;v.push([x+r*Math.cos(a),y,z+r*Math.sin(a)],[x,y+h,z],[x+r*Math.cos(b),y,z+r*Math.sin(b)])}add(v,color)}
   function ball(x,y,z,r,color){let v=[];const p=(a,b)=>[x+r*Math.sin(a)*Math.cos(b),y+r*Math.cos(a),z+r*Math.sin(a)*Math.sin(b)];for(let i=0;i<6;i++)for(let j=0;j<10;j++){let a=i*Math.PI/6,b=j*Math.PI/5,c=(i+1)*Math.PI/6,d=(j+1)*Math.PI/5;v.push(p(a,b),p(c,b),p(c,d),p(a,b),p(c,d),p(a,d))}add(v,color)}
-  const palette={forest:{white:[.91,.88,1,1],red:[.48,.23,.65,1],gold:[.78,.65,1,1],fur:[.68,.60,.78,1],antler:[.86,.78,1,1]},aurora:{white:[.86,1,.97,1],red:[.65,.025,.055,1],gold:[.95,.57,.12,1],fur:[.57,.41,.28,1],antler:[.77,.84,.72,1]},alpine:{white:[.98,.97,.92,1],red:[.72,.07,.12,1],gold:[1,.65,.2,1],fur:[.47,.25,.12,1],antler:[.72,.51,.28,1]}}[world||'alpine'];
+  const palette={forest:{white:[.91,.88,1,1],red:[.48,.23,.65,1],gold:[.78,.65,1,1],fur:[.68,.60,.78,1],antler:[.86,.78,1,1]},aurora:{white:[.94,.93,.89,1],red:[.48,.07,.07,1],gold:[.72,.48,.19,1],fur:[.57,.41,.28,1],antler:[.77,.84,.72,1]},alpine:{white:[.98,.97,.92,1],red:[.72,.07,.12,1],gold:[1,.65,.2,1],fur:[.47,.25,.12,1],antler:[.72,.51,.28,1]}}[world||'alpine'];
   const {white,red,gold}=palette;
   if(kind==='reindeer'){
    const {fur,antler}=palette,cream=white,hoof=[.17,.10,.08,1];
@@ -40,7 +40,7 @@ window.FuzzyDecorations=(()=>{
  async function build(lit,items,world,wrapped=false){
   const source=await base(wrapped?'assets/gift.glb':['forest','aurora','alpine'].includes(world)?`assets/worlds/${world}${lit?'-lit':''}.glb`:(lit?'assets/world.glb':'assets/world-unlit.glb')),view=new DataView(source),jl=view.getUint32(12,true),g=JSON.parse(new TextDecoder().decode(new Uint8Array(source,20,jl))),binStart=20+jl+8,bl=view.getUint32(20+jl,true);
   if(wrapped){
-   const colors={forest:[[.48,.23,.65,1],[.78,.65,1,1]],aurora:[[.65,.025,.055,1],[.95,.57,.12,1]],alpine:[[.72,.07,.12,1],[1,.65,.2,1]]}[world||'alpine'];
+   const colors={forest:[[.48,.23,.65,1],[.78,.65,1,1]],aurora:[[.48,.07,.07,1],[.72,.48,.19,1]],alpine:[[.72,.07,.12,1],[1,.65,.2,1]]}[world||'alpine'];
    for(const material of g.materials){if(material.name==='Cranberry')material.pbrMetallicRoughness.baseColorFactor=colors[0];if(material.name==='Champagne gold')material.pbrMetallicRoughness.baseColorFactor=colors[1]}
   }
   const chunks=[new Uint8Array(source,binStart,bl)];let length=bl;

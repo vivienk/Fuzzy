@@ -1,16 +1,18 @@
 """North Pole diorama details, using the world's GLB primitive helpers."""
 import math
 
-def populate(g,box,cone,material,snow,cedar):
- red=material('Santa red',[.65,.025,.055,1]);green=material('Elf evergreen',[.035,.25,.12,1]);gold=material('Workshop brass',[.95,.57,.12,1]);black=material('Boot leather',[.035,.022,.025,1]);white=snow
+def populate(g,box,cone,ball,material,snow,cedar):
+ red=material('Santa red',[.48,.07,.07,1]);green=material('Elf evergreen',[.15,.24,.17,1]);gold=material('Workshop brass',[.72,.48,.19,1]);black=material('Boot leather',[.035,.022,.025,1]);white=snow
  skins=[material('Elf skin '+str(i),c) for i,c in enumerate([[.76,.42,.22,1],[.96,.69,.49,1],[.34,.16,.08,1]])]
  fur=material('Reindeer cinnamon',[.38,.17,.07,1])
  # The old spa becomes a gift-making yard; no water or bridge beneath the elves.
  for node in g['nodes']:
   if node.get('name','').startswith(('Frozen pond','Pond snow rim','Bridge','Mineral','Turquoise','Nordic')):node['scale']=[0,0,0]
+ soft_palette={'Deep pine':[.16,.23,.19,1],'Sage':[.31,.30,.23,1],'Cranberry':[.48,.07,.07,1],'Cedar':[.34,.22,.14,1],'Champagne gold':[.72,.48,.19,1],'Midnight roof':[.23,.25,.29,1],'Pearl snow':[.92,.93,.95,1],'Lavender slate':[.28,.29,.33,1],'Rose sandstone':[.43,.37,.31,1],'aurora architectural trim':[.31,.32,.23,1],'aurora enchanted accent':[.80,.63,.34,1]}
  for m in g['materials']:
-  if m['name'] in ['Cranberry','Sage']:m['pbrMetallicRoughness']['baseColorFactor']=[.65,.025,.055,1] if m['name']=='Cranberry' else [.035,.25,.12,1]
-  if m['name']=='Champagne gold':m['pbrMetallicRoughness']['baseColorFactor']=[.95,.57,.12,1]
+  if m['name'] in soft_palette:
+   m['pbrMetallicRoughness']['baseColorFactor']=soft_palette[m['name']]
+   if m.get('emissiveFactor'):m['emissiveFactor']=[.15,.10,.035]
  def bar(name,a,b,r,mat):
   delta=[b[i]-a[i] for i in range(3)];length=math.sqrt(sum(v*v for v in delta));box(name,*[(a[i]+b[i])/2 for i in range(3)],r,length,r,mat)
   # Quaternion rotates local +Y to the segment direction.
@@ -41,20 +43,33 @@ def populate(g,box,cone,material,snow,cedar):
  for x,z in [(-.88,.35),(-.12,.68),(.10,.62),(.91,.12)]:cane(x,z)
  # A striped landmark sign at the front-right corner, readable in 3D.
  for i in range(10):cone('North Pole striped signpost',.75,.12+i*.035,.62,.018,.035,red if i%2 else white,8,.018)
- sign('NORTH POLE',.75,.49,.62,.32);cone('North Pole golden finial',.75,.53,.62,.025,.045,gold,8)
+ # Ivory plaque with gold scalloped border, like a traditional North Pole marker.
+ ball('North Pole gold plaque',.75,.49,.62,.44,.18,.033,gold)
+ ball('North Pole ivory plaque',.75,.49,.643,.41,.155,.025,white)
+ for dx in [-.19,.19]:
+  for dy in [-.065,.065]:ball('North Pole gold scroll',.75+dx,.49+dy,.65,.05,.05,.025,gold)
+ before=len(g['nodes']);sign('NORTH POLE',.75,.49,.659,.34)
+ for node in g['nodes'][before:]:
+  if node['name']=='NORTH POLE sign board':node['scale']=[0,0,0]
+  else:
+   for primitive in g['meshes'][node['mesh']]['primitives']:primitive['material']=red
+ for dx in [-.025,0,.025]:ball('Sign holly leaf',.75+dx,.545,.675,.04,.025,.008,green)
+ ball('Sign holly berry',.75,.541,.681,.014,.014,.01,red)
+ cone('North Pole brass base',.75,.12,.62,.055,.035,gold,12,.045)
+ ball('North Pole golden finial',.75,.61,.62,.055,.055,.055,gold)
  def elf(x,z,index,pose):
   skin=skins[index];base=.13
   for dx in [-.024,.024]:
-   box('Elf boots',x+dx,base+.015,z+.012,.029,.03,.055,black);box('Elf leggings',x+dx,base+.06,z,.02,.07,.023,red)
-  cone('Elf green tunic',x,base+.085,z,.048,.07,green,6,.035)
+   ball('Elf boots',x+dx,base+.015,z+.012,.029,.03,.055,black);box('Elf leggings',x+dx,base+.06,z,.02,.07,.023,red)
+  ball('Elf soft tunic',x,base+.123,z,.105,.095,.075,green)
   box('Elf belt',x,base+.103,z,.085,.015,.062,black);box('Elf buckle',x,base+.103,z+.034,.017,.014,.006,gold)
-  cone('Elf face',x,base+.16,z,.031,.045,skin,8,.029)
+  ball('Elf rounded face',x,base+.185,z,.078,.068,.066,skin);ball('Elf button nose',x,base+.18,z+.035,.019,.018,.022,skin)
   for dx in [-.04,.04]:cone('Pointed elf ear',x+dx,base+.177,z,.014,.027,skin,4)
   for dx in [-.011,.011]:box('Elf eyes',x+dx,base+.188,z+.03,.005,.005,.004,black)
-  cone('Elf hat',x,base+.207,z,.038,.071,green,6);cone('Elf hat pom',x,base+.275,z,.013,.019,gold,6)
+  cone('Elf hat',x,base+.207,z,.043,.071,green,12);ball('Elf hat pom',x+.012,base+.275,z,.030,.030,.030,gold);ball('Elf hat cuff',x,base+.216,z,.087,.023,.073,gold)
   for side in [-1,1]:
    shoulder=(x+side*.04,base+.143,z);hand=(x+side*.036,base+(.19 if pose=='carry' else .105),z+.075)
-   bar('Elf working arm',shoulder,hand,.019,green);box('Elf hand',*hand,.021,.021,.021,skin)
+   bar('Elf working arm',shoulder,hand,.019,green);ball('Elf hand',*hand,.021,.021,.021,skin)
   if pose=='carry':gift(x,base+.17,z+.09,.075)
  # Stage 1: wooden toy train being assembled.
  for x,z,label in [(.17,.35,'MAKE'),(.46,.51,'WRAP')]:
@@ -82,3 +97,49 @@ def populate(g,box,cone,material,snow,cedar):
    bar('Reindeer antler',(x+side*.02,.37,z+.05),(x+side*.04,.46,z+.035),.009,gold)
    bar('Reindeer antler tine',(x+side*.03,.42,z+.04),(x+side*.065,.44,z+.045),.007,gold)
    box('Reindeer eye',x+side*.025,.359,z+.112,.007,.007,.003,black)
+
+ # Puffy snow along the workshop eaves softens its storybook silhouette.
+ for x,z,k in [(-.56,-.20,1.13),(.43,-.49,.80),(-.08,-.62,.66)]:
+  for dx in [-.23,.23]:
+   for j in range(5):ball('Soft snowy cottage eave',x+dx*k,.12+.36*k,z+(-.17+j*.085)*k,.10*k,.065*k,.115*k,white)
+ # Three igloos on the newly expanded snowfield, made from curved courses of blocks.
+ for x,z,r in [(-1.28,.78,.29),(1.22,.79,.32),(.96,-.93,.27)]:
+  for row in range(5):
+   latitude=(row+.4)/5*math.pi/2;rr=r*math.cos(latitude);count=max(5,round(16*math.cos(latitude)))
+   for j in range(count):
+    a=j*math.tau/count+(row%2)*math.pi/count
+    if row<2 and abs(math.sin(a)-1)<.16:continue
+    box('Igloo snow brick',x+rr*math.cos(a),.11+r*math.sin(latitude),z+rr*math.sin(a),rr*math.tau/count*.90,r*.27,.065,white)
+    angle=math.pi/2-a;g['nodes'][-1]['rotation']=[0,math.sin(angle/2),0,math.cos(angle/2)]
+  ball('Igloo snow crown',x,.11+r,z,.13,.055,.13,white)
+  box('Igloo dark doorway',x,.18,z+r*.85,.13,.14,.025,black)
+  for side in [-1,1]:box('Igloo tunnel wall',x+side*.085,.17,z+r,.055,.15,.19,white)
+  ball('Igloo tunnel roof',x,.26,z+r,.23,.08,.20,white)
+ # A pair of broad-antlered moose browsing beside the snowy grove.
+ for x,z in [(-1.30,-.36),(-1.55,-.06)]:
+  for dx in [-.055,.055]:
+   for dz in [-.09,.09]:ball('Moose leg',x+dx,.21,z+dz,.036,.23,.044,fur)
+  ball('Moose round body',x,.35,z,.19,.20,.30,fur);ball('Moose shoulder',x,.41,z+.07,.16,.20,.16,fur)
+  ball('Moose head',x,.49,z+.14,.13,.16,.15,fur);ball('Moose muzzle',x,.445,z+.23,.12,.085,.13,fur)
+  for side in [-1,1]:
+   ball('Moose ear',x+side*.095,.53,z+.10,.10,.035,.05,fur)
+   bar('Moose antler stem',(x+side*.045,.55,z+.12),(x+side*.15,.63,z+.10),.02,gold)
+   ball('Moose broad antler',x+side*.16,.64,z+.10,.12,.035,.15,gold)
+   for j in range(4):cone('Moose antler tine',x+side*(.13+j*.023),.64,z+.04+j*.033,.012,.055,gold,6)
+   ball('Moose eye',x+side*.055,.50,z+.20,.012,.012,.008,black)
+ bear_white=material('Polar bear warm ivory',[.86,.84,.78,1])
+ # A gentle polar bear and cub on the front snowbank.
+ for x,z,k in [(.31,1.14,1),(.66,1.20,.60)]:
+  for dx in [-.07,.07]:
+   for dz in [-.10,.10]:ball('Polar bear paw',x+dx*k,.17,z+dz*k,.09*k,.13*k,.11*k,bear_white)
+  ball('Polar bear body',x,.22+.07*k,z,.26*k,.24*k,.39*k,bear_white)
+  ball('Polar bear head',x,.22+.13*k,z+.22*k,.19*k,.17*k,.19*k,bear_white)
+  ball('Polar bear muzzle',x,.22+.10*k,z+.31*k,.12*k,.08*k,.10*k,bear_white)
+  ball('Polar bear nose',x,.22+.11*k,z+.365*k,.045*k,.033*k,.025*k,black)
+  for side in [-1,1]:
+   ball('Polar bear ear',x+side*.065*k,.22+.215*k,z+.19*k,.055*k,.055*k,.035*k,bear_white)
+   ball('Polar bear eye',x+side*.055*k,.22+.15*k,z+.30*k,.012*k,.012*k,.009*k,black)
+ # A quiet stepping-stone trail connects the expanded island instead of enlarging props.
+ for i in range(17):
+  a=.2+i*math.pi/12
+  ball('Outer snowy path',math.cos(a)*1.1,.135,math.sin(a)*.83,.085,.018,.075,cedar)
