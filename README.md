@@ -90,3 +90,5 @@ Mailbox trims, bridge finials, tree ornaments, wrapped gifts, note paper and
 added miniatures also change with the theme. Miniature height checks passed for
 all nine style/type combinations (maximum 0.228 m, below the mailbox).
 Browser-checked world switching, generation, and wrapping; APK remains unchanged.
+
+North Pole workshop update: Santa workshop facade, candy canes, three elves at make/wrap/dispatch stations, two permanent reindeer and a 3D North Pole sign. The spa was replaced with a snowy work yard. Both GLBs structurally checked and rendered in Blender; browser interaction QA unavailable during this update. Website-only; native APK unchanged.

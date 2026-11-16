@@ -1,5 +1,6 @@
 """Derive three interactive low-poly worlds without changing mailbox/effect anchors."""
 import json,struct,math,random,copy
+from north_pole import populate
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]; OUT=ROOT/'prototype/web/assets/worlds'; OUT.mkdir(exist_ok=True)
 PALETTES={
@@ -115,6 +116,7 @@ for style,palette in PALETTES.items():
    # Faceted alpine ridge on the rear rim; village remains accessible in front.
    for x,z,r,h in [(-.83,-.55,.23,.56),(-.42,-.79,.25,.77),(.02,-.86,.21,.59),(.50,-.69,.24,.70),(.86,-.42,.18,.48)]:
     cone('Alpine ridge',x,.05,z,r,h,stone,5);cone('Alpine snow peak',x,.05+h*.57,z,r*.43,h*.43,snow,5)
+  if style=='aurora':populate(g,box,cone,material,snow,cedar)
   write(OUT/(style+('-lit' if lit else '')+'.glb'),g,b)
 # Matching lightweight star-filled sky artwork.
 for style in PALETTES:
