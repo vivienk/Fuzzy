@@ -138,3 +138,16 @@ generation remains unavailable until a Tripo key and server integration exist.
 All six GLBs passed snow coverage checks, and six animal paths have matching
 loop endpoints. Inline JavaScript parses. Browser preview connection timed out;
 interactive acceptance remains unverified. Website-only; APK unchanged.
+
+Gentle walking and Christmas albums: the six North Pole animals now complete
+individual laps in 80, 96, 120, 160, 192 and 240 seconds (previously all 32).
+Leg cadence scales with travel speed and uses smaller strides. Elf gesture
+speed is retained. All tracks share a seamless 960-second master loop.
+An opt-in Spotify album selector offers A Charlie Brown Christmas, Christmas
+by Michael Buble, and Merry Christmas by Mariah Carey. One iframe is replaced
+on selection to prevent overlapping albums; Stop removes it. Spotify controls
+track availability and preview/sign-in limits. Winter ambience stays separate.
+
+Validation: both North Pole GLBs passed extracted-keyframe speed and loop
+checks. Album opt-in, switch and stop behavior passed a mock DOM test.
+Live Spotify playback and in-browser motion remain unverified.

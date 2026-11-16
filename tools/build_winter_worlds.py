@@ -178,10 +178,12 @@ for style,palette in PALETTES.items():
   animal_names=('Reindeer look around','Moose gentle sway','Polar bear happy bob')
   animals=[(i,n) for i,n in enumerate(g['nodes']) if n.get('name') in animal_names]
   tracks=[t for t in tracks if t['node'] not in {i for i,n in animals}]
+  for track in tracks:track['cycles']*=30  # Preserve elf gesture pace over the 960-second shared loop.
   for j,(idx,node) in enumerate(animals):
-   tracks.append({'node':idx,'axis':'route','offset':j*math.tau/6,'direction':1 if j%2==0 else -1,'pivot':[0,.13,0]})
+   laps=[12,10,8,6,5,4][j]  # Individual laps take 80, 96, 120, 160, 192, 240 seconds.
+   tracks.append({'node':idx,'axis':'route','laps':laps,'offset':j*math.tau/6,'direction':1 if j%2==0 else -1,'pivot':[0,.13,0]})
    legs=[c for c in node['children'] if g['nodes'][c].get('name') in ('Reindeer leg','Moose leg','Polar bear paw')]
-   for k,leg in enumerate(legs):tracks.append({'node':leg,'axis':'x','pivot':[0,0,0],'amplitude':.48,'cycles':24,'phase':math.pi if k in (1,2) else 0})
+   for k,leg in enumerate(legs):tracks.append({'node':leg,'axis':'x','pivot':[0,0,0],'amplitude':.32,'cycles':24*laps,'phase':math.pi if k in (1,2) else 0})
   if tracks:
    def animation_accessor(values,dimension):
     flat=[v for row in values for v in row];raw=struct.pack('<'+'f'*len(flat),*flat);view=len(g['bufferViews'])
@@ -189,12 +191,12 @@ for style,palette in PALETTES.items():
     item={'bufferView':view,'componentType':5126,'count':len(values),'type':{1:'SCALAR',3:'VEC3',4:'VEC4'}[dimension]}
     if dimension==1:item.update(min=[min(flat)],max=[max(flat)])
     g['accessors'].append(item);return len(g['accessors'])-1
-   times=animation_accessor([[i/8] for i in range(257)],1);clip={'name':'North Pole life','samplers':[],'channels':[]}
+   times=animation_accessor([[i/4] for i in range(3841)],1);clip={'name':'North Pole life','samplers':[],'channels':[]}
    for track in tracks:
     if track['axis']=='route':
      positions=[];rotations=[]
-     for i in range(257):
-      a=track['offset']+track['direction']*i/256*math.tau
+     for i in range(3841):
+      a=track['offset']+track['direction']*i/3840*math.tau*track['laps']
       positions.append([2.04*math.cos(a),.13,1.60*math.sin(a)])
       yaw=math.atan2(-2.04*math.sin(a)*track['direction'],1.60*math.cos(a)*track['direction'])
       q=[0,math.sin(yaw/2),0,math.cos(yaw/2)]
@@ -205,8 +207,8 @@ for style,palette in PALETTES.items():
       sampler=len(clip['samplers']);clip['samplers'].append({'input':times,'output':animation_accessor(values,dimension),'interpolation':'LINEAR'});clip['channels'].append({'sampler':sampler,'target':{'node':track['node'],'path':channel}})
      continue
     values=[]
-    for i in range(257):
-     angle=track['amplitude']*math.sin(i/256*math.tau*track['cycles']+track.get('phase',0))
+    for i in range(3841):
+     angle=track['amplitude']*math.sin(i/3840*math.tau*track['cycles']+track.get('phase',0))
      if track['axis']=='bob':values.append([track['pivot'][0],track['pivot'][1]+abs(angle),track['pivot'][2]])
      else:
       q=[0,0,0,math.cos(angle/2)];q[{'x':0,'y':1,'z':2}[track['axis']]]=math.sin(angle/2);values.append(q)
