@@ -150,6 +150,7 @@ document.querySelectorAll('.style-option[data-style]').forEach(button=>button.ad
  selectedSceneStyle=button.dataset.style;
  try{localStorage.setItem('fuzzy-scene-style',selectedSceneStyle)}catch(e){}
  void applySceneStyle();
+ if(opened)refreshVillage();else refreshGift();
 }));
 scene.addEventListener('load',()=>{applySceneStyle();syncLightEffects();$('unwrap').disabled=false;$('status').textContent=opened?'Drag to look around your village.':'Your gift is ready.'});scene.addEventListener('error',()=>{$('status').textContent='The 3D model could not load. Refresh this page or serve it with a local web server.'});
 function openWorld(){clearLightEffects();opened=true;refreshVillage();$('unwrap').hidden=true;$('reopen').hidden=true;['lights','rotate','keep','reset','motion'].forEach(x=>$(x).hidden=false);$('step').textContent='02 / A world made for you';$('heading').textContent='Make it yours.';$('message').hidden=true;$('editor').hidden=false;$('keep').textContent=kept?'Kept ♥':'Keep this world';$('status').textContent='Opening your village…'}
@@ -209,12 +210,12 @@ function persistEditor(){try{localStorage.setItem('fuzzy-editor',JSON.stringify(
 function readMailbox(){$('letter-text').textContent=mailboxNote;$('letter').showModal();mailRead=true;persistEditor();const icon=scene.querySelector('.mailbox-alert');if(icon){icon.classList.add('read');icon.setAttribute('aria-label','Read mailbox note')}}
 $('note-input').oninput=editorCounts;
 $('save-note').onclick=()=>{const value=$('note-input').value.trim();if(!value){$('status').textContent='Write a note before adding it to the mailbox.';$('note-input').focus();return}mailboxNote=value;mailRead=false;const saved=persistEditor();syncLightEffects();$('status').textContent=saved?'Your note is in the mailbox. Tap the envelope to read it.':'Your note is ready for this visit, but browser saving is unavailable.'};
-async function refreshVillage(){const request=++worldRequest;$('generate').disabled=true;try{const url=await FuzzyDecorations.build(lit,decorations,selectedWorld);if(request!==worldRequest||!opened){URL.revokeObjectURL(url);return}const previous=worldUrl;worldUrl=url;scene.src=url;if(previous)URL.revokeObjectURL(previous)}catch(e){$('status').textContent='The village could not update. Please try again.';editorCounts()}}
+async function refreshVillage(){const request=++worldRequest;$('generate').disabled=true;try{const url=await FuzzyDecorations.build(lit,decorations,selectedWorld,false,selectedSceneStyle);if(request!==worldRequest||!opened){URL.revokeObjectURL(url);return}const previous=worldUrl;worldUrl=url;scene.src=url;if(previous)URL.revokeObjectURL(previous)}catch(e){$('status').textContent='The village could not update. Please try again.';editorCounts()}}
 $('generate').onclick=()=>{if(decorations.length>=3)return;decorations.push($('decoration-type').value);const saved=persistEditor();refreshVillage();editorCounts();$('status').textContent=saved?'Adding your miniature to an empty snow spot…':'Adding your miniature for this visit; browser saving is unavailable.'};
 $('undo').onclick=()=>{decorations.pop();persistEditor();refreshVillage();editorCounts()};
 async function refreshGift(){
  const request=++worldRequest;
- try{const url=await FuzzyDecorations.build(false,[],selectedWorld,true);if(request!==worldRequest||opened){URL.revokeObjectURL(url);return}const previous=worldUrl;worldUrl=url;scene.src=url;if(previous)URL.revokeObjectURL(previous)}catch(e){$('status').textContent='Your gift could not update. Please refresh and try again.'}
+ try{const url=await FuzzyDecorations.build(false,[],selectedWorld,true,selectedSceneStyle);if(request!==worldRequest||opened){URL.revokeObjectURL(url);return}const previous=worldUrl;worldUrl=url;scene.src=url;if(previous)URL.revokeObjectURL(previous)}catch(e){$('status').textContent='Your gift could not update. Please refresh and try again.'}
 }
 const snowfall=document.querySelector('.snow-weather');
 for(let i=0;i<30;i++){const flake=document.createElement('i');flake.style.cssText=`--x:${(i*37)%100}%;--size:${1+i%3}px;--time:${18+i%11}s;--delay:-${i*.91}s`;snowfall.append(flake)}
