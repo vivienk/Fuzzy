@@ -116,8 +116,8 @@ function drawStylePattern(ctx,style,size,seed){
 }
 async function getStyledSceneTexture(material,original,style){
  if(!original.baseColorTexture||!original.texture?.source)return null;
- let variants=styledSceneTextures.get(material.pbr);
- if(!variants){variants=new Map();styledSceneTextures.set(material.pbr,variants)}
+ let variants=styledSceneTextures.get(original.pbr);
+ if(!variants){variants=new Map();styledSceneTextures.set(original.pbr,variants)}
  if(variants.has(style))return variants.get(style);
  const size=512,texture=scene.createCanvasTexture(),canvas=texture.source.element,ctx=canvas.getContext('2d');
  canvas.width=size;canvas.height=size;
