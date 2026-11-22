@@ -48,6 +48,8 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #world .elf-target:focus-visible{outline:2px solid #ffda85}
 .elf-bubble:not(:empty){display:block;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding:5px 9px;border-radius:13px;background:#fff9ed;box-shadow:0 2px 8px #17203940;font:19px/1.2 system-ui;white-space:nowrap;pointer-events:none}
 .elf-bubble:not(:empty)::after{content:"";position:absolute;top:100%;left:calc(50% - 5px);border:5px solid transparent;border-top-color:#fff9ed}
+#world .moose-feed{cursor:pointer;padding:0;margin:0;width:32px;height:32px;background:transparent;border:0;box-shadow:none;line-height:1;text-align:center;font-size:15px;color:inherit;text-shadow:0 1px 3px white;pointer-events:auto}
+#world .moose-feed:disabled{cursor:default;opacity:1}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -219,7 +221,27 @@ function showElfInteraction(){
 }
 function showVillageEffects(){
   if(world.dataset.kind!=="village")return;
-  effects.forEach(({kind,position,normal},i)=>{
+  effects.forEach(({kind,position,normal,name},i)=>{
+    if(kind==="feed"){
+      const feed=document.createElement("button");
+      feed.type="button";feed.className="moose-feed";feed.slot="hotspot-feed-"+i;
+      feed.dataset.position=position.map(v=>v+"m").join(" ");
+      feed.setAttribute("aria-label","Feed "+name.toLowerCase()+" a carrot");
+      feed.title=feed.getAttribute("aria-label");feed.textContent="🥕";
+      feed.onclick=e=>{
+        e.stopPropagation();
+        if(feed.disabled)return;
+        feed.disabled=true;feed.textContent="💛";
+        const clip="Feed "+name,reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if(!reduced)world.appendAnimation(clip,{repetitions:1,time:0});
+        setTimeout(()=>{
+          if(!feed.isConnected)return;
+          if(!reduced)world.detachAnimation(clip);
+          feed.textContent="🥕";feed.disabled=false;
+        },3000);
+      };
+      world.append(feed);return;
+    }
     const anchor=document.createElement("div");
     anchor.slot="hotspot-village-"+i;
     anchor.className=kind==="smoke"?"atmosphere-anchor smoke":"light-anchor "+kind;
