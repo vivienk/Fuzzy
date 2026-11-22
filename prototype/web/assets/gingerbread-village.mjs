@@ -231,6 +231,19 @@ export async function villageGeometry() {
     box(i%2?"mint":"red",0,.15,0,.22,.15,.17);box("gold",0,.155,0,.043,.156,.174);box("gold",0,.31,0,.22,.014,.04);
   },x,.002,z,.88,i*.6);
   // Open-front toy shop on the near side gives the workbench a clear sightline.
+  // Snow between the entrance sign and the front curve of the railway.
+  const stationX=2.62,stationZ=4.34;
+  place("Gift making station","Cedar gift counter",()=>{
+    box("cookie",0,.43,0,.59,.07,.30);
+    for(const x of [-.48,.48])for(const z of [-.20,.20])box("wood",x,.21,z,.05,.21,.05);
+    box("spruce",0,.33,.245,.53,.12,.034);
+    box("red",-.17,.64,0,.18,.14,.15);
+    box("gold",-.17,.64,0,.035,.145,.154);
+    for(const side of [-1,1])ball("gold",-.17+side*.055,.81,0,.068,.04,.03);
+    box("mint",.26,.59,-.02,.12,.09,.11);
+    box("white",.26,.59,-.02,.025,.094,.114);
+  },stationX,.025,stationZ,1,.12);
+  villageEffects.push({kind:"gift-station",position:[stationX,1.06,stationZ]});
   const shopX=-2.20,shopZ=2.96;
   prop("Santa's workshop","workshop",shopX,shopZ-.40,2.946875);
   const mailboxHeight=1.10;
