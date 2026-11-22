@@ -94,7 +94,7 @@ const SCENE_STYLES={
  }}
 };
 const originalSceneMaterials=new WeakMap();
-let selectedSceneStyle='needle-felt',sceneStyleRevision=0;
+let selectedSceneStyle='needle-felt';
 try{const saved=localStorage.getItem('fuzzy-scene-style');if(Object.hasOwn(SCENE_STYLES,saved))selectedSceneStyle=saved}catch(e){}
 function drawStylePattern(ctx,style,size,seed){
  let state=(Math.floor(seed*1e7)>>>0)||1;
