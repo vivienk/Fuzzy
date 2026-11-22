@@ -231,19 +231,20 @@ export async function villageGeometry() {
     box(i%2?"mint":"red",0,.15,0,.22,.15,.17);box("gold",0,.155,0,.043,.156,.174);box("gold",0,.31,0,.22,.014,.04);
   },x,.002,z,.88,i*.6);
   // Open-front toy shop on the near side gives the workbench a clear sightline.
-  // Snow between the entrance sign and the front curve of the railway.
-  const stationX=2.62,stationZ=4.34;
-  place("Gift making station","Cedar gift counter",()=>{
-    box("cookie",0,.43,0,.92,.07,.42);
-    for(const x of [-.48,.48])for(const z of [-.20,.20])box("wood",x,.21,z,.05,.21,.05);
-    box("spruce",0,.33,.245,.53,.12,.034);
-    box("red",-.69,.64,0,.18,.14,.15);
-    box("gold",-.69,.64,0,.035,.145,.154);
-    for(const side of [-1,1])ball("gold",-.69+side*.055,.81,0,.068,.04,.03);
-    box("mint",.68,.59,-.02,.12,.09,.11);
-    box("white",.68,.59,-.02,.025,.094,.114);
-  },stationX,.025,stationZ,1,.12);
-  villageEffects.push({kind:"gift-station",position:[stationX,1.06,stationZ]});
+  // Three round hatboxes on the open snow west of the mailbox.
+  const giftBoxes=[[-4.62,3.53,"red"],[-5.53,2.96,"mint"],[-6.21,2.17,"ice"]];
+  giftBoxes.forEach(([x,z,color],slot)=>{
+    place("Gift box "+slot,"Round gift box "+color,()=>{
+      solid(color,0,0,0,[[0,.34,.34],[.045,.39,.39],[.37,.39,.39],[.40,.36,.36]],16);
+      solid("gold",0,0,0,[[.08,.393,.393],[.105,.393,.393]],16);
+    },x,.025,z);
+    place("Gift lid "+slot,"Round ribbon lid "+color,()=>{
+      solid(color,0,0,0,[[0,.40,.40],[.035,.422,.422],[.11,.422,.422],[.14,.395,.395]],16);
+      box("gold",0,.145,0,.048,.012,.39);
+      for(const side of [-1,1])ball("gold",side*.09,.19,0,.11,.06,.05);
+    },x,.415,z);
+    villageEffects.push({kind:"gift-station",slot,position:[x,.44,z]});
+  });
   const shopX=-2.20,shopZ=2.96;
   prop("Santa's workshop","workshop",shopX,shopZ-.40,2.946875);
   const mailboxHeight=1.10;
