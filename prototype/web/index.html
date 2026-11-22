@@ -233,9 +233,9 @@ function syncCharacterMotion(){
  else $('motion').textContent=scene.classList.contains('effects-paused')?'Resume effects':'Pause effects';
  const canAnimate=opened&&!document.hidden&&!reduced&&!scene.classList.contains('effects-paused');
  if(selectedSceneStyle==='monument-valley'&&canAnimate){scene.setAttribute('auto-rotate','');scene.setAttribute('rotation-per-second','2deg')}else scene.removeAttribute('auto-rotate');
- if(opened&&selectedWorld==='aurora'&&!document.hidden&&!reduced&&!scene.classList.contains('effects-paused')&&scene.availableAnimations?.includes('North Pole life')){
-  scene.animationName='North Pole life';scene.play();
- }else scene.pause();
+ // The imported North Pole life clip sends the animals and props through
+ // intersecting paths. Keep it paused until those paths are corrected in the asset.
+ scene.pause();
 }
 reducedMotion.addEventListener('change',syncCharacterMotion);
 document.addEventListener('visibilitychange',syncCharacterMotion);
