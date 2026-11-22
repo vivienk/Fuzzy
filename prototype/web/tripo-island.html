@@ -25,7 +25,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #diorama{position:relative}
 #diorama[data-village]{isolation:isolate}
 #diorama[data-village] #world{position:relative;z-index:1;background:transparent}
-#diorama[data-village]::before{content:"";position:absolute;inset:0 0 2.6em;pointer-events:none;border-radius:16px;background:url("assets/worlds/aurora-sky.svg") center/cover}
+#diorama[data-village]::before{content:"";position:absolute;inset:0 0 2.6em;pointer-events:none;border-radius:16px;background:url("assets/worlds/glacier-horizon.svg") center/100% 100% no-repeat,url("assets/worlds/aurora-sky.svg") center/cover}
 #diorama[data-village]::after{content:"";position:absolute;inset:0 0 2.6em;pointer-events:none;border-radius:16px;background:radial-gradient(ellipse 80% 48% at 50% -12%,transparent 50%,#7fe0bf38 65%,#7cc8c915 72%,transparent 89%);background-size:140% 125%;animation:aurora-wave 10s ease-in-out infinite alternate}
 @keyframes aurora-wave{from{background-position:left top;opacity:.46}to{background-position:right 16%;opacity:.88}}
 @media(prefers-reduced-motion:reduce){#diorama[data-village]::after{animation:none}}
