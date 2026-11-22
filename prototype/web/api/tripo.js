@@ -2,12 +2,13 @@ const ALLOWED_ORIGIN = process.env.TRIPO_APP_ORIGIN;
 const API_BASE = "https://openapi.tripo3d.ai/v3";
 const OPERATION_COST = { island: 30, object: 30, character: 30, "rig-check": 0, rig: 25, animate: 10 };
 const OBJECT_STYLE = "A handcrafted low-poly winter miniature. Use crisp triangular facets, softly beveled edges, chunky readable silhouettes and restrained detail. Matte painted surfaces, soft diffuse shading, no glossy reflections or baked shadows. Palette: pearl snow, icy blue, muted pine, cranberry red, cedar brown and small warm-gold accents. Keep these proportions, materials and palette consistent throughout the set.";
+const GIFT_STYLE = "Make a cute low-poly toy miniature. Build its silhouette from plump, softly faceted forms with rounded corners and a few clear details. Use smooth, matte painted surfaces with broad planes, gentle diffuse shading and minimal texture grain. For creatures, use a large head and short limbs. For objects, keep their defining parts and add no face unless requested. Follow the user's colors; otherwise choose colors natural to the subject.";
 const ELF_SUBJECT = "One friendly, short Christmas elf with an oversized head, pointed cap and cream-trimmed outfit. Full body in a neutral upright pose with separated limbs suitable for biped rigging.";
 const SINGLE_OBJECT = "One complete freestanding asset, centered, with no terrain, scenery or display base.";
 function generationPrompt(operation, body) {
   const subject = operation === "character" ? ELF_SUBJECT : String(typeof body.prompt === "string" ? body.prompt : "").trim();
   const framing = operation === "island" ? "Show the full floating island." : SINGLE_OBJECT;
-  const suffix = "\n\n" + framing + "\n" + OBJECT_STYLE;
+  const suffix = "\n\n" + framing + "\n" + (operation === "object" ? GIFT_STYLE : OBJECT_STYLE);
   const maxLength = 1024 - suffix.length;
   if (subject.length < 3 || subject.length > maxLength) {
     const error = new Error("Describe the subject in 3 to " + maxLength + " characters. The shared style is added automatically.");
