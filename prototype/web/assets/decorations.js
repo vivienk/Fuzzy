@@ -20,14 +20,6 @@ window.FuzzyDecorations=(()=>{
     ctx.strokeStyle='rgba(83,60,41,.48)';ctx.lineWidth=1.25;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.moveTo(x+cell,y);ctx.lineTo(x,y+cell);ctx.stroke();
    }
   }else if(style==='monument-valley'){
-   const cell=64;
-   for(let y=0;y<size;y+=cell)for(let x=0;x<size;x+=cell){
-    ctx.fillStyle=((x/cell+y/cell)%2)?'rgba(255,255,255,.16)':'rgba(112,83,146,.12)';
-    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y);ctx.lineTo(x+cell,y+cell);ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(249,215,201,.14)';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.lineTo(x,y+cell);ctx.closePath();ctx.fill();
-    ctx.strokeStyle='rgba(111,91,145,.22)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.stroke();
-   }
-  }else if(style==='monument-valley'){
    const cell=64,offsetX=seed%32,offsetY=(seed>>>7)%32,phase=(seed>>>14)%2;
    for(let y=-cell+offsetY;y<size+cell;y+=cell)for(let x=-cell+offsetX;x<size+cell;x+=cell){
     const flip=(Math.floor((x-offsetX)/cell)+Math.floor((y-offsetY)/cell)+phase)%2;
