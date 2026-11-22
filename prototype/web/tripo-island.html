@@ -29,6 +29,18 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #diorama[data-village]::after{content:"";position:absolute;inset:0 0 2.6em;pointer-events:none;border-radius:16px;background:radial-gradient(ellipse 80% 48% at 50% -12%,transparent 50%,#7fe0bf38 65%,#7cc8c915 72%,transparent 89%);background-size:140% 125%;animation:aurora-wave 10s ease-in-out infinite alternate}
 @keyframes aurora-wave{from{background-position:left top;opacity:.46}to{background-position:right 16%;opacity:.88}}
 @media(prefers-reduced-motion:reduce){#diorama[data-village]::after{animation:none}}
+.light-anchor{width:0;height:0;pointer-events:none;opacity:0;transition:opacity 180ms cubic-bezier(.23,1,.32,1)}
+.light-anchor[data-visible]{opacity:1}.light-anchor .halo{position:absolute;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,#fffceabf 0%,#ffe49a80 12%,#ffbd4947 28%,#ff9c1e18 48%,transparent 70%);animation:light-breathe 4.8s cubic-bezier(.77,0,.175,1) infinite;animation-delay:var(--delay);mix-blend-mode:screen}
+.light-anchor.window .halo,.light-anchor.lantern .halo{width:68px;height:68px;left:-34px;top:-34px}.light-anchor.star .halo{width:90px;height:90px;left:-45px;top:-45px}
+.light-anchor .spark{position:absolute;left:-7px;top:-7px;width:14px;height:14px;background:linear-gradient(transparent 40%,#fff9da 50%,transparent 60%),linear-gradient(90deg,transparent 40%,#fff9da 50%,transparent 60%);filter:drop-shadow(0 0 3px #ffc86b);opacity:.15;animation:light-sparkle 5.6s cubic-bezier(.77,0,.175,1) infinite;animation-delay:var(--delay)}
+@keyframes light-breathe{0%,100%{opacity:.58;transform:scale(.94)}50%{opacity:1;transform:scale(1.12)}}
+@keyframes light-sparkle{0%,36%,100%{opacity:.08;transform:scale(.95) rotate(0deg)}52%{opacity:.95;transform:scale(1.3) rotate(35deg)}70%{opacity:.08;transform:scale(.95) rotate(70deg)}}
+@media(prefers-reduced-motion:reduce){.light-anchor .halo{animation:none;opacity:.8}.light-anchor .spark{animation:none;opacity:.3}}
+.atmosphere-anchor{width:0;height:0;opacity:0;pointer-events:none;transition:opacity 180ms cubic-bezier(.23,1,.32,1)}
+.atmosphere-anchor[data-visible]{opacity:1}.puff{display:block;position:absolute;pointer-events:none;border-radius:50%;opacity:0;will-change:transform,opacity}
+.smoke .puff{top:-12px;width:22px;height:26px;background:radial-gradient(ellipse,#d8e3ef85 0%,#bbc8df40 35%,transparent 70%);animation:chimney-drift 7s linear infinite}
+@keyframes chimney-drift{0%{opacity:0;transform:translate(0,0) scale(.95)}15%{opacity:.6}50%{opacity:.38;transform:translate(9px,-35px) scale(1.65)}100%{opacity:0;transform:translate(25px,-85px) scale(2.5)}}
+@media(prefers-reduced-motion:reduce){.smoke .puff,.steam .puff{animation:none;opacity:.12;transform:translateY(-10px)}.puff:nth-child(n+3){display:none}}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -137,12 +149,34 @@ for (const viewer of document.querySelectorAll("model-viewer")) {
 }
 const choices = document.querySelectorAll("#worlds button");
 let villageModel;
+let effects=[];
+function showVillageEffects(){
+  if(world.dataset.kind!=="village")return;
+  effects.forEach(({kind,position,normal},i)=>{
+    const anchor=document.createElement("div");
+    anchor.slot="hotspot-village-"+i;
+    anchor.className=kind==="smoke"?"atmosphere-anchor smoke":"light-anchor "+kind;
+    anchor.dataset.position=position.map(v=>v+"m").join(" ");
+    anchor.dataset.normal=(normal||[0,1,0]).join(" ");
+    anchor.dataset.visibilityAttribute="visible";
+    anchor.setAttribute("aria-hidden","true");
+    if(kind==="smoke"){
+      for(let j=0;j<6;j++){const puff=document.createElement("span");puff.className="puff";puff.style.left="-10px";puff.style.animationDelay=(-j*7/6-i*.8)+"s";anchor.append(puff);}
+    }else{
+      anchor.style.setProperty("--delay",(-i*.37)+"s");
+      anchor.innerHTML='<span class="halo"></span><span class="spark"></span>';
+    }
+    world.append(anchor);
+  });
+}
+world.addEventListener("load",()=>{world.replaceChildren();showVillageEffects();});
 let request = 0;
 async function selectWorld(choice) {
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
   world.alt = choice.textContent;
   caption.textContent = "Loading " + world.alt + "…";
+  world.replaceChildren();
   const turn = ++request;
   const village = choice.dataset.world === "village";
   document.querySelector("#diorama").toggleAttribute("data-village",village);
@@ -154,9 +188,9 @@ async function selectWorld(choice) {
     world.removeAttribute("src");
     try {
       villageModel ||= Promise.all([import("./assets/santa-flight.mjs"), import("./assets/gingerbread-village.mjs")])
-        .then(async ([{animateVillage}, {villageGeometry}]) => {
-          const source = URL.createObjectURL(new Blob([villageGeometry()], {type:"model/gltf-binary"}));
-          try { return await animateVillage(source); }
+        .then(async ([{animateVillage}, {villageGeometry,villageEffects}]) => {
+          const source = URL.createObjectURL(new Blob([await villageGeometry()], {type:"model/gltf-binary"}));
+          try { const url=await animateVillage(source);effects=villageEffects;return url; }
           finally { URL.revokeObjectURL(source); }
         });
       const url = await villageModel;
