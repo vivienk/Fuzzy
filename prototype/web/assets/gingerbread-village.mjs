@@ -69,7 +69,7 @@ export async function villageGeometry() {
     const bands=[[0,1],[-.22,1.015],[-.98,.92],[-1.82,.73],[-2.65,.49],[-3.43,.20]];
     const rings=bands.map(([h,s],k)=>Array.from({length:36},(_,i)=>{
       const t=i*tau/36,f=1+.028*Math.cos(t*5)+.027*Math.sin(t*7);
-      return [8*s*f*Math.cos(t)+k*.07,h+(k?.18*Math.sin(t*5+k):0),6.07*s*f*Math.sin(t)-k*.055];
+      return [8*s*f*Math.cos(t)+k*.07,1.27*h+(k?.18*Math.sin(t*5+k):0),6.07*s*f*Math.sin(t)-k*.055];
     }));
     const top=rings[0].map(([x,y,z],i)=>[x*.78,.014+.026*Math.sin(i*2.3),z*.78]);
     for(let i=0;i<36;i++){const j=(i+1)%36;
@@ -78,7 +78,7 @@ export async function villageGeometry() {
       for(let k=1;k<bands.length;k++){
         const colors=k===1?["snow","snowShadow"]:["rock",i%3?"rockBlue":"shale"];
         tri(colors[0],rings[k][i],rings[k-1][i],rings[k-1][j]);tri(colors[1],rings[k][i],rings[k-1][j],rings[k][j]);}
-      tri("rockBlue",[.57,-3.98,-.36],rings.at(-1)[i],rings.at(-1)[j]);
+      tri("rockBlue",[.57,-5.25,-.36],rings.at(-1)[i],rings.at(-1)[j]);
     }
     for(const [x,y,z,h] of [[-4.2,-.90,4.45,1.78],[-4.5,-.90,4.28,.83],[3.65,-1.26,3.66,1.25],[5.36,-.94,-2.29,1.13]])
       solid("ice",x,y,z,[[-h,.018,.018],[0,.15,.18]],5);
@@ -88,7 +88,7 @@ export async function villageGeometry() {
     const levels=[[0,1,0],[.43,.68,.05],[.65,.43,-.09],[.84,.24,-.14],[1,.015,-.21]];
     const rim=levels.map(([y,r,dx],k)=>Array.from({length:n},(_,i)=>{
       const a=tau*i/n,noise=1+.12*Math.cos(3*a+.4);
-      return [dx+r*noise*Math.cos(a),y+(k>0&&k<4?.085*Math.sin(5*a+k):0),r*.36*noise*Math.sin(a)];
+      return [dx+r*noise*Math.cos(a),1.65*(y+(k>0&&k<4?.085*Math.sin(5*a+k):0)),r*.36*noise*Math.sin(a)];
     }));
     for(let k=1;k<rim.length;k++)for(let i=0;i<n;i++){
       const j=(i+1)%n,shade=k<2?(i%3?"rockBlue":"rock"):(i%3?"snow":"ice");
