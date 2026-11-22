@@ -571,6 +571,8 @@ async function selectWorld(choice) {
   ++renderVersion;pendingReveal=null;
   const village = choice.dataset.world === "village";
   document.querySelector("#diorama").toggleAttribute("data-village",village);
+  world.setAttribute("min-camera-orbit", village ? "auto 52deg auto" : "auto 65deg auto");
+  world.setAttribute("max-camera-orbit", village ? "auto 76deg auto" : "auto 65deg auto");
   world.setAttribute("camera-orbit", village ? "18deg 65deg 87%" : "30deg 65deg auto");
   const academy = choice.dataset.world === "academy";
   world.autoplay = (village || academy || choice.dataset.world === "north") && !matchMedia("(prefers-reduced-motion: reduce)").matches;
