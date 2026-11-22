@@ -132,7 +132,9 @@ function selectWorld(choice) {
   world.dataset.kind = choice.dataset.world;
   world.alt = choice.textContent;
   caption.textContent = "Loading " + world.alt + "…";
-  world.src = choice.dataset.world === "north" ? "assets/worlds/aurora-lit.glb" : island;
+  const academy = choice.dataset.world === "academy";
+  world.autoplay = academy && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  world.src = academy ? "assets/worlds/owl-post-academy.gltf" : "assets/worlds/aurora-lit.glb";
 }
 world.addEventListener("error", () => caption.textContent = world.alt + " couldn’t load. Select the world again to retry.");
 for (const choice of choices) choice.onclick = () => selectWorld(choice);
