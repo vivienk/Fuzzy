@@ -564,7 +564,7 @@ function finishIslandLoad(){
   islandLoader.hidden=true;
   world.removeAttribute("aria-busy");
 }
-world.addEventListener("load",()=>{if(world.hasAttribute("src")&&world.loaded)finishIslandLoad();});
+world.addEventListener("load",finishIslandLoad);
 let request = 0;
 async function selectWorld(choice) {
   if(choice.dataset.world===world.dataset.kind&&world.loaded&&islandLoader.hidden)return;
