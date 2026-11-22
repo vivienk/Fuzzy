@@ -14,7 +14,7 @@ export async function villageGeometry() {
   const parts=[], designs=new Map();
   let data, bytes=0;
   const tau=Math.PI*2;
-  const palette={snowShadow:"e2eaf0",rock:"655f56",rockBlue:"4c5663",snow:"fff5ed",ice:"93bfd1",deep:"658ba9",cliff:"807581",shale:"a59aa2",path:"dcc8b9",wood:"a76a45",dark:"603e35",cookie:"d89c65",red:"b9504c",tile:"c7685a",white:"fff0d3",gold:"e6b35e",lit:"ffce76",pine:"527966",spruce:"3c6055",mint:"81a18a",skin:"efbc97",fur:"8e604c",antler:"c39976",black:"3d3534",blush:"d98074"};
+  const palette={carrot:"df8b4b",snowShadow:"e2eaf0",rock:"655f56",rockBlue:"4c5663",snow:"fff5ed",ice:"93bfd1",deep:"658ba9",cliff:"807581",shale:"a59aa2",path:"dcc8b9",wood:"a76a45",dark:"603e35",cookie:"d89c65",red:"b9504c",tile:"c7685a",white:"fff0d3",gold:"e6b35e",lit:"ffce76",pine:"527966",spruce:"3c6055",mint:"81a18a",skin:"efbc97",fur:"8e604c",antler:"c39976",black:"3d3534",blush:"d98074"};
   const names=Object.keys(palette);
   for(const [name,hex] of Object.entries(palette)){
     const rgb=hex.match(/../g).map(c=>Math.pow(parseInt(c,16)/255,2.2));
@@ -185,7 +185,10 @@ export async function villageGeometry() {
     for(const s of [-1,1])for(const end of [-1,1]){
       const x=end*.40,z=s*.17;rod("fur",[x,.80,z],[x+end*.065,.15,z],.089);ball("dark",x+end*.065,.09,z,.125,.09,.107);
     }
-    ball("fur",0,.83,0,.61,.33,.255);ball("fur",.33,1.02,0,.30,.39,.24);ball("fur",.59,1.24,0,.27,.28,.20);
+    ball("fur",0,.83,0,.61,.33,.255);ball("fur",-.59,.95,0,.105,.09,.088);
+  }
+  function mooseHead(){
+    ball("fur",.33,1.02,0,.30,.39,.24);ball("fur",.59,1.24,0,.27,.28,.20);
     ball("wood",.80,1.16,0,.26,.17,.18);ball("dark",.98,1.19,0,.065,.075,.15);
     for(const s of [-1,1]){ball("black",.68,1.32,s*.18,.036,.038,.024);
       ball("fur",.46,1.46,s*.19,.10,.11,.063);
@@ -193,10 +196,32 @@ export async function villageGeometry() {
       ball("antler",.32,1.63,s*.39,.23,.09,.12);
       for(let i=0;i<4;i++){const x=.14+i*.108;rod("antler",[x,1.64,s*.40],[x-.04,1.78+.05*Math.sin(i),s*.50],.032);}
     }
-    ball("fur",-.59,.95,0,.105,.09,.088);
   }
-  place("Adult moose","Moose with palmate antlers",moose,2.84,0,2.67,1.03,-1.07);
-  place("Moose calf","Moose with palmate antlers",moose,4.06,0,2.10,.73,-.78);
+  const feedClips=[];
+  const mooseLocations=[[2.84,2.67,1.03,-1.07],[4.06,2.10,.73,-.78]];
+  for(const [i,[x,z,size,yaw]] of mooseLocations.entries()){
+    const name=i?"Moose calf":"Adult moose";
+    place(name,"Moose torso",moose,x,0,z,size,yaw);
+    const body=model.nodes.at(-1);body.children=[];
+    place(name+" head","Palmate antlers and muzzle",mooseHead,-.28,-.92,0);
+    const head=model.scenes[0].nodes.pop();
+    const joint=model.nodes.push({name:name+" neck pivot",translation:[.28,.92,0],children:[head]})-1;
+    body.children.push(joint);
+    place(name+" carrot","Carrot with leafy top",()=>{
+      solid("carrot",0,0,0,[[-.15,.012,.012],[.095,.065,.065],[.12,.054,.054]],8);
+      for(const side of [-1,1])rod("pine",[0,.10,0],[side*.06,.22,0],.018);
+    },.99,.50,0,0);
+    const carrot=model.scenes[0].nodes.pop();body.children.push(carrot);
+    const times=[0,.35,.85,1.10,1.32,1.55,1.80,2.05,2.45,2.80];
+    const angles=[0,-.18,-.88,-.96,-.79,-.94,-.81,-.78,-.30,0];
+    const sizes=[0,1,1,.84,.72,.51,.28,0,0,0];
+    const input=accessor(times,{min:[0],max:[2.8]},"SCALAR");
+    const rotation=accessor(angles.flatMap(a=>[0,0,Math.sin(a/2),Math.cos(a/2)]),{},"VEC4");
+    const scale=accessor(sizes.flatMap(s=>[s,s,s]),{});
+    feedClips.push({name:"Feed "+name,samplers:[{input,output:rotation},{input,output:scale}],channels:[
+      {sampler:0,target:{node:joint,path:"rotation"}},{sampler:1,target:{node:carrot,path:"scale"}}]});
+    villageEffects.push({kind:"feed",name,position:[x,.92*size,z]});
+  }
   for(const [i,[x,z]] of [[-1.1,.69],[.99,.72],[.65,1.02]].entries())place("Wrapped gift "+(i+1),"Ribbon parcel "+i,()=>{
     box(i%2?"mint":"red",0,.15,0,.22,.15,.17);box("gold",0,.155,0,.043,.156,.174);box("gold",0,.31,0,.22,.014,.04);
   },x,.002,z,.88,i*.6);
@@ -236,6 +261,15 @@ export async function villageGeometry() {
       if(previous&&previous[1]*q[1]+previous[3]*q[3]<0)q=q.map(v=>-v);
       previous=q;return q;
     });
+    const carrying=i===0||i===3;
+    if(carrying){
+      place("Carried present "+i,"Ribboned walking present "+i,()=>{
+        box(i?"mint":"red",0,0,0,.205,.16,.14);
+        box("gold",0,0,0,.035,.166,.145);box("gold",0,.162,0,.208,.012,.032);
+        for(const side of [-1,1])ball("gold",side*.055,.198,0,.069,.037,.031);
+      },0,.43,.255);
+      model.nodes[body].children.push(model.scenes[0].nodes.pop());
+    }
     for(const side of [-1,1]){
       place("Walking boot","Boot and stocking",()=>{
         ball("white",0,-.066,0,.074,.13,.075);
@@ -243,12 +277,13 @@ export async function villageGeometry() {
       },side*.13,.26,0);
       const leg=model.scenes[0].nodes.pop();model.nodes[body].children.push(leg);
       track(leg,"rotation",t=>pitch(side*.66*Math.sin(step(t))));
-      place("Swinging arm","Swinging sleeve "+coat+side,()=>{
+      place("Elf arm",(carrying?"Carrying sleeve ":"Swinging sleeve ")+coat+side,()=>{
+        if(carrying){rod(coat,[0,0,0],[side*.07,-.11,.12],.068);rod(coat,[side*.07,-.11,.12],[side*.04,-.075,.24],.06);ball("skin",side*.04,-.075,.24,.07,.063,.065);return;}
         rod(coat,[0,0,0],[side*.11,-.16,.065],.077);
         ball("skin",side*.11,-.16,.065,.078,.074,.078);
       },side*.16,.47,0);
       const arm=model.scenes[0].nodes.pop();model.nodes[body].children.push(arm);
-      track(arm,"rotation",t=>pitch(-side*.52*Math.sin(step(t))));
+      if(!carrying)track(arm,"rotation",t=>pitch(-side*.52*Math.sin(step(t))));
     }
   });
   for(const [i,offset] of [-.46,.44].entries()){
@@ -363,7 +398,7 @@ export async function villageGeometry() {
     for(const dx of [-.52,.52])villageEffects.push({kind:"window",position:[x+s*(dx*Math.cos(r)+.77*Math.sin(r)),.55*s,z+s*(-dx*Math.sin(r)+.77*Math.cos(r))],normal:[Math.sin(r),0,Math.cos(r)]});
   });
   villageEffects.push({kind:"star",position:[0,3.49,.05]});
-  model.animations=[animation];
+  model.animations=[animation,...feedClips];
   model.buffers.push({byteLength:bytes});
   const json=new TextEncoder().encode(JSON.stringify(model)),size=(json.length+3)&~3,out=new Uint8Array(28+size+bytes);
   const view=new DataView(out.buffer);[0x46546c67,2,out.length,size,0x4e4f534a].forEach((v,i)=>view.setUint32(i*4,v,true));
