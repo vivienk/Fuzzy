@@ -25,7 +25,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #diorama{position:relative}
 #diorama[data-village]{isolation:isolate}
 #diorama[data-village] #world{position:relative;z-index:1;background:transparent}
-#diorama[data-village]::before{content:"";position:absolute;inset:0 0 2.6em;pointer-events:none;border-radius:16px;background:#031722 url("assets/worlds/aurora-sky.svg") center/cover no-repeat}
+#diorama[data-village]::before{content:"";position:absolute;inset:0 0 2.6em;pointer-events:none;border-radius:16px;background:#101a35 url("assets/worlds/santa-dawn.svg") center/100% 100% no-repeat}
 .light-anchor{width:0;height:0;pointer-events:none;opacity:0;transition:opacity 180ms cubic-bezier(.23,1,.32,1)}
 .light-anchor[data-visible]{opacity:1}.light-anchor .halo{position:absolute;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,#fffceabf 0%,#ffe49a80 12%,#ffbd4947 28%,#ff9c1e18 48%,transparent 70%);animation:light-breathe 4.8s cubic-bezier(.77,0,.175,1) infinite;animation-delay:var(--delay);mix-blend-mode:screen}
 .light-anchor.window .halo,.light-anchor.lantern .halo{width:68px;height:68px;left:-34px;top:-34px}.light-anchor.star .halo{width:90px;height:90px;left:-45px;top:-45px}
