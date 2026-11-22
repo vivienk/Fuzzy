@@ -162,8 +162,8 @@ export async function villageGeometry() {
       rod("dark",[0,2.17,z*1.11],[.13,2.23,z*1.11],.026);rod("dark",[0,2.17,z*1.11],[0,2.36,z*1.11],.022);}
     solid("red",0,2.51,0,[[0,.82,.82],[.85,.045,.045]],4);solid("snow",0,2.82,0,[[0,.56,.56],[.58,0,0]],4);ball("gold",0,3.44,0,.095,.13,.095);
   },-4.08,0,-1.65,1.07,.15);
-  function elf(coat,working=false){
-    for(const s of [-1,1]){ball("dark",s*.13,.09,.045,.115,.085,.17);ball("white",s*.12,.195,0,.074,.13,.075);}
+  function elf(coat,working=false,walking=false){
+    if(!walking)for(const s of [-1,1]){ball("dark",s*.13,.09,.045,.115,.085,.17);ball("white",s*.12,.195,0,.074,.13,.075);}
     solid(coat,0,.19,0,[[0,.245,.18],[.15,.235,.17],[.35,.16,.14]],11);
     box("dark",0,.33,.142,.20,.036,.033);box("gold",0,.33,.184,.043,.032,.016);
     for(const s of [-1,1]){if(!working){rod(coat,[s*.16,.47,0],[s*.31,.33,.09],.077);ball("skin",s*.31,.33,.09,.078,.074,.078);}
@@ -199,7 +199,6 @@ export async function villageGeometry() {
   place("Gift wrapping bench","Ribbon cutting table",()=>{
     box("cookie",0,.45,0,.84,.055,.19);
     for(const x of [-.73,.73])for(const z of [-.14,.14])box("dark",x,.28,z,.043,.19,.042);
-    for(const x of [-.46,.44]){box(x<0?"red":"pine",x,.605,0,.17,.10,.13);box("gold",x,.61,0,.032,.106,.135);}
     box("mint",.02,.51,0,.16,.01,.13);
   },shopX,.025,shopZ+.84);
   prop("Ice igloo by the inlet","igloo",5.61,-.65,1.23,.26);
@@ -210,45 +209,72 @@ export async function villageGeometry() {
     const sampler=animation.samplers.push({input,output:accessor(values.flat(),{},path==="rotation"?"VEC4":"VEC3"),interpolation:"LINEAR"})-1;
     animation.channels.push({sampler,target:{node,path}});
   }
-  const villagers=[[-1.68,1.35,.28],[1.78,1.45,-.38],[-5.13,.55,.40],[2.15,-.50,-.55]];
-  villagers.forEach(([x,z,yaw],i)=>{
-    const coat=i%2?"red":"pine";
-    place("Elf "+(i+1),"Waving elf "+coat,()=>elf(coat,true),x,0,z,.79,yaw);
+  // Sample each action across the existing 24-second village loop.
+  const frames=Array.from({length:193},(_,k)=>k/8);
+  const pitch=a=>[Math.sin(a/2),0,0,Math.cos(a/2)];
+  const roll=a=>[0,0,Math.sin(a/2),Math.cos(a/2)];
+  function track(id,path,sample){motion(id,path,frames,frames.map(sample));}
+  const walks=[[-.85,1.96,.64,.20],[2.10,.92,.30,.52],[-5.27,1.24,.37,.66],[.52,-1.45,.49,.20]];
+  walks.forEach(([cx,cz,rx,rz],i)=>{
+    const coat=i%2?"red":"pine",phase=t=>t*tau/8+i,step=t=>t*tau+i;
+    place("Walking elf "+(i+1),"Walker "+coat,()=>elf(coat,true,true),cx,0,cz,.79);
     const body=model.nodes.length-1;
     model.nodes[body].children=[];
+    track(body,"translation",t=>[cx+rx*Math.cos(phase(t)),.025+.021*Math.abs(Math.cos(step(t))),cz+rz*Math.sin(phase(t))]);
+    let previous;
+    track(body,"rotation",t=>{
+      const a=Math.atan2(-rx*Math.sin(phase(t)),rz*Math.cos(phase(t)));
+      let q=[0,Math.sin(a/2),0,Math.cos(a/2)];
+      if(previous&&previous[1]*q[1]+previous[3]*q[3]<0)q=q.map(v=>-v);
+      previous=q;return q;
+    });
     for(const side of [-1,1]){
-      place("Elf "+(i+1)+" sleeve "+side,"Village sleeve "+coat+side,()=>{
-        rod(coat,[0,0,0],[side*.15,-.14,.09],.077);
-        ball("skin",side*.15,-.14,.09,.078,.074,.078);
+      place("Walking boot","Boot and stocking",()=>{
+        ball("white",0,-.066,0,.074,.13,.075);
+        ball("dark",0,-.17,.045,.115,.085,.17);
+      },side*.13,.26,0);
+      const leg=model.scenes[0].nodes.pop();model.nodes[body].children.push(leg);
+      track(leg,"rotation",t=>pitch(side*.66*Math.sin(step(t))));
+      place("Swinging arm","Swinging sleeve "+coat+side,()=>{
+        rod(coat,[0,0,0],[side*.11,-.16,.065],.077);
+        ball("skin",side*.11,-.16,.065,.078,.074,.078);
       },side*.16,.47,0);
-      const arm=model.scenes[0].nodes.pop();
-      model.nodes[body].children.push(arm);
-      const times=[],rotations=[];
-      for(let k=0;k<=96;k++){
-        const t=k/4,cycle=t*tau/(i%2?4:6)+i;
-        const lift=(1-Math.cos(cycle))*.5;
-        const angle=side*(side===(i%2?1:-1)? .18+1.82*lift+.20*lift*Math.sin(cycle*4):.14+.28*lift);
-        times.push(t);rotations.push([0,0,Math.sin(angle/2),Math.cos(angle/2)]);
-      }
-      motion(arm,"rotation",times,rotations);
+      const arm=model.scenes[0].nodes.pop();model.nodes[body].children.push(arm);
+      track(arm,"rotation",t=>pitch(-side*.52*Math.sin(step(t))));
     }
   });
   for(const [i,offset] of [-.46,.44].entries()){
-    const x=shopX+offset,z=shopZ+.49;
-    place("Gift maker "+(i+1),"Seated gift maker "+i,()=>elf(i?"pine":"red",true),x,.14,z,.77);
+    const x=shopX+offset,z=shopZ+.49,parcelZ=shopZ+.84;
+    const paper=i?"pine":"red";
+    const cycle=t=>(t+i*3)%8;
+    const ease=(v)=>{const u=Math.max(0,Math.min(1,v));return u*u*(3-2*u);};
+    const fold=(t,delay)=>ease((cycle(t)-delay)/1.35)*(1-ease((cycle(t)-6.8)/1.2));
+    place("Gift maker "+(i+1),"Seated gift maker "+i,()=>elf(paper,true),x,.14,z,.77);
+    place("Parcel to wrap "+(i+1),"Paper parcel "+paper,()=>{
+      box(paper,0,.075,0,.115,.075,.109);
+      box("cookie",0,.153,0,.109,.005,.103);
+    },x,.535,parcelZ);
     for(const side of [-1,1]){
+      const delay=side<0?.6:2.15;
+      place("Wrapping paper flap","Paper flap "+paper+side,()=>{
+        box(paper,side*.062,0,0,.062,.006,.111);
+      },x+side*.115,.699+(side>0?.01:0),parcelZ);
+      track(model.nodes.length-1,"rotation",t=>roll(side*Math.PI*fold(t,delay)));
       const start=[x+side*.14,.50,z+.035];
-      place("Gift maker "+(i+1)+" wrapping hand "+side,"Wrapping sleeve "+i+" "+side,()=>{
-        rod(i?"pine":"red",[0,0,0],[side*.018,-.015,.23],.065);
+      place("Gift maker wrapping sleeve","Wrapping sleeve "+i+" "+side,()=>{
+        rod(paper,[0,0,0],[side*.018,-.015,.23],.065);
         ball("skin",side*.018,-.025,.245,.065,.06,.065);
       },...start);
-      const id=model.nodes.length-1,t=[],v=[];
-      for(let k=0;k<=48;k++){
-        const phase=(1-Math.cos(k*Math.PI/2+Math.PI*(i+(side+1)/2)))/2;
-        t.push(k/2);v.push([start[0]-side*.064*phase,start[1]+.092*phase,start[2]+.078*phase]);
-      }
-      motion(id,"translation",t,v);
+      track(model.nodes.length-1,"translation",t=>{
+        const f=fold(t,delay),angle=f*Math.PI;
+        return [x+side*(.115+.082*Math.cos(angle)),.70+.082*Math.sin(angle),parcelZ-.23+.023*f];
+      });
     }
+    place("Finishing ribbon","Gold bow",()=>{
+      box("gold",0,0,0,.025,.008,.112);
+      for(const side of [-1,1])ball("gold",side*.044,.029,0,.051,.026,.027);
+    },x,.725,parcelZ);
+    track(model.nodes.length-1,"scale",t=>{const v=Math.max(.001,fold(t,4));return [v,v,v];});
   }
   const rx=7.18,rz=5.44;
   function railPoint(t,side=0){
