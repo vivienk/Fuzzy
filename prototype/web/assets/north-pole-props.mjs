@@ -1,3 +1,16 @@
+// Cut against the original dome equator, where the tunnel meets the snow.
+function aboveSnow(vertices, snowline) {
+  const polygon=[];
+  for(let i=0;i<vertices.length;i++){
+    const a=vertices[i], b=vertices[(i+1)%vertices.length];
+    if(a[1]>=snowline)polygon.push(a);
+    if((a[1]<snowline && b[1]>snowline)||(a[1]>snowline && b[1]<snowline)){
+      const t=(snowline-a[1])/(b[1]-a[1]);
+      polygon.push([a[0]+t*(b[0]-a[0]),snowline,a[2]+t*(b[2]-a[2])]);
+    }
+  }
+  return polygon;
+}
 export async function propsV1() {
   const response=await fetch(new URL("./worlds/aurora-lit.glb",import.meta.url));
   if(!response.ok)throw new Error("Original North Pole props unavailable");
@@ -14,6 +27,7 @@ export async function propsV1() {
   const result={materials:src.materials};
   for(const [key,group] of Object.entries(groups)){
     const low=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity],faces=[];let chimney;
+    const snowline=key==="igloo"?group[0].translation[1]:null;
     for(const n of group){
       if(n.mesh===undefined)continue;
       const mat=new DOMMatrix();mat.translateSelf(...(n.translation||[0,0,0]));
@@ -26,10 +40,18 @@ export async function propsV1() {
           point.forEach((v,i)=>{low[i]=Math.min(low[i],v);hi[i]=Math.max(hi[i],v);});
         }
         if(n.name.startsWith("Chimney snow"))chimney=[n.translation[0],Math.max(...pts.map(p=>p[1])),n.translation[2]];
-        for(let k=0;k<(indices?.length||pts.length);k+=3)faces.push([p.material,...[k,k+1,k+2].map(i=>pts[indices?indices[i]:i])]);
+        for(let k=0;k<(indices?.length||pts.length);k+=3){
+          const vertices=[k,k+1,k+2].map(i=>pts[indices?indices[i]:i]);
+          const polygon=snowline===null?vertices:aboveSnow(vertices,snowline);
+          for(let j=1;j+1<polygon.length;j++)faces.push([p.material,polygon[0],polygon[j],polygon[j+1]]);
+          if(n.name==="Igloo continuous ice dome" && polygon.some(v=>v[1]>snowline)){
+            const edge=polygon.filter(v=>v[1]===snowline);
+            if(edge.length===2)faces.push([p.material,n.translation,edge[1],edge[0]]);
+          }
+        }
       }
     }
-    const origin=[(hi[0]+low[0])/2,low[1],(hi[2]+low[2])/2],height=hi[1]-low[1];
+    const origin=[(hi[0]+low[0])/2,snowline??low[1],(hi[2]+low[2])/2],height=hi[1]-low[1];
     const local=p=>p.map((v,i)=>(v-origin[i])/height);
     result[key]={draw(tri){for(const [m,a,b,c] of faces)tri("Original "+src.materials[m].name,local(a),local(b),local(c));},chimney:chimney&&local(chimney)};
   }
