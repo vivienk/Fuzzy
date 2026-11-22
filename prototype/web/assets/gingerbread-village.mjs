@@ -103,8 +103,8 @@ export async function villageGeometry() {
       tri(shade,rim[k-1][i],rim[k][i],rim[k][j]);tri(k>=2&&i%2?"snowShadow":shade,rim[k-1][i],rim[k][j],rim[k-1][j]);
     }
   }
-  place("Glacier summit","Folded alpine peak",peak,-1.34,0,-4.10,2.75,.08);
-  place("Glacier shoulder","Folded alpine peak",peak,1.12,0,-4.02,1.84,.6);
+  place("Glacier summit","Folded alpine peak",peak,-1.86,0,-4.18,2.75,.08);
+  place("Glacier shoulder","Folded alpine peak",peak,1.68,0,-4.05,1.84,.6);
   place("Packed snow around the square","Village paths",()=>{
     const curve=t=>[2.8*Math.cos(t),.011,1.70*Math.sin(t)];
     for(let i=0;i<60;i++){
@@ -162,7 +162,7 @@ export async function villageGeometry() {
       for(let i=0;i<10;i++)for(const z of [-.074,.074])tri("lit",[0,3.23,z],ring[i],ring[(i+1)%10]);}
   }
   place("Christmas tree · star, golden garlands and baubles","Village Christmas tree",()=>evergreen(true),0,0,.05,1.08);
-  for(const [i,[x,z,s]] of [[-5,-1.3,.56],[-4.8,-2.4,.7],[4.3,-2.55,.60],[5.2,-1.45,.72],[-1.36,-3.55,.54]].entries())
+  for(const [i,[x,z,s]] of [[-5.64,-1.14,.56],[-4.98,-2.90,.7],[4.44,-3.02,.60],[5.61,-1.76,.72],[.08,-3.49,.54]].entries())
     place("Snow pine "+(i+1),"Frosted pine",()=>evergreen(false),x,0,z,s);
   place("North Pole clock tower","Timber clock tower",()=>{
     box("wood",0,1,0,.47,1,.44);box("cookie",0,2.14,0,.55,.37,.51);
