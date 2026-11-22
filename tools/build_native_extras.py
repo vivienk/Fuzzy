@@ -47,12 +47,12 @@ class GLB:
 def quad(w,h):return [(-w/2,-h/2,0),(w/2,-h/2,0),(w/2,h/2,0),(-w/2,-h/2,0),(w/2,h/2,0),(-w/2,h/2,0)]
 uv=[(0,1),(1,1),(1,0),(0,1),(1,0),(0,0)]
 # World-space background stays fixed while the village rotates.
-g=GLB();sky=g.mat([.014,.027,.065,1],unlit=True);g.node('Midnight sky',g.mesh(quad(3.8,2.55),sky),[0,.20,-1.13]);star=g.mat([.7,.84,1,1],unlit=True);verts=[];rng=random.Random(73)
+g=GLB();sky=g.mat([.63,.52,.78,1],unlit=True);g.node('Dusk lilac sky',g.mesh(quad(3.8,2.55),sky),[0,.20,-1.13]);star=g.mat([1,.91,.73,1],unlit=True);verts=[];rng=random.Random(73)
 for i in range(240):
  x=rng.uniform(-1.87,1.87);y=rng.uniform(-1.05,1.44);r=rng.uniform(.0016,.0045);verts += [(x,y+r,-1.12),(x-r,y,-1.12),(x,y-r,-1.12),(x,y+r,-1.12),(x,y-r,-1.12),(x+r,y,-1.12)]
 g.node('Sky stars',g.mesh(verts,star));g.save('night-sky.glb')
 # Crossed transparent billboards maintain volume when viewed from either side.
-g=GLB();glow=g.mat([1,.70,.27,.65],'glow',True);spark=g.mat([1,.94,.72,.9],'spark',True);smoke=g.mat([.78,.84,.94,.4],'smoke',True);mist=g.mat([.82,1,.94,.32],'mist',True)
+g=GLB();glow=g.mat([1,.76,.43,.58],'glow',True);spark=g.mat([1,.95,.82,.86],'spark',True);smoke=g.mat([.88,.79,.91,.34],'smoke',True);mist=g.mat([.83,.94,.87,.28],'mist',True)
 def sprite(w,h,mat):
  a=quad(w,h);b=[(z,y,x) for x,y,z in a];return g.mesh(a+b,mat,uv+uv)
 meshes={'glow':sprite(.10,.10,glow),'spark':sprite(.035,.035,spark),'smoke':sprite(.075,.09,smoke),'steam':sprite(.20,.10,mist)}
