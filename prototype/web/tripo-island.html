@@ -305,6 +305,7 @@ function syncGuide(){
     button.toggleAttribute("data-muted",step.slot!==slot&&b.phase!=="building");
     button.toggleAttribute("data-guide-hidden",b.phase!=="building"&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
   });
+  world.querySelectorAll(".elf-target").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
   world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note");
   world.querySelector(".fishing-action")?.toggleAttribute("data-guide-hidden",!gaming||gameChoice!=="fish");
   world.querySelector(".fishing-float")?.toggleAttribute("data-guide-hidden",!gaming||gameChoice!=="fish");
@@ -492,7 +493,7 @@ function showVillageEffects(){
     world.append(anchor);
   });
 }
-world.addEventListener("load",()=>{resetFishing();clearElfInteraction();world.replaceChildren();showVillageEffects();syncGuide();showElfInteraction();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
+world.addEventListener("load",()=>{resetFishing();clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();syncGuide();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
 let request = 0;
 async function selectWorld(choice) {
   resetFishing();
