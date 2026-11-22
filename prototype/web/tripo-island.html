@@ -351,7 +351,7 @@ function guideStep(){
   return {kind:"unwrap",slot:boxes.findIndex(b=>b.phase==="ready"||b.phase==="opening")};
 }
 function syncGuide(){
-  const village=world.dataset.kind==="village",step=guideStep(),gaming=village&&step.kind==="game";
+  const village=world.dataset.kind==="village",step=guideStep(),gaming=village&&(step.kind==="game"||boxes.every(box=>box.phase==="open"));
   packWorld.hidden=!village||!!parcel||!boxes.every(b=>["ready","open"].includes(b.phase));
   activities.hidden=!gaming;
   switchGame.textContent=gameChoice==="fish"?"Feed a moose instead":"Go ice fishing instead";
@@ -369,7 +369,7 @@ function syncGuide(){
   world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming||gameChoice!=="feed");});
 
 }
-switchGame.onclick=()=>{resetFishing();gameChoice=gameChoice==="fish"?"feed":"fish";syncGuide();caption.textContent=gameChoice==="feed"?"Tap the carrot to feed the moose.":"Tap the fish to cast.";};
+switchGame.onclick=()=>{gameChoice=gameChoice==="fish"?"feed":"fish";syncGuide();caption.textContent=gameChoice==="feed"?"Tap the carrot to feed the moose.":"Tap the fish to cast.";};
 letter.addEventListener("close",()=>{
   if(guideStep().kind==="note"){
     noteVisited=true;try{localStorage.setItem(noteKey,"1");}catch{}
@@ -487,7 +487,7 @@ function fishTap(){
       fishingTimer=setTimeout(()=>{fishPhase="missed";drawFishing();},2400);
     },1600+Math.random()*2400);
   }
-  drawFishing();
+  drawFishing();syncGuide();
 }
 function showVillageEffects(){
   if(world.dataset.kind!=="village")return;
@@ -557,7 +557,7 @@ function showVillageEffects(){
     world.append(anchor);
   });
 }
-world.addEventListener("load",()=>{resetFishing();clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();syncGuide();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
+world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();syncGuide();if(fishPhase!=="idle")drawFishing();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
 let request = 0;
 async function selectWorld(choice) {
   resetFishing();
