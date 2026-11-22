@@ -48,7 +48,11 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #world .elf-target:focus-visible{outline:2px solid #ffda85}
 .elf-bubble:not(:empty){display:block;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding:5px 9px;border-radius:13px;background:#fff9ed;box-shadow:0 2px 8px #17203940;font:19px/1.2 system-ui;white-space:nowrap;pointer-events:none}
 .elf-bubble:not(:empty)::after{content:"";position:absolute;top:100%;left:calc(50% - 5px);border:5px solid transparent;border-top-color:#fff9ed}
-#world .moose-feed{cursor:pointer;padding:0;margin:0;width:32px;height:32px;background:transparent;border:0;box-shadow:none;line-height:1;text-align:center;font-size:15px;color:inherit;text-shadow:0 1px 3px white;pointer-events:auto}
+#world .moose-feed{display:grid;place-items:center;cursor:pointer;padding:0;margin:0;width:32px;height:32px;background:transparent;border:0;box-shadow:none;pointer-events:auto}
+.moose-feed svg{width:22px;height:22px;overflow:visible;filter:drop-shadow(0 1px 1px #28202b66)}
+.moose-feed .fed-icon,.moose-feed:disabled .carrot-icon{display:none}
+.moose-feed:disabled .fed-icon{display:block}
+.moose-feed:focus-visible{outline:2px solid #ffda85;outline-offset:1px;border-radius:50%}
 #world .moose-feed:disabled{cursor:default;opacity:1}
 </style>
 </head>
@@ -219,6 +223,14 @@ function showElfInteraction(){
   }
   follow();
 }
+const feedIcons=`<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <g class="carrot-icon">
+    <path d="m16 8 1-5m0 5 5-2m-5 2 4-5" stroke="#42634e" stroke-width="2.3"/>
+    <path d="M15.8 7.4c-1.7-1.2-3.8-.4-5 1.4L3.1 20c-.5.8.1 1.5 1 1.1l11.5-6.9c2.8-1.7 2.8-4.8.2-6.8Z" fill="#e5a161" stroke="#714930" stroke-width="1.4"/>
+    <path d="m9.9 10.4 2.1 1.6m-4.8 2.1 1.7 1.2" stroke="#a86843" stroke-width="1.3"/>
+  </g>
+  <path class="fed-icon" d="M12 20.3 4.4 13C-1 7.4 6.3 1.2 12 7.5c5.7-6.3 13-.1 7.6 5.5Z" fill="#e8bb71" stroke="#785537" stroke-width="1.5"/>
+</svg>`;
 function showVillageEffects(){
   if(world.dataset.kind!=="village")return;
   effects.forEach(({kind,position,normal,name},i)=>{
@@ -227,17 +239,17 @@ function showVillageEffects(){
       feed.type="button";feed.className="moose-feed";feed.slot="hotspot-feed-"+i;
       feed.dataset.position=position.map(v=>v+"m").join(" ");
       feed.setAttribute("aria-label","Feed "+name.toLowerCase()+" a carrot");
-      feed.title=feed.getAttribute("aria-label");feed.textContent="🥕";
+      feed.title=feed.getAttribute("aria-label");feed.innerHTML=feedIcons;
       feed.onclick=e=>{
         e.stopPropagation();
         if(feed.disabled)return;
-        feed.disabled=true;feed.textContent="💛";
+        feed.disabled=true;
         const clip="Feed "+name,reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
         if(!reduced)world.appendAnimation(clip,{repetitions:1,time:0});
         setTimeout(()=>{
           if(!feed.isConnected)return;
           if(!reduced)world.detachAnimation(clip);
-          feed.textContent="🥕";feed.disabled=false;
+          feed.disabled=false;
         },3000);
       };
       world.append(feed);return;
