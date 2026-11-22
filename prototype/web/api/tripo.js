@@ -66,7 +66,7 @@ async function createTask(operation,body) {
   if(["island","object","character"].includes(operation)) {
     const prompt=generationPrompt(operation,body);
     path="/generation/text-to-model";
-    payload={prompt,model:"v3.1-20260211",face_limit:operation==="island"?12000:8000,texture:true,pbr:true,smart_low_poly:true};
+    payload={prompt,model:"v3.1-20260211",face_limit:operation==="island"?12000:operation==="object"?6000:8000,texture:true,pbr:true,smart_low_poly:true};
   } else if(operation==="rig-check") {
     if(!/^[0-9a-f-]{20,40}$/i.test(String(body.characterTaskId||""))){const e=new Error("A valid character generation task is required.");e.status=400;throw e;}
     const source=await tripo("/tasks/"+body.characterTaskId);

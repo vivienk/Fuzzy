@@ -74,6 +74,8 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #world [data-guide-hidden],#gift-activities[hidden]{display:none!important}
 #world .box-hit[data-next]::before{content:"";display:block;width:15px;height:15px;margin:auto;background:#fff8e9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23654d37' stroke-width='1.8'%3E%3Cpath d='M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9C3 9 5 1 9 4l3 5 3-5c4-3 6 5-3 5Z'/%3E%3C/svg%3E") center/15px no-repeat;border:1px solid #baa47b;border-radius:50%;padding:4px;position:absolute;bottom:100%;left:50%;transform:translateX(-50%)}
 #world .box-hit[data-muted] span{display:none}#gift-activities{margin:-20px 0 20px}
+#inspect-gift{width:min(520px,94vw);background:#fff8eb;border:0;border-radius:18px;color:#493833}#inspect-gift model-viewer{height:clamp(220px,46vh,420px);width:100%;background:#e5ebe7}#inspect-gift form{text-align:right}#bike-preset{margin:8px 0;background:#e0e9dc;color:#394d40}
+#world .moose-feed[data-quiet]:not(:hover):not(:focus-visible):not(:disabled){opacity:.15}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -114,7 +116,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 <div class="status" id="elf-status" role="status" aria-live="polite">Ready after the island generation; this step can also run independently.</div><div class="progress"><i id="elf-progress"></i></div>
 </div></section>
 <p class="note">Your Tripo key stays server-side. The page checks authentication for free before enabling generation. Each step can only be submitted once per preview session, with a combined 95-credit cap.</p>
-</details></main><dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button id="box-generate">Prepare gift</button><p id="box-status" role="status"></p></section></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your Christmas note</label><textarea id="letter-input" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="start-gifts" hidden>Generate gifts</button> <button type="button" id="close-letter">Close</button></dialog>
+</details></main><dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button type="button" id="bike-preset">Bicycle · Instant preset</button> <button id="box-generate">Generate gift · 30 credits</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your Christmas note</label><textarea id="letter-input" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function setStatus(prefix,text,progress){document.querySelector("#"+prefix+"-status").textContent=text;if(Number.isFinite(progress))document.querySelector("#"+prefix+"-progress").style.width=Math.max(0,Math.min(100,progress))+"%"}
@@ -127,7 +129,7 @@ async function beginTask(operation,body){
 }
 async function waitTask(taskId,prefix,label,onProgress){
  for(let i=0;i<180;i++){
-  await sleep(4000);const response=await fetch("/api/tripo?taskId="+encodeURIComponent(taskId),{cache:"no-store"});const data=await response.json();
+  await sleep(i<3?1600:3000);const response=await fetch("/api/tripo?taskId="+encodeURIComponent(taskId),{cache:"no-store"});const data=await response.json();
   if(!response.ok)throw new Error(data.error||"Could not check task status.");
   const progress=data.progress||4;if(onProgress)onProgress(progress);else setStatus(prefix,label+" · "+data.status+" ("+progress+"%)",progress);
   if(data.status==="success")return data;
@@ -282,40 +284,37 @@ const noteKey="fuzzy-village-guided-note";
 let noteVisited=false;
 try{noteVisited=localStorage.getItem(noteKey)==="1";}catch{}
 let fishingUnlocked=false,gameChoice="fish",mooseIndex=0;
-const startGifts=document.querySelector("#start-gifts");
+
 const activities=document.querySelector("#gift-activities"),switchGame=document.querySelector("#switch-game");
 function guideStep(){
-  const prep=boxes.findIndex(b=>["empty","retry"].includes(b.phase));
+  const prep=boxes.findIndex(b=>["empty","prepared","retry"].includes(b.phase));
   if(prep>=0)return {kind:"prep",slot:prep};
-  if(!noteVisited||boxes.some(b=>b.phase==="prepared"))return {kind:"note"};
+  if(!noteVisited)return {kind:"note"};
   if(boxes.some(b=>b.phase==="building"||b.phase==="starting"))return {kind:"game"};
   return {kind:"unwrap",slot:boxes.findIndex(b=>b.phase==="ready"||b.phase==="opening")};
 }
 function syncGuide(){
   const village=world.dataset.kind==="village",step=guideStep(),gaming=village&&step.kind==="game";
-  const count=boxes.filter(b=>b.phase==="prepared").length;
-  startGifts.hidden=step.kind!=="note"||!count||!form.hidden;
-  startGifts.textContent="Generate "+count+" gift"+(count===1?"":"s")+" · "+(count*30)+" credits";
   activities.hidden=!gaming;
   switchGame.textContent=gameChoice==="fish"?"Feed a moose instead":"Go ice fishing instead";
   if(!village)return;
   world.querySelectorAll(".box-hit").forEach(button=>{
     const slot=Number(button.dataset.box),b=boxes[slot];
-    button.toggleAttribute("data-next",step.kind==="prep"&&step.slot===slot&&b.phase==="empty");
+    button.toggleAttribute("data-next",step.kind==="prep"&&step.slot===slot&&["empty","prepared"].includes(b.phase));
     button.toggleAttribute("data-muted",step.slot!==slot&&b.phase!=="building");
-    button.toggleAttribute("data-guide-hidden",b.phase!=="building"&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
+    button.toggleAttribute("data-guide-hidden",!["building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
   });
   world.querySelectorAll(".elf-target").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
   world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note");
   world.querySelector(".fishing-action")?.toggleAttribute("data-guide-hidden",!gaming||gameChoice!=="fish");
   world.querySelector(".fishing-float")?.toggleAttribute("data-guide-hidden",!gaming||gameChoice!=="fish");
-  world.querySelectorAll(".moose-feed").forEach((b,i)=>b.toggleAttribute("data-guide-hidden",!gaming||gameChoice!=="feed"||i!==mooseIndex));
+  world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming||gameChoice!=="feed");});
   if(!gaming&&fishPhase!=="idle")resetFishing();
   if(gaming&&!fishingUnlocked)unlockFishing();
 }
 switchGame.onclick=()=>{resetFishing();gameChoice=gameChoice==="fish"?"feed":"fish";syncGuide();caption.textContent=gameChoice==="feed"?"Tap the carrot to feed the moose.":"Tap the fish to cast.";};
 letter.addEventListener("close",()=>{
-  if(guideStep().kind==="note"&&!boxes.some(b=>b.phase==="prepared")){
+  if(guideStep().kind==="note"){
     noteVisited=true;try{localStorage.setItem(noteKey,"1");}catch{}
     syncGuide();
   }
@@ -336,36 +335,55 @@ function paintBox(slot){
   const b=boxes[slot],button=world.querySelector('[data-box="'+slot+'"]');if(!button)return;
   const busy=["building","opening","starting"].includes(b.phase);
   const label=b.phase==="ready"?"Unwrap":b.phase==="retry"?"Retry":b.phase==="opening"?"Opening…":busy?Math.round(b.progress||0)+"%":"";
-  button.title=(label||"Make a gift")+" · Box "+(slot+1);
+  button.title=(b.phase==="open"?"Rotate gift":label||"Make a gift")+" · Box "+(slot+1);
   button.setAttribute("aria-label",button.title);button.setAttribute("aria-disabled",String(busy));
   button.firstElementChild.hidden=!label;button.querySelector("b").textContent=label;
   const bar=button.querySelector("progress");bar.hidden=!["building","starting"].includes(b.phase);bar.value=b.progress||0;
 }
 async function watchBox(slot){
   const b=boxes[slot];b.phase="building";paintBox(slot);persistBoxes();
-  try{await waitTask(b.id,"object","Building gift",p=>{b.progress=Math.min(99,p);paintBox(slot);});b.phase="ready";}
+  try{await waitTask(b.id,"object","Building gift",p=>{b.progress=Math.min(99,p);paintBox(slot);});b.phase="ready";rememberBicycle(b);}
   catch(error){b.phase=error.terminal?"empty":"retry";b.error=error.message;}
   persistBoxes();paintBox(slot);
 }
 const boxStatus=document.querySelector("#box-status"),boxInput=document.querySelector("#box-prompt");
+const bikeKey="fuzzy-bicycle-preset";
+function rememberBicycle(b){
+  if(b.id && b.phase==="ready" && /\b(bicycle|bike|bycle)\b/i.test(b.prompt||"")){
+    try{localStorage.setItem(bikeKey,b.id);}catch{}
+  }
+}
+for(const b of boxes)if(b.phase==="open"||b.phase==="ready")rememberBicycle({...b,phase:"ready"});
+const inspector=document.querySelector("#inspect-gift"),inspectModel=document.querySelector("#inspect-model");
+let inspectedSlot=0;
+async function inspectGift(slot){
+  inspectedSlot=slot;
+  const {giftURL}=await import("./assets/place-village-gift.mjs");
+  inspectModel.src=await giftURL(boxes[slot].id);inspector.showModal();
+}
+document.querySelector("#replace-gift").onclick=()=>{inspector.close();openGiftForm(inspectedSlot);};
+function openGiftForm(slot){
+  selectedBox=slot;boxInput.value=boxes[slot].prompt||"";boxStatus.textContent=boxes[slot].error||"";
+  document.querySelector("#box-title").textContent="Make a gift · Box "+(slot+1);
+  stationDialog.showModal();boxInput.focus();
+}
+document.querySelector("#bike-preset").onclick=()=>{
+  let id="preset:bicycle";try{id=localStorage.getItem(bikeKey)||id;}catch{}
+  const slot=selectedBox,replace=boxes[slot].phase==="open";
+  boxes[slot]={id,prompt:"Bicycle",phase:"ready"};
+  persistBoxes();stationDialog.close();paintBox(slot);
+  if(replace)refreshBoxes().catch(()=>{});
+};
 document.querySelector("#box-generate").onclick=async()=>{
   const slot=selectedBox,previous=boxes[slot],prompt=boxInput.value.trim();
   if(prompt.length<3){boxStatus.textContent="Describe your gift in at least three characters.";return;}
-  if(!["empty","open"].includes(previous.phase))return;
-  boxes[slot]={phase:"prepared",prompt};
-  persistBoxes();paintBox(slot);stationDialog.close();
-  if(previous.phase==="open")refreshBoxes().catch(()=>{});
-};
-startGifts.onclick=()=>{
-  const drafts=boxes.map((b,slot)=>({b,slot})).filter(({b})=>b.phase==="prepared");
-  if(!drafts.length)return;
-  noteVisited=true;try{localStorage.setItem(noteKey,"1");}catch{}
-  for(const {b} of drafts){b.phase="starting";b.progress=0;}
-  letter.close();syncGuide();
-  for(const {b,slot} of drafts)(async()=>{
-    try{b.id=await beginTask("object",{prompt:b.prompt});await watchBox(slot);}
-    catch(error){b.phase="empty";b.error=error.message;persistBoxes();paintBox(slot);caption.textContent=error.message;}
-  })();
+  if(!["empty","prepared","open"].includes(previous.phase))return;
+  const b=boxes[slot]={phase:"starting",progress:0,prompt};
+  stationDialog.close();paintBox(slot);
+  try{
+    b.id=await beginTask("object",{prompt});if(previous.phase==="open")refreshBoxes().catch(()=>{});
+    await watchBox(slot);
+  }catch(error){boxes[slot]=previous;previous.error=error.message;persistBoxes();paintBox(slot);caption.textContent=error.message;}
 };
 async function refreshBoxes(reveal=null){
   const version=++renderVersion;
@@ -387,10 +405,8 @@ async function activateBox(slot){
     catch(error){b.phase="ready";caption.textContent="Could not unwrap the gift. Tap the box to retry.";}
     paintBox(slot);return;
   }
-  if(!["empty","open"].includes(b.phase))return;
-  selectedBox=slot;boxInput.value=b.prompt||"";boxStatus.textContent=b.error||"Generation starts after the mailbox note.";
-  document.querySelector("#box-title").textContent=(b.phase==="open"?"Make another gift":"Make a gift")+" · Box "+(slot+1);
-  stationDialog.showModal();boxInput.focus();
+  if(b.phase==="open"){try{await inspectGift(slot);}catch{caption.textContent="Could not open this gift. Tap to try again.";}return;}
+  if(["empty","prepared"].includes(b.phase))openGiftForm(slot);
 }
 window.addEventListener("village-gift-ready",({detail:id})=>{
   const slot=boxes.findIndex(b=>b.phase==="empty");if(slot<0)return;

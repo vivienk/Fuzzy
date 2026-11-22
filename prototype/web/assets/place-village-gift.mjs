@@ -1,3 +1,15 @@
+const giftFiles=new Map();
+export function giftURL(id){
+  if(id==="preset:bicycle")return Promise.resolve(new URL("./presets/bicycle.glb",import.meta.url).href);
+  if(!giftFiles.has(id)){
+    const request=fetch("/api/tripo?download=1&asset=object&taskId="+encodeURIComponent(id)).then(async response=>{
+      if(!response.ok)throw Error("Could not download the gift.");
+      return URL.createObjectURL(await response.blob());
+    }).catch(error=>{giftFiles.delete(id);throw error;});
+    giftFiles.set(id,request);
+  }
+  return giftFiles.get(id);
+}
 async function readGLB(url) {
   const response = await fetch(url);
   if (!response.ok) throw new Error("Could not load the 3D model.");
@@ -48,12 +60,13 @@ export async function composeGiftBoxes(villageUrl,opened) {
     return m.accessors.push({bufferView:view,componentType:5126,count:values.length,type,...(type==="SCALAR"?{min:[0],max:[1]}:{})})-1;
   }
   for(const {slot,id} of opened){
-    const {model:g,bin:gb}=await readGLB("/api/tripo?download=1&asset=object&taskId="+encodeURIComponent(id));
+    const {model:g,bin:gb}=await readGLB(await giftURL(id));
     const roots=g.scenes[g.scene||0].nodes;
     const {min,max}=giftBounds(g,roots),extent=Math.max(...max.map((v,i)=>v-min[i]));
     if(!(extent>0 && Number.isFinite(extent)))throw Error("Gift has no visible geometry");
-    const scale=.85/extent,box=m.nodes.find(n=>n.name==="Gift box "+slot),lid=m.nodes.find(n=>n.name==="Gift lid "+slot);
+    const box=m.nodes.find(n=>n.name==="Gift box "+slot),lid=m.nodes.find(n=>n.name==="Gift lid "+slot);
     const [x,y,z]=box.translation;
+    const closedScale=[...(box.scale||[1,1,1])],scale=.844*closedScale[0]/extent;
     const base={};for(const k of ["nodes","meshes","accessors","bufferViews","skins","textures","images","samplers","materials"])base[k]=(m[k]||=[]).length;
     const offset=append(gb);
     for(const v of g.bufferViews){v.byteOffset=(v.byteOffset||0)+offset;const ext=v.extensions?.EXT_meshopt_compression;if(ext)ext.byteOffset=(ext.byteOffset||0)+offset;}
@@ -70,15 +83,18 @@ export async function composeGiftBoxes(villageUrl,opened) {
     for(const k of ["extensionsUsed","extensionsRequired"])if(g[k])m[k]=[...new Set([...(m[k]||[]),...g[k]])];
     const gift=m.nodes.push({name:"Unwrapped gift "+slot,children:roots.map(i=>i+base.nodes),translation:[-scale*(min[0]+max[0])/2,-scale*min[1],-scale*(min[2]+max[2])/2],scale:[scale,scale,scale]})-1;
     const boxScale=box.scale?.[1]??1;
-    const final=[x,y+.39*boxScale,z],start=[x,y+.22*boxScale,z];
+    const final=[x,y,z],start=[x,y+.22*boxScale,z];
     const display=m.nodes.push({name:"Gift reveal "+slot,translation:final,children:[gift]})-1;
     m.scenes[m.scene||0].nodes.push(display);
     const closed=[...lid.translation],aside=[x,y+.18*boxScale,z-.56*boxScale],lidNode=m.nodes.indexOf(lid);
-    lid.translation=aside;lid.rotation=[-.38,0,0,.925];
+    const gone=[0,0,0];
+    lid.translation=aside;lid.rotation=[-.38,0,0,.925];box.scale=gone;lid.scale=gone;
     const times=floats([0,.35,1],"SCALAR"),clip={name:"Unwrap box "+slot,samplers:[],channels:[]};
     function track(node,path,values,type){const sampler=clip.samplers.push({input:times,output:floats(values,type),interpolation:"LINEAR"})-1;clip.channels.push({sampler,target:{node,path}});}
     track(lidNode,"translation",[closed,[x,y+.95*boxScale,z-.13*boxScale],aside],"VEC3");
     track(lidNode,"rotation",[[0,0,0,1],[-.2,0,0,.979796],lid.rotation],"VEC4");
+    track(m.nodes.indexOf(box),"scale",[closedScale,closedScale,gone],"VEC3");
+    track(lidNode,"scale",[closedScale,closedScale,gone],"VEC3");
     track(display,"translation",[start,start,final],"VEC3");
     track(display,"scale",[[.001,.001,.001],[.01,.01,.01],[1,1,1]],"VEC3");
     m.animations.push(clip);
