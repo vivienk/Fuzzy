@@ -275,6 +275,18 @@ try{
   if(Array.isArray(saved))saved.slice(0,3).forEach((v,i)=>{if(v?.id && ["building","retry","ready","open"].includes(v.phase))boxes[i]=v;});
   else {const id=localStorage.getItem("fuzzy-village-gift-task");if(id)boxes[0]={id,phase:"ready"};}
 }catch{}
+const fishingKey="fuzzy-village-fishing-unlocked";
+let fishingUnlocked=boxes.some(b=>b.phase==="ready"||b.phase==="open");
+try{fishingUnlocked ||= localStorage.getItem(fishingKey)==="1";if(fishingUnlocked)localStorage.setItem(fishingKey,"1");}catch{}
+function unlockFishing(){
+  if(fishingUnlocked)return;
+  fishingUnlocked=true;
+  try{localStorage.setItem(fishingKey,"1");}catch{}
+  const oldBase=villageModel;
+  villageModel=null;
+  if(world.dataset.kind==="village")selectWorld(document.querySelector('[data-world="village"]'));
+  if(oldBase)oldBase.then(url=>URL.revokeObjectURL(url)).catch(()=>{});
+}
 let selectedBox=0,renderVersion=0,currentModel=null,pendingReveal=null;
 const persistBoxes=()=>{try{localStorage.setItem(key,JSON.stringify(boxes.map(b=>b.phase==="opening"?{...b,phase:"ready"}:b)));}catch{}};
 function paintBox(slot){
@@ -288,7 +300,7 @@ function paintBox(slot){
 }
 async function watchBox(slot){
   const b=boxes[slot];b.phase="building";paintBox(slot);persistBoxes();
-  try{await waitTask(b.id,"object","Building gift",p=>{b.progress=Math.min(99,p);paintBox(slot);});b.phase="ready";}
+  try{await waitTask(b.id,"object","Building gift",p=>{b.progress=Math.min(99,p);paintBox(slot);});b.phase="ready";unlockFishing();}
   catch(error){b.phase=error.terminal?"empty":"retry";b.error=error.message;}
   persistBoxes();paintBox(slot);
 }
@@ -327,6 +339,7 @@ async function activateBox(slot){
   stationDialog.showModal();boxInput.focus();
 }
 window.addEventListener("village-gift-ready",({detail:id})=>{
+  unlockFishing();
   const slot=boxes.findIndex(b=>b.phase==="empty");if(slot<0)return;
   boxes[slot]={phase:"ready",id};persistBoxes();paintBox(slot);
 });
@@ -395,13 +408,17 @@ function showVillageEffects(){
       feed.onclick=e=>{
         e.stopPropagation();
         if(feed.disabled)return;
-        feed.disabled=true;
+        const feeders=[...world.querySelectorAll(".moose-feed")];
+        for(const button of feeders){
+          button.disabled=true;
+          if(button!==feed)button.style.visibility="hidden";
+        }
         const clip="Feed "+name,reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
         if(!reduced)world.appendAnimation(clip,{repetitions:1,time:0});
         setTimeout(()=>{
           if(!feed.isConnected)return;
           if(!reduced)world.detachAnimation(clip);
-          feed.disabled=false;
+          for(const button of feeders){button.disabled=false;button.style.visibility="";}
         },3000);
       };
       world.append(feed);return;
@@ -445,7 +462,7 @@ async function selectWorld(choice) {
     try {
       villageModel ||= Promise.all([import("./assets/santa-flight.mjs"), import("./assets/gingerbread-village.mjs")])
         .then(async ([{animateVillage}, village]) => {
-          const source = URL.createObjectURL(new Blob([await village.villageGeometry()], {type:"model/gltf-binary"}));
+          const source = URL.createObjectURL(new Blob([await village.villageGeometry(fishingUnlocked)], {type:"model/gltf-binary"}));
           try { const url=await animateVillage(source);effects=village.villageEffects;walkingElfPosition=village.walkingElfPosition;walkingElfCount=village.walkingElfCount;return url; }
           finally { URL.revokeObjectURL(source); }
         });
