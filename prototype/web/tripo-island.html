@@ -36,6 +36,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 <nav aria-label="Choose a world" id="worlds"><button aria-pressed="true" data-world="north">North Pole</button> <button aria-pressed="false" data-world="village">North Pole v2 · Santa Village</button> <button aria-pressed="false" data-world="academy">Wizarding Christmas</button></nav>
 <figure id="diorama"><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure>
 <details><summary>Tripo models and generation tools</summary>
+<p><a href="/api/tripo?taskId=caabd271-8750-45d4-abc8-579a7fbfc74e&amp;download=1&amp;asset=island" download="santa-village-original.glb">Download original Tripo Santa Village</a></p>
 <div class="kicker">Tripo · low-poly 3D generation</div>
 <h1>A new Christmas island</h1>
 <p class="intro">Create the snowy wizarding-school island, then generate one separately rigged and animated festive elf. The island and character stay as separate GLB assets.</p>
@@ -151,7 +152,12 @@ async function selectWorld(choice) {
   if (village) {
     world.removeAttribute("src");
     try {
-      villageModel ||= import("./assets/santa-flight.mjs").then(({animateVillage}) => animateVillage("/api/tripo?taskId=caabd271-8750-45d4-abc8-579a7fbfc74e&download=1&asset=island"));
+      villageModel ||= Promise.all([import("./assets/santa-flight.mjs"), import("./assets/gingerbread-village.mjs")])
+        .then(async ([{animateVillage}, {villageGeometry}]) => {
+          const source = URL.createObjectURL(new Blob([villageGeometry()], {type:"model/gltf-binary"}));
+          try { return await animateVillage(source); }
+          finally { URL.revokeObjectURL(source); }
+        });
       const url = await villageModel;
       if (turn === request) world.src = url;
     } catch (error) {
