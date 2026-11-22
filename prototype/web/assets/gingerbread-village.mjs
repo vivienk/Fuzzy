@@ -8,7 +8,7 @@ export async function villageGeometry() {
   const parts=[], designs=new Map();
   let data, bytes=0;
   const tau=Math.PI*2;
-  const palette={snow:"fff5ed",ice:"93bfd1",deep:"658ba9",cliff:"807581",shale:"a59aa2",path:"dcc8b9",wood:"a76a45",dark:"603e35",cookie:"d89c65",red:"b9504c",tile:"c7685a",white:"fff0d3",gold:"e6b35e",lit:"ffce76",pine:"527966",spruce:"3c6055",mint:"81a18a",skin:"efbc97",fur:"8e604c",antler:"c39976",black:"3d3534",blush:"d98074"};
+  const palette={snowShadow:"e2eaf0",rock:"655f56",rockBlue:"4c5663",snow:"fff5ed",ice:"93bfd1",deep:"658ba9",cliff:"807581",shale:"a59aa2",path:"dcc8b9",wood:"a76a45",dark:"603e35",cookie:"d89c65",red:"b9504c",tile:"c7685a",white:"fff0d3",gold:"e6b35e",lit:"ffce76",pine:"527966",spruce:"3c6055",mint:"81a18a",skin:"efbc97",fur:"8e604c",antler:"c39976",black:"3d3534",blush:"d98074"};
   const names=Object.keys(palette);
   for(const [name,hex] of Object.entries(palette)){
     const rgb=hex.match(/../g).map(c=>Math.pow(parseInt(c,16)/255,2.2));
@@ -23,7 +23,7 @@ export async function villageGeometry() {
     const buf=new Float32Array(array);
     const view=model.bufferViews.push({buffer:0,byteOffset:bytes,byteLength:buf.byteLength})-1;
     parts.push(buf);bytes+=buf.byteLength;
-    return model.accessors.push({bufferView:view,componentType:5126,count:type==="SCALAR"?array.length:array.length/3,type,...bounds})-1;
+    return model.accessors.push({bufferView:view,componentType:5126,count:array.length/({SCALAR:1,VEC3:3,VEC4:4}[type]),type,...bounds})-1;
   }
   function tri(color,a,b,c){
     const u=b.map((q,i)=>q-a[i]),v=c.map((q,i)=>q-a[i]);
@@ -66,16 +66,37 @@ export async function villageGeometry() {
     model.scenes[0].nodes.push(model.nodes.push({name,mesh:designs.get(design),translation:[x,y,z],scale:[scale,scale,scale],rotation:[0,Math.sin(yaw/2),0,Math.cos(yaw/2)]})-1);
   }
   place("Floating island","Faceted snow shelf",()=>{
-    const rings=[[0,1],[-.20,1.02],[-.67,.98],[-1.27,.79],[-1.7,.43]].map(([h,s],k)=>Array.from({length:34},(_,i)=>{
-      const t=i*tau/34,f=1+.025*Math.cos(t*5)+.038*Math.sin(t*7);
-      return [6.5*s*f*Math.cos(t),h+(k? .10*Math.sin(t*9+k):0),4.8*s*f*Math.sin(t)];
+    const bands=[[0,1],[-.22,1.015],[-.98,.92],[-1.82,.73],[-2.65,.49],[-3.43,.20]];
+    const rings=bands.map(([h,s],k)=>Array.from({length:36},(_,i)=>{
+      const t=i*tau/36,f=1+.028*Math.cos(t*5)+.027*Math.sin(t*7);
+      return [8*s*f*Math.cos(t)+k*.07,h+(k?.18*Math.sin(t*5+k):0),6.07*s*f*Math.sin(t)-k*.055];
     }));
-    for(let i=0;i<34;i++){const j=(i+1)%34;tri("snow",[0,0,0],rings[0][j],rings[0][i]);
-      for(let k=1;k<5;k++){const colors=k===1?["snow","snow"]:k===2&&i<12?["ice","deep"]:["cliff",i%3?"cliff":"shale"];
+    const top=rings[0].map(([x,y,z],i)=>[x*.78,.014+.026*Math.sin(i*2.3),z*.78]);
+    for(let i=0;i<36;i++){const j=(i+1)%36;
+      tri(i%5?"snow":"snowShadow",[0,0,0],top[j],top[i]);
+      quad(i%4?"snow":"snowShadow",top[i],top[j],rings[0][j],rings[0][i]);
+      for(let k=1;k<bands.length;k++){
+        const colors=k===1?["snow","snowShadow"]:["rock",i%3?"rockBlue":"shale"];
         tri(colors[0],rings[k][i],rings[k-1][i],rings[k-1][j]);tri(colors[1],rings[k][i],rings[k-1][j],rings[k][j]);}
-      tri("cliff",[0,-1.93,0],rings[4][i],rings[4][j]);
+      tri("rockBlue",[.57,-3.98,-.36],rings.at(-1)[i],rings.at(-1)[j]);
     }
+    for(const [x,y,z,h] of [[-4.2,-.90,4.45,1.78],[-4.5,-.90,4.28,.83],[3.65,-1.26,3.66,1.25],[5.36,-.94,-2.29,1.13]])
+      solid("ice",x,y,z,[[-h,.018,.018],[0,.15,.18]],5);
   });
+  function peak(){
+    const n=11;
+    const levels=[[0,1,0],[.43,.68,.05],[.65,.43,-.09],[.84,.24,-.14],[1,.015,-.21]];
+    const rim=levels.map(([y,r,dx],k)=>Array.from({length:n},(_,i)=>{
+      const a=tau*i/n,noise=1+.12*Math.cos(3*a+.4);
+      return [dx+r*noise*Math.cos(a),y+(k>0&&k<4?.085*Math.sin(5*a+k):0),r*.36*noise*Math.sin(a)];
+    }));
+    for(let k=1;k<rim.length;k++)for(let i=0;i<n;i++){
+      const j=(i+1)%n,shade=k<2?(i%3?"rockBlue":"rock"):(i%3?"snow":"ice");
+      tri(shade,rim[k-1][i],rim[k][i],rim[k][j]);tri(k>=2&&i%2?"snowShadow":shade,rim[k-1][i],rim[k][j],rim[k-1][j]);
+    }
+  }
+  place("Glacier summit","Folded alpine peak",peak,-1.34,0,-4.10,2.75,.08);
+  place("Glacier shoulder","Folded alpine peak",peak,1.12,0,-4.02,1.84,.6);
   place("Packed snow around the square","Village paths",()=>{
     const curve=t=>[2.8*Math.cos(t),.011,1.70*Math.sin(t)];
     for(let i=0;i<60;i++){
@@ -114,7 +135,7 @@ export async function villageGeometry() {
     box("wood",.44,1.52,-.38,.13,.36,.14);box("snow",.44,1.90,-.38,.17,.051,.18);
     for(const x of [-.78,.78])for(let i=0;i<6;i++)ball(i%2?"red":"white",x,.20+i*.13,.713,.057,.083,.056,7);
   }
-  const homes=[[-3.8,.75,.32],[-2.25,-2.28,.17],[.28,-3,-.12],[2.66,-1.98,-.32],[4.17,.36,-.49]];
+  const homes=[[-3.8,.75,.32],[-2.25,-2.28,.17],[.28,-2.30,-.12],[2.66,-1.98,-.32],[4.17,.36,-.49]];
   homes.forEach(([x,z,r],i)=>place("Gingerbread cottage "+(i+1),"Iced gingerbread gable",cottage,x,0,z,.85+i%2*.10,r));
   function evergreen(decorated){
     solid("wood",0,0,0,[[0,.16,.16],[.70,.17,.17]]);
@@ -206,6 +227,69 @@ export async function villageGeometry() {
       }
       motion(id,"translation",t,v);
     }
+  }
+  const rx=7.18,rz=5.44;
+  function railPoint(t,side=0){
+    const c=Math.cos(t),v=Math.sin(t),n=Math.hypot(rz*c,rx*v);
+    return [rx*c+side*rz*c/n,.099,rz*v+side*rx*v/n];
+  }
+  place("Perimeter railway","Snowbound railway tracks",()=>{
+    for(let i=0;i<144;i++){
+      const t=tau*i/144,u=tau*(i+1)/144;
+      for(const side of [-.19,.19])rod("rockBlue",railPoint(t,side),railPoint(u,side),.032);
+      if(i%2===0){const a=railPoint(t,-.31),b=railPoint(t,.31);a[1]=b[1]=.065;rod("wood",a,b,.054);}
+    }
+  });
+  function rollingStock(engine){
+    box("dark",0,.30,0,.65,.09,.29);
+    for(const x of [-.43,.43])for(const z of [-.24,.24]){
+      ball("black",x,.205,z,.15,.15,.072);
+      ball("gold",x,.205,z*1.24,.065,.065,.025);
+    }
+    if(engine){
+      ball("red",.16,.63,0,.49,.255,.245);
+      solid("dark",.40,.77,0,[[0,.078,.078],[.26,.09,.09],[.36,.135,.135]],9);
+      box("red",-.38,.70,0,.235,.30,.25);
+      for(const side of [-1,1])box("lit",-.38,.81,side*.253,.14,.12,.012);
+      box("spruce",-.38,1.04,0,.31,.055,.31);
+      ball("lit",.62,.67,0,.079,.086,.083);
+    }else{
+      box("red",0,.62,0,.61,.26,.255);
+      box("spruce",0,.925,0,.665,.056,.303);
+      box("snow",0,.985,0,.60,.025,.28);
+      for(const side of [-1,1]){
+        for(const x of [-.40,0,.40])box("lit",x,.698,side*.26,.115,.105,.012);
+        for(let i=0;i<16;i++)ball("pine",-.55+i*.073,.535-.035*Math.cos(i*tau/8),side*.274,.063,.048,.037,7);
+        for(const x of [-.40,.40]){
+          ball("red",x-.044,.55,side*.303,.070,.043,.024);ball("red",x+.044,.55,side*.303,.070,.043,.024);
+          ball("gold",x,.55,side*.32,.035,.032,.018);
+        }
+      }
+    }
+  }
+  for(let car=0;car<3;car++){
+    const shift=car*1.44;
+    // Partition the oval by arc length to keep the couplers at a constant spacing.
+    const samples=360,dist=[0];
+    for(let i=1;i<=samples;i++){const a=railPoint((i-1)*tau/samples),b=railPoint(i*tau/samples);dist.push(dist[i-1]+Math.hypot(b[0]-a[0],b[2]-a[2]));}
+    const length=dist.at(-1),times=[],points=[],turns=[];
+    let prev;
+    for(let i=0;i<=120;i++){
+      const d=((.18+i/120)*length-shift+length)%length;
+      let k=1;while(k<samples&&dist[k]<d)k++;
+      const t=(k-1+(d-dist[k-1])/(dist[k]-dist[k-1]))*tau/samples;
+      const p=railPoint(t);p[1]=.09;
+      const yaw=Math.atan2(-rz*Math.cos(t),-rx*Math.sin(t));
+      let q=[0,Math.sin(yaw/2),0,Math.cos(yaw/2)];
+      if(prev&&q[1]*prev[1]+q[3]*prev[3]<0)q=q.map(v=>-v);
+      times.push(i/5);points.push(p);turns.push(q);prev=q;
+    }
+    place(car?"Christmas carriage "+car:"Christmas locomotive",car?"Garland carriage":"Peppermint engine",()=>rollingStock(!car),...points[0]);
+    const id=model.nodes.length-1;model.nodes[id].rotation=turns[0];
+    motion(id,"translation",times,points);
+    const input=accessor(times,{min:[0],max:[24]},"SCALAR"),output=accessor(turns.flat(),{},"VEC4");
+    const sampler=animation.samplers.push({input,output,interpolation:"LINEAR"})-1;
+    animation.channels.push({sampler,target:{node:id,path:"rotation"}});
   }
   const chimneys=homes.map(([x,z,r],i)=>{
     const s=.85+i%2*.10;
