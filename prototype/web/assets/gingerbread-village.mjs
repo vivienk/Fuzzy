@@ -10,11 +10,11 @@ export function villageGeometry() {
     const rgb=hex.match(/../g).map(c=>Math.pow(parseInt(c,16)/255,2.2));
     model.materials.push({name,pbrMetallicRoughness:{baseColorFactor:[...rgb,1],metallicFactor:0,roughnessFactor:.95},doubleSided:true,...(name==="lit"?{emissiveFactor:[.6,.27,.06]}:{})});
   }
-  function accessor(array,bounds){
+  function accessor(array,bounds,type='VEC3'){
     const buf=new Float32Array(array);
     const view=model.bufferViews.push({buffer:0,byteOffset:bytes,byteLength:buf.byteLength})-1;
     parts.push(buf);bytes+=buf.byteLength;
-    return model.accessors.push({bufferView:view,componentType:5126,count:array.length/3,type:"VEC3",...bounds})-1;
+    return model.accessors.push({bufferView:view,componentType:5126,count:type==="SCALAR"?array.length:array.length/3,type,...bounds})-1;
   }
   function tri(color,a,b,c){
     const u=b.map((q,i)=>q-a[i]),v=c.map((q,i)=>q-a[i]);
@@ -132,17 +132,17 @@ export function villageGeometry() {
       rod("dark",[0,2.17,z*1.11],[.13,2.23,z*1.11],.026);rod("dark",[0,2.17,z*1.11],[0,2.36,z*1.11],.022);}
     solid("red",0,2.51,0,[[0,.82,.82],[.85,.045,.045]],4);solid("snow",0,2.82,0,[[0,.56,.56],[.58,0,0]],4);ball("gold",0,3.44,0,.095,.13,.095);
   },-4.08,0,-1.65,1.07,.15);
-  function elf(coat){
+  function elf(coat,working=false){
     for(const s of [-1,1]){ball("dark",s*.13,.09,.045,.115,.085,.17);ball("white",s*.12,.195,0,.074,.13,.075);}
     solid(coat,0,.19,0,[[0,.245,.18],[.15,.235,.17],[.35,.16,.14]],11);
     box("dark",0,.33,.142,.20,.036,.033);box("gold",0,.33,.184,.043,.032,.016);
-    for(const s of [-1,1]){rod(coat,[s*.16,.47,0],[s*.31,.33,.09],.077);ball("skin",s*.31,.33,.09,.078,.074,.078);
+    for(const s of [-1,1]){if(!working){rod(coat,[s*.16,.47,0],[s*.31,.33,.09],.077);ball("skin",s*.31,.33,.09,.078,.074,.078);}
       ball("skin",s*.232,.70,0,.085,.09,.05);}
     ball("skin",0,.71,0,.24,.24,.216,12);for(const x of [-.086,.086])ball("black",x,.73,.194,.028,.036,.021);
     ball("skin",0,.674,.219,.055,.043,.046);solid("red",0,.875,0,[[0,.245,.22],[.09,.23,.20],[.23,.14,.12,-.055],[.34,.04,.04,-.16]],11);
     ball("white",-.18,1.20,0,.064,.063,.061);solid("white",0,.86,0,[[0,.25,.22],[.072,.246,.219]],11);
   }
-  [[-1.68,1.66,.28],[1.78,1.45,-.38],[-3.12,2.32,.40],[2.15,-.50,-.55]].forEach(([x,z,r],i)=>place("Elf "+(i+1),"Toy elf "+i%2,()=>elf(i%2?"red":"pine"),x,0,z,.79,r));
+  [[-1.68,1.66,.28],[1.78,1.45,-.38],[-4.95,.10,.40],[2.15,-.50,-.55]].forEach(([x,z,r],i)=>place("Elf "+(i+1),"Toy elf "+i%2,()=>elf(i%2?"red":"pine"),x,0,z,.79,r));
   function moose(){
     for(const s of [-1,1])for(const end of [-1,1]){
       const x=end*.40,z=s*.17;rod("fur",[x,.80,z],[x+end*.065,.15,z],.089);ball("dark",x+end*.065,.09,z,.125,.09,.107);
@@ -162,6 +162,89 @@ export function villageGeometry() {
   for(const [i,[x,z]] of [[-1.1,.69],[.99,.72],[.65,1.02]].entries())place("Wrapped gift "+(i+1),"Ribbon parcel "+i,()=>{
     box(i%2?"mint":"red",0,.15,0,.22,.15,.17);box("gold",0,.155,0,.043,.156,.174);box("gold",0,.31,0,.22,.014,.04);
   },x,.002,z,.88,i*.6);
+  // Open-front toy shop on the near side gives the workbench a clear sightline.
+  const shopX=-2.20,shopZ=2.96;
+  place("Santa's workshop","Open timber toy workshop",()=>{
+    box("cookie",0,.075,0,1.26,.075,.78);
+    box("wood",0,.71,-.65,1.18,.63,.09);
+    for(const x of [-1.13,1.13]){box("dark",x,.75,.46,.075,.68,.075);windowAt(x*.57,.78,-.54);}
+    for(const z of [-.80,.61])rod("dark",[-1.28,1.48,z],[1.28,1.48,z],.085);
+    for(const side of [-1,1]){
+      const x=side*1.37;
+      quad("red",[0,2.05,-.89],[0,2.05,.65],[x,1.43,.65],[x,1.43,-.89]);
+      rod("snow",[0,2.09,.67],[x,1.46,.67],.076);
+    }
+    box("wood",-.78,1.97,-.42,.14,.44,.14);box("snow",-.78,2.43,-.42,.18,.06,.18);
+    box("dark",0,1.56,.68,.42,.15,.05);
+    // A toy train emblem marks the shop.
+    box("gold",-.03,1.57,.75,.18,.052,.024);box("gold",-.16,1.65,.75,.065,.06,.026);
+    for(const x of [-.15,.09])ball("white",x,1.48,.75,.053,.053,.025);
+  },shopX,0,shopZ);
+  place("Gift wrapping bench","Ribbon cutting table",()=>{
+    box("cookie",0,.45,0,.84,.055,.19);
+    for(const x of [-.73,.73])for(const z of [-.14,.14])box("dark",x,.28,z,.043,.19,.042);
+    for(const x of [-.46,.44]){box(x<0?"red":"pine",x,.605,0,.17,.10,.13);box("gold",x,.61,0,.032,.106,.135);}
+    box("mint",.02,.51,0,.16,.01,.13);
+  },shopX,.025,shopZ+.84);
+  function igloo(){
+    for(let row=0;row<5;row++){
+      const lo=row*Math.PI/10,hi=(row+1)*Math.PI/10-.013,count=14-row*2;
+      for(let j=0;j<count;j++){
+        const a=(j+(row%2)*.5)*tau/count,b=a+tau/count-.021;
+        const p=(lat,t)=>[.82*Math.cos(lat)*Math.cos(t),.79*Math.sin(lat),.82*Math.cos(lat)*Math.sin(t)];
+        quad((row+j)%4?"snow":"ice",p(lo,a),p(hi,a),p(hi,b),p(lo,b));
+      }
+    }
+    for(let i=0;i<8;i++){
+      const a=i*Math.PI/8,b=(i+1)*Math.PI/8-.022;
+      const arch=(t,r,z)=>[r*Math.cos(t),r*Math.sin(t),z];
+      quad("ice",arch(a,.34,.63),arch(b,.34,.63),arch(b,.34,1.02),arch(a,.34,1.02));
+      quad("snow",arch(a,.34,1.02),arch(b,.34,1.02),arch(b,.23,1.02),arch(a,.23,1.02));
+      tri("deep",[0,.001,.99],arch(a,.242,.99),arch(b+.022,.242,.99));
+    }
+  }
+  place("Ice igloo by the inlet","Block-built ice igloo",igloo,5.47,0,-.38,.82,.26);
+  place("Little ice igloo","Block-built ice igloo",igloo,.35,0,3.34,.73,.52);
+  const animation={name:"Workshop and chimney loops",channels:[],samplers:[]};
+  function motion(node,path,times,values){
+    const input=accessor(times,{min:[times[0]],max:[times.at(-1)]},"SCALAR");
+    const sampler=animation.samplers.push({input,output:accessor(values.flat()),interpolation:"LINEAR"})-1;
+    animation.channels.push({sampler,target:{node,path}});
+  }
+  for(const [i,offset] of [-.46,.44].entries()){
+    const x=shopX+offset,z=shopZ+.49;
+    place("Gift maker "+(i+1),"Seated gift maker "+i,()=>elf(i?"pine":"red",true),x,.14,z,.77);
+    for(const side of [-1,1]){
+      const start=[x+side*.14,.50,z+.035];
+      place("Gift maker "+(i+1)+" wrapping hand "+side,"Wrapping sleeve "+i+" "+side,()=>{
+        rod(i?"pine":"red",[0,0,0],[side*.018,-.015,.23],.065);
+        ball("skin",side*.018,-.025,.245,.065,.06,.065);
+      },...start);
+      const id=model.nodes.length-1,t=[],v=[];
+      for(let k=0;k<=48;k++){
+        const phase=(1-Math.cos(k*Math.PI/2+Math.PI*(i+(side+1)/2)))/2;
+        t.push(k/2);v.push([start[0]-side*.064*phase,start[1]+.092*phase,start[2]+.078*phase]);
+      }
+      motion(id,"translation",t,v);
+    }
+  }
+  const chimneys=homes.map(([x,z,r],i)=>{
+    const s=.85+i%2*.10;
+    return [x+s*(.44*Math.cos(r)-.38*Math.sin(r)),1.95*s,z+s*(-.44*Math.sin(r)-.38*Math.cos(r))];
+  });
+  chimneys.push([shopX-.78,2.49,shopZ-.42]);
+  chimneys.forEach(([x,y,z],i)=>{
+    for(let j=0;j<3;j++){
+      place("Chimney "+(i+1)+" smoke "+(j+1),"Soft smoke puff",()=>ball("shale",0,0,0,.10,.105,.09,8),x,y,z);
+      const id=model.nodes.length-1,t=[],p=[],size=[];
+      for(let k=0;k<=144;k++){
+        const phase=((k+j*8+i*3)%24)/24, radius=Math.sin(Math.PI*phase)*(.62+phase*.95);
+        t.push(k/6);p.push([x+.32*phase*phase,y+.96*phase,z-.11*phase]);size.push([radius,radius,radius]);
+      }
+      motion(id,"translation",t,p);motion(id,"scale",t,size);
+    }
+  });
+  model.animations=[animation];
   model.buffers.push({byteLength:bytes});
   const json=new TextEncoder().encode(JSON.stringify(model)),size=(json.length+3)&~3,out=new Uint8Array(28+size+bytes);
   const view=new DataView(out.buffer);[0x46546c67,2,out.length,size,0x4e4f534a].forEach((v,i)=>view.setUint32(i*4,v,true));
