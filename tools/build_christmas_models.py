@@ -9,7 +9,7 @@ def mat(n,c,glow=0):
  m=bpy.data.materials.new(n);m.diffuse_color=(*c,1);m.use_nodes=True
  p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*c,1);p.inputs['Roughness'].default_value=.8;p.inputs['Emission'].default_value=(*c,1);p.inputs['Emission Strength'].default_value=glow
  return m
-snow=mat('Pearl snow',(.91,.95,1));rock=mat('Lavender slate',(.27,.23,.37));wood=mat('Cedar',(.32,.12,.08));pine=mat('Deep pine',(.035,.20,.16));red=mat('Cranberry',(.59,.055,.1));gold=mat('Champagne gold',(.92,.58,.17));dark=mat('Bronze',(.07,.055,.08));light=mat('Amber glow',(1,.66,.25),1.3);mint=mat('Sage',(.24,.49,.39));ice=mat('Glacier blue',(.33,.66,.78));path=mat('Rose sandstone',(.62,.43,.43));roof=mat('Midnight roof',(.07,.12,.2))
+snow=mat('Warm porcelain',(.98,.95,.88));rock=mat('Lilac stone',(.48,.43,.66));wood=mat('Soft coral',(.78,.36,.38));pine=mat('Deep teal',(.13,.34,.34));red=mat('Persimmon',(.91,.43,.40));gold=mat('Butter yellow',(.98,.76,.43));dark=mat('Ink violet',(.18,.16,.31));light=mat('Honey light',(1,.78,.48),.55);mint=mat('Sea glass',(.43,.70,.66));ice=mat('Mist blue',(.52,.72,.86));path=mat('Rose stone',(.84,.55,.54));roof=mat('Dusk violet',(.34,.30,.50))
 def finish(o,n,m):o.name=n;o.data.materials.append(m);return o
 def cube(n,loc,s,m):
  bpy.ops.mesh.primitive_cube_add(size=1,location=loc);o=bpy.context.object;o.scale=s;bpy.ops.object.transform_apply(location=False,rotation=False,scale=True);return finish(o,n,m)
@@ -58,6 +58,17 @@ def cabin(x,y,s=1,m=wood):
  for i in range(12):
   a=i*math.pi/6;ico('Wreath leaf',(x+math.cos(a)*.045*s,y-.18*s,z+.30*s+math.sin(a)*.045*s),(.017*s,)*3,pine)
  ico('Wreath bow',(x,y-.20*s,z+.257*s),(.028*s,.012*s,.014*s),red)
+def monument_tower(x,y,h,w,m,accent):
+ # A spare, stacked landmark with a high window and an open visual frame.
+ z=.12
+ cube('Dream tower footing',(x,y,z+.035),(w*1.45,w*1.45,.07),accent)
+ cube('Dream tower shaft',(x,y,z+h*.47),(w,w,h*.82),m)
+ cube('Dream tower cornice',(x,y,z+h*.90),(w*1.34,w*1.34,.075),accent)
+ cube('Dream tower crown',(x,y,z+h*.99),(w*.72,w*.72,.10),m)
+ cube('Dream tower window',(x,y-w*.51,z+h*.62),(w*.30,.012,h*.18),dark)
+ cube('Dream tower light',(x,y-w*.52,z+h*.62),(w*.11,.014,h*.11),light)
+ # Offset lintel gives the structure a quiet, impossible-architecture cue.
+ cube('Dream tower lintel',(x+w*.20,y-w*.55,z+h*.50),(w*.52,.06,.045),accent)
 def lantern(x,y):
  cone('Lantern base',(x,y,.14),.055,.04,.06,dark);bar('Lantern post',(x,y,.14),(x,y,.41),.012,dark)
  cube('Lantern glass',(x,y,.435),(.045,.045,.07),light);cone('Lantern roof',(x,y,.49),.05,0,.055,dark,4)
@@ -75,9 +86,15 @@ for i in range(15):
  a=i*math.tau/15;ico('Snow edge',(math.cos(a)*1.00,math.sin(a)*.80,.08),(.17,.13,.06),snow)
 lights=bpy.data.objects.new('TreeLights',None);bpy.context.collection.objects.link(lights)
 # Three distinct cottages surround the central celebration tree.
-cabin(-.56,.20,1.13);cabin(.43,.49,.80,mint);cabin(-.08,.62,.66,red)
+cabin(-.56,.20,1.13);cabin(-.08,.62,.66,red)
 tree(.20,.07,1.15,True)
-for x,y,s in [(-.88,.07,.60),(-.78,.48,.70),(-.48,.66,.53),(.79,.25,.66),(.72,-.27,.52),(.11,.77,.44)]:tree(x,y,s)
+for x,y,s in [(-.88,.07,.60),(.72,-.27,.52),(.11,.77,.44)]:tree(x,y,s)
+# A rising ribbon stair winds up the island to a small pastel tower.
+monument_tower(.72,.48,.65,.19,mint,gold)
+for i in range(8):
+ t=i/7;x=-.70+1.22*t;y=.58-.22*t;z=.12+.27*t
+ step=cube('Impossible stair %02d'%i,(x,y,z),(.16,.12,.035),path)
+ step.rotation_euler[2]=math.radians(-12)
 # Winding stepping-stone path and frozen pond.
 for i in range(16):
  t=i/15;x=-.50+.49*t+.08*math.sin(t*5);y=.0-.70*t
