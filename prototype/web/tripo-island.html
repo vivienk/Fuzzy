@@ -29,25 +29,25 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 <div class="kicker">Tripo · low-poly 3D generation</div>
 <h1>A new Christmas island</h1>
 <p class="intro">Create the snowy wizarding-school island, then generate one separately rigged and animated festive elf. The island and character stay as separate GLB assets.</p>
-<div><span class="badge">Storybook low-poly</span><span class="badge">Separate animated character</span><span class="badge">Credit cap: 115</span></div>
+<div><span class="badge">Storybook low-poly</span><span class="badge">Separate animated character</span><span class="badge">Credit cap: 95 credits · $0.95</span> <span id="api-status" class="badge">Checking Tripo API key…</span></div>
 <section class="card" aria-labelledby="island-title">
 <div><model-viewer id="island-model" alt="Generated low-poly Christmas island" camera-controls auto-rotate auto-rotate-delay="1500" rotation-per-second="10deg" shadow-intensity="1" exposure="1.05" interaction-prompt="none"></model-viewer>
 <div class="downloads"><a id="island-download" download="fuzzy-christmas-island.glb">Download island GLB</a></div></div>
 <div class="controls"><h2 id="island-title">1. Generate the island</h2>
 <label for="island-prompt">Island description</label>
 <textarea id="island-prompt">A magical Christmas island in a whimsical wizarding-school fantasy: one floating low-poly snowy island, a grand gothic stone academy with tall towers and glowing golden windows, a small cluster of cozy timber cottages, a decorated Christmas tree in the village square, evergreen trees, a tiny owl post hut, floating candles, a few festive elves, a friendly polar bear and a reindeer, distant snowy mountains, icy shoreline, and flowing teal aurora in a deep violet winter sky. Storybook low-poly 3D diorama, crisp triangular facets, warm candlelight, balanced readable layout, full island visible, no text, no logos, no recognizable copyrighted characters.</textarea>
-<button id="island-generate">Generate island · ~40 credits</button>
+<button id="island-generate" disabled>Generate island · 30 credits</button>
 <div class="status" id="island-status" role="status" aria-live="polite">Ready to create the island.</div><div class="progress"><i id="island-progress"></i></div>
 </div></section>
 <section class="card" aria-labelledby="elf-title">
 <div><model-viewer id="elf-model" alt="Separately generated animated festive elf" camera-controls auto-rotate auto-rotate-delay="1500" rotation-per-second="10deg" shadow-intensity="1" exposure="1.05" interaction-prompt="none"></model-viewer>
 <div class="downloads"><a id="elf-download" download="fuzzy-elf-walk.glb">Download animated elf GLB</a></div></div>
 <div class="controls"><h2 id="elf-title">2. Generate and animate one elf</h2>
-<p class="intro">This creates a separate biped elf, rigs it, and applies an in-place walk cycle. Estimated total for the full run: 115 credits (about $1.15).</p>
-<button id="elf-generate">Generate + animate elf · ~75 credits</button>
+<p class="intro">This creates a separate biped elf, rigs it, and applies an in-place walk cycle. Estimated total: 95 credits (about $0.95): island 30, elf 30, rig 25, walk animation 10; rig check is free.</p>
+<button id="elf-generate" disabled>Generate + animate elf · 65 credits</button>
 <div class="status" id="elf-status" role="status" aria-live="polite">Ready after the island generation; this step can also run independently.</div><div class="progress"><i id="elf-progress"></i></div>
 </div></section>
-<p class="note">Your Tripo key stays server-side. Each generation, rig, and animation step can only be submitted once per preview session. The API reserves a combined maximum of 115 credits.</p>
+<p class="note">Your Tripo key stays server-side. The page checks authentication for free before enabling generation. Each step can only be submitted once per preview session, with a combined 95-credit cap.</p>
 </main>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -64,7 +64,7 @@ async function waitTask(taskId,prefix,label){
   await sleep(4000);const response=await fetch("/api/tripo?taskId="+encodeURIComponent(taskId),{cache:"no-store"});const data=await response.json();
   if(!response.ok)throw new Error(data.error||"Could not check task status.");
   const progress=data.progress||4;setStatus(prefix,label+" · "+data.status+" ("+progress+"%)",progress);
-  if(data.status==="success")return;
+  if(data.status==="success")return data;
   if(["failed","banned","cancelled","expired"].includes(data.status))throw new Error(data.error||label+" failed.");
  }
  throw new Error(label+" is taking longer than expected. Refresh and retry this step.");
@@ -81,11 +81,20 @@ document.querySelector("#island-generate").onclick=async()=>{
   downloadModel(taskId,"island","island-model","island-download");setStatus("island","Island ready. Preview or download the GLB.",100);
  }catch(e){setStatus("island",e.message)}finally{button.disabled=false}
 };
+async function checkApiKey(){
+ const status=document.querySelector("#api-status"),buttons=[document.querySelector("#island-generate"),document.querySelector("#elf-generate")];
+ try{const response=await fetch("/api/tripo?check=1",{cache:"no-store"});const data=await response.json();if(!response.ok)throw new Error(data.error||"Tripo authentication failed.");
+  status.textContent="Tripo connected";status.style.color="#91e1c4";buttons.forEach(button=>button.disabled=false);
+ }catch(error){status.textContent="Tripo key rejected";status.title=error.message;document.querySelector("#island-status").textContent=error.message;buttons.forEach(button=>button.disabled=true);}
+}
+checkApiKey();
 document.querySelector("#elf-generate").onclick=async()=>{
  const button=document.querySelector("#elf-generate");button.disabled=true;setStatus("elf","Generating the elf…",3);
  try{
   const charId=await beginTask("character",{});await waitTask(charId,"elf","Generating the elf");
-  setStatus("elf","Rigging the elf…",45);const rigId=await beginTask("rig",{characterTaskId:charId});await waitTask(rigId,"elf","Rigging");
+  setStatus("elf","Checking the elf rig for free…",42);const checkId=await beginTask("rig-check",{characterTaskId:charId});const checked=await waitTask(checkId,"elf","Checking rig compatibility");
+  if(!checked.output?.riggable||checked.output?.rig_type!=="biped")throw new Error("Tripo could not confirm a biped rig for this elf; stopped before the paid rig step.");
+  setStatus("elf","Rigging the elf…",50);const rigId=await beginTask("rig",{characterTaskId:charId});await waitTask(rigId,"elf","Rigging");
   setStatus("elf","Applying the walk animation…",75);const animId=await beginTask("animate",{rigTaskId:rigId});await waitTask(animId,"elf","Animating");
   downloadModel(animId,"character","elf-model","elf-download");setStatus("elf","Animated elf ready. Preview or download the GLB.",100);
  }catch(e){setStatus("elf",e.message)}finally{button.disabled=false}
