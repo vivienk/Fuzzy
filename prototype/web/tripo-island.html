@@ -595,6 +595,7 @@ async function selectWorld(choice) {
   islandLoader.hidden=false;world.setAttribute("aria-busy","true");
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
+  if(world.dataset.kind==="village" && choice.dataset.world!=="village")document.querySelector("#stop-album").click();
   world.dataset.kind = choice.dataset.world;
   packWorld.hidden=true;document.querySelector("#pack-hint").hidden=true;
   world.alt = choice.textContent;
