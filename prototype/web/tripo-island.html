@@ -93,6 +93,20 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 main:not(:has(#diorama[data-village])) .album-room,.album-room [hidden]{display:none}
 .album-room{margin:1.5rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));align-items:center;gap:1.5rem;padding:clamp(16px,3vw,32px);border:1px solid #fff3;border-radius:20px;background:#182034}.album-room h2{font:30px Georgia,serif;margin:0}.album-room label{display:block}.album-room select{display:block;max-width:100%;padding:.6rem;margin:.4rem 0 .8rem}.album-room .note{font-size:.87rem;color:var(--muted)}
 .chime-track{margin:0}.chime-track audio{display:block;width:100%;margin:.4rem 0}.chime-track a{font-size:.9rem}
+
+:root{--glass-fill:#323b51c9;--glass-ink:#fffaf2;--glass-rim:#ffffff69;--glass-sheen:linear-gradient(155deg,#ffffff42,transparent 42%,#ffffff10 80%,#ffffff28)}
+dialog,#world{--glass-fill:#fffae9c4;--glass-ink:#352e3a;--glass-rim:#ffffffce}
+body button:not(:where(#world button)),#worlds button[aria-pressed],#friend-world:not([hidden]),#world :is(.moose-feed,.mail-open,.fishing-action),#world .box-hit span,#world .elf-bubble:not(:empty){
+ background:var(--glass-sheen),var(--glass-fill);color:var(--glass-ink);border:1px solid var(--glass-rim);
+ box-shadow:inset 0 1px 1px #ffffff94,inset 0 -1px 2px #ffffff31,0 2px 7px #11192d32;
+ -webkit-backdrop-filter:blur(14px) saturate(145%);backdrop-filter:blur(14px) saturate(145%);
+}
+#worlds button[aria-pressed="true"]{--glass-fill:#e9c980d6;--glass-ink:#312836;--glass-rim:#ffebb6}
+#world .box-hit[data-next]::before{background-color:#fff6dfb8;backdrop-filter:blur(8px);box-shadow:inset 0 1px 2px white,0 2px 6px #15193240}
+body button:enabled:hover,#friend-world:hover{filter:brightness(1.1)}
+body button:enabled:active{filter:brightness(.93)}
+body :is(button,#friend-world):focus-visible{outline:2px solid #65cbe1;outline-offset:3px}
+@media(forced-colors:active){body button,#friend-world{border:1px solid ButtonText}}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
