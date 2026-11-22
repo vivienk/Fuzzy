@@ -234,14 +234,14 @@ export async function villageGeometry() {
   // Snow between the entrance sign and the front curve of the railway.
   const stationX=2.62,stationZ=4.34;
   place("Gift making station","Cedar gift counter",()=>{
-    box("cookie",0,.43,0,.59,.07,.30);
+    box("cookie",0,.43,0,.92,.07,.42);
     for(const x of [-.48,.48])for(const z of [-.20,.20])box("wood",x,.21,z,.05,.21,.05);
     box("spruce",0,.33,.245,.53,.12,.034);
-    box("red",-.17,.64,0,.18,.14,.15);
-    box("gold",-.17,.64,0,.035,.145,.154);
-    for(const side of [-1,1])ball("gold",-.17+side*.055,.81,0,.068,.04,.03);
-    box("mint",.26,.59,-.02,.12,.09,.11);
-    box("white",.26,.59,-.02,.025,.094,.114);
+    box("red",-.69,.64,0,.18,.14,.15);
+    box("gold",-.69,.64,0,.035,.145,.154);
+    for(const side of [-1,1])ball("gold",-.69+side*.055,.81,0,.068,.04,.03);
+    box("mint",.68,.59,-.02,.12,.09,.11);
+    box("white",.68,.59,-.02,.025,.094,.114);
   },stationX,.025,stationZ,1,.12);
   villageEffects.push({kind:"gift-station",position:[stationX,1.06,stationZ]});
   const shopX=-2.20,shopZ=2.96;
