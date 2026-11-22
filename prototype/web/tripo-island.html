@@ -307,9 +307,10 @@ if(parcelParams.has("parcel")){
 const draftId=parcelParams.get("draft")||"";
 const draftSuffix=!parcel&&/^[0-9a-f-]{36}$/i.test(draftId)?":"+draftId:"";
 const editorKey="fuzzy-editor"+draftSuffix;
+if(draftSuffix)document.querySelector("a.back").href="./index.html"+location.hash;
 const friendWorld=document.querySelector("#friend-world");
 if(parcel){
-  const draftURL=new URL(location.href);
+  const draftURL=new URL("./index.html",location.href);
   draftURL.hash=new URLSearchParams({draft:crypto.randomUUID()}).toString();
   friendWorld.href=draftURL.href;
 }
