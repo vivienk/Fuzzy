@@ -33,6 +33,10 @@ button:disabled{opacity:.55;cursor:wait}
 .progress{height:6px;background:#ffffff18;border-radius:9px;overflow:hidden}
 .progress i{display:block;width:0;height:100%;background:linear-gradient(90deg,#69d5bd,var(--gold));transition:width .3s}
 .note{font-size:12px;color:#aaa8b9;margin-top:18px}
+input[type=file]{width:100%;padding:12px;border:1px solid #ffffff29;border-radius:12px;background:#0c1020;color:var(--muted);font:13px system-ui,sans-serif}
+@keyframes island-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+model-viewer{animation:island-drift 7s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){model-viewer{animation:none}}
 #download{display:none;margin-top:12px}
 .badge{display:inline-block;border:1px solid #ffffff26;border-radius:999px;padding:5px 9px;color:#d9d4e8;font-size:11px;margin:0 5px 5px 0}
 @media(max-width:850px){.grid{grid-template-columns:1fr}model-viewer{height:460px}.controls{order:-1}}
@@ -43,27 +47,28 @@ button:disabled{opacity:.55;cursor:wait}
 <div class="aurora" aria-hidden="true"></div>
 <header><strong>fuzzy</strong><a class="back" href="./index.html">← Back to winter worlds</a></header>
 <main>
-<div class="kicker">Tripo · text to 3D</div>
-<h1>A wizarding Christmas island</h1>
-<p class="intro">Generate a low-poly holiday island with a candlelit magic academy, snowy rooftops, warm village windows, evergreen trees, and a northern-light sky. Drag to orbit and scroll to zoom once the model is ready.</p>
-<div><span class="badge">Low-poly mesh</span><span class="badge">Textured GLB</span><span class="badge">3D preview</span></div>
+<div class="kicker">Tripo · image to 3D</div>
+<h1>Rebuild the North Pole island</h1>
+<p class="intro">Turn the provided scene reference into a textured low-poly island GLB. The preview adds a softly moving aurora, gentle island float, and horizontal orbit with zoom.</p>
+<div><span class="badge">Reference image</span><span class="badge">Low-poly textured GLB</span><span class="badge">Animated preview</span></div>
 <div class="grid">
 <div class="viewer-wrap">
 <model-viewer id="model" alt="Generated low-poly wizarding Christmas island" camera-controls auto-rotate auto-rotate-delay="1500" rotation-per-second="10deg" shadow-intensity="1" exposure="1.05" interaction-prompt="none"></model-viewer>
 </div>
 <section class="controls" aria-labelledby="prompt-label">
-<label id="prompt-label" for="prompt">Scene prompt</label>
-<textarea id="prompt" maxlength="1024">A magical Christmas island in a whimsical wizarding-school fantasy inspired by Harry Potter: one floating low-poly snowy island, a grand gothic stone academy with tall towers and glowing golden windows, a small cluster of cozy timber cottages, a decorated Christmas tree in the village square, evergreen trees, a tiny owl post hut, floating candles, a few festive elves, a friendly polar bear and a reindeer, distant snowy mountains, icy shoreline, and flowing teal aurora in a deep violet winter sky. Storybook low-poly 3D diorama, crisp triangular facets, warm candlelight, balanced readable layout, full island visible, no text, no logos, no recognizable copyrighted characters.</textarea>
-<button id="generate">Generate 3D island</button>
-<div class="status" id="status" role="status" aria-live="polite">Ready. Starting a generation uses Tripo API credits.</div>
+<label id="prompt-label" for="reference-image">Reference image</label>
+<input id="reference-image" type="file" accept="image/png,image/jpeg,image/webp">
+<p class="note">Choose the attached North Pole island image (PNG, JPEG, or WebP; up to 20 MB).</p>
+<button id="generate">Rebuild from reference</button>
+<div class="status" id="status" role="status" aria-live="polite">Ready. An image-to-3D generation uses Tripo API credits.</div>
 <div class="progress" aria-hidden="true"><i id="bar"></i></div>
 <a id="download" download="wizarding-christmas-island.glb">Download generated GLB</a>
-<p class="note">The Tripo key stays server-side. Add <code>TRIPO_API_KEY</code> to the Vercel project environment before generating. One textured low-poly generation uses API credits; confirm your available trial balance first.</p>
+<p class="note">The API key stays server-side. Tripo creates a static scene mesh from the image. This preview animates the aurora and island float; individual character motion requires separately rigged character assets.</p>
 </section>
 </div>
 </main>
 <script>
-const promptInput=document.querySelector("#prompt");
+const referenceInput=document.querySelector("#reference-image");
 const generateButton=document.querySelector("#generate");
 const statusNode=document.querySelector("#status");
 const progressBar=document.querySelector("#bar");
@@ -74,8 +79,16 @@ function status(text,progress){statusNode.textContent=text;if(Number.isFinite(pr
 generateButton.addEventListener("click",async()=>{
   generateButton.disabled=true;downloadLink.style.display="none";viewer.removeAttribute("src");progressBar.style.width="0%";
   try{
-    status("Submitting the island prompt…",2);
-    const start=await fetch("/api/tripo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:promptInput.value})});
+    const reference=referenceInput.files?.[0];
+    if(!reference)throw new Error("Choose the North Pole reference image first.");
+    if(!["image/png","image/jpeg","image/webp"].includes(reference.type))throw new Error("Use a PNG, JPEG, or WebP image.");
+    if(reference.size>20*1024*1024)throw new Error("Reference images must be 20 MB or smaller.");
+    status("Uploading the reference image…",2);
+    const upload=await fetch("/api/tripo?upload=1",{method:"POST",headers:{"Content-Type":reference.type},body:reference});
+    const uploaded=await upload.json();
+    if(!upload.ok)throw new Error(uploaded.error||"Could not upload the reference image.");
+    status("Submitting the island to Tripo…",5);
+    const start=await fetch("/api/tripo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({imageToken:uploaded.imageToken})});
     const started=await start.json();
     if(!start.ok)throw new Error(started.error||"Could not start generation.");
     const taskId=started.taskId;let finished=false;
