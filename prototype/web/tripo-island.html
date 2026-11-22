@@ -47,6 +47,10 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 @keyframes village-snowfall{to{transform:translate(40px,75vh)}}
 #diorama[data-village] .smoke .puff{width:28px;height:32px;background:radial-gradient(ellipse,#e6edf4a8 0%,#c3cfdf67 38%,transparent 72%)}
 @media(prefers-reduced-motion:reduce){#diorama[data-village] .village-snow{display:none}}
+#world .elf-target{position:relative;width:32px;height:36px;padding:0;margin:0;border:0;border-radius:45%;background:transparent;cursor:pointer;pointer-events:auto;color:#30253c}
+#world .elf-target:focus-visible{outline:2px solid #ffda85}
+.elf-bubble:not(:empty){display:block;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding:5px 9px;border-radius:13px;background:#fff9ed;box-shadow:0 2px 8px #17203940;font:19px/1.2 system-ui;white-space:nowrap;pointer-events:none}
+.elf-bubble:not(:empty)::after{content:"";position:absolute;top:100%;left:calc(50% - 5px);border:5px solid transparent;border-top-color:#fff9ed}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -177,6 +181,45 @@ for(let i=0;i<55;i++){
 }
 let villageModel;
 let effects=[];
+let walkingElfPosition,walkingElfCount;
+let elfFrame, bubbleTimer;
+const greetings=[["👋 🎄","🎁 ✨"],["☃️ ❄️","🧣 💙"],["🍪 🥛","🎅 ❤️"],["🚂 🔔","🦌 ✨"]];
+function clearElfInteraction(){
+  cancelAnimationFrame(elfFrame);
+  clearTimeout(bubbleTimer);
+}
+function showElfInteraction(){
+  if(world.dataset.kind!=="village" || !walkingElfPosition)return;
+  const buttons=Array.from({length:walkingElfCount},(_,i)=>{
+    const button=document.createElement("button"),bubble=document.createElement("span");
+    button.type="button";button.className="elf-target";button.slot="hotspot-elf-"+i;
+    button.setAttribute("aria-label","Greet walking elf "+(i+1));
+    bubble.className="elf-bubble";bubble.setAttribute("role","status");
+    button.append(bubble);
+    let visits=0;
+    button.onclick=e=>{
+      e.stopPropagation();
+      clearTimeout(bubbleTimer);
+      for(const target of buttons)target.firstChild.textContent="";
+      bubble.textContent=greetings[i][visits++%greetings[i].length];
+      bubbleTimer=setTimeout(()=>bubble.textContent="",3200);
+    };
+    world.append(button);return button;
+  });
+  let previous=-1;
+  function follow(){
+    const time=world.currentTime||0;
+    if(time!==previous){
+      buttons.forEach((b,i)=>{
+        const [x,y,z]=walkingElfPosition(i,time);
+        world.updateHotspot({name:b.slot,position:x+"m "+(y+.52)+"m "+z+"m"});
+      });
+      previous=time;
+    }
+    elfFrame=requestAnimationFrame(follow);
+  }
+  follow();
+}
 function showVillageEffects(){
   if(world.dataset.kind!=="village")return;
   effects.forEach(({kind,position,normal},i)=>{
@@ -196,14 +239,14 @@ function showVillageEffects(){
     world.append(anchor);
   });
 }
-world.addEventListener("load",()=>{world.replaceChildren();showVillageEffects();});
+world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();});
 let request = 0;
 async function selectWorld(choice) {
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
   world.alt = choice.textContent;
   caption.textContent = "Loading " + world.alt + "…";
-  world.replaceChildren();
+  clearElfInteraction();world.replaceChildren();
   const turn = ++request;
   const village = choice.dataset.world === "village";
   document.querySelector("#diorama").toggleAttribute("data-village",village);
@@ -216,9 +259,9 @@ async function selectWorld(choice) {
     world.removeAttribute("src");
     try {
       villageModel ||= Promise.all([import("./assets/santa-flight.mjs"), import("./assets/gingerbread-village.mjs")])
-        .then(async ([{animateVillage}, {villageGeometry,villageEffects}]) => {
-          const source = URL.createObjectURL(new Blob([await villageGeometry()], {type:"model/gltf-binary"}));
-          try { const url=await animateVillage(source);effects=villageEffects;return url; }
+        .then(async ([{animateVillage}, village]) => {
+          const source = URL.createObjectURL(new Blob([await village.villageGeometry()], {type:"model/gltf-binary"}));
+          try { const url=await animateVillage(source);effects=village.villageEffects;walkingElfPosition=village.walkingElfPosition;walkingElfCount=village.walkingElfCount;return url; }
           finally { URL.revokeObjectURL(source); }
         });
       const url = await villageModel;
