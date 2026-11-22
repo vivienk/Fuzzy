@@ -4,7 +4,7 @@
  const gift=new URLSearchParams(location.hash.slice(1));
  const storageKey='fuzzy-christmas-album'+(gift.has('draft')?':'+gift.get('draft'):'');
  let controller=null,sdk=null,version=0,playing=false,pending=false;
- let wantsPlay=false;
+ let wantsPlay=false, audio=null;
  const spotifyId=()=>picker.selectedOptions[0].dataset.spotify;
  function display(active){
   playing=active;
@@ -14,6 +14,7 @@
  }
  function stop(){
   version++;pending=false;wantsPlay=false;controller?.destroy();controller=null;
+  if(audio){audio.pause();audio.removeAttribute("src");audio.load();audio=null;}
   host.replaceChildren();host.hidden=true;display(false);
  }
  function select(){
@@ -21,7 +22,19 @@
   link.hidden=!id;
   if(id)link.href='https://open.spotify.com/album/'+id;
   status.textContent='Tap the record to play.';
-  prepareAlbum();
+  const src=picker.selectedOptions[0].dataset.audio;
+  if(!src){prepareAlbum();return;}
+  const player=document.createElement('audio');
+  audio=player;
+  player.controls=true;player.loop=true;player.preload='metadata';
+  player.src=src;player.style.width='100%';
+  player.setAttribute('aria-label',picker.selectedOptions[0].textContent);
+  for(const event of ['playing','pause','error'])player.addEventListener(event,()=>{
+   if(audio!==player)return;
+   display(event==='playing');
+   status.textContent=event==='playing'?'Playing in the background.':event==='pause'?'Playback paused.':'This track could not load.';
+  });
+  host.hidden=false;host.replaceChildren(player);
  }
  function getSDK(){
   if(!sdk)sdk=new Promise((resolve,reject)=>{
@@ -49,6 +62,7 @@
   }catch{if(version===ticket){pending=false;display(false);status.textContent='Spotify could not play. Try again or open the album in Spotify.';}}
  }
  function play(){
+  if(audio){const player=audio;if(!player.paused)player.pause();else player.play().catch(()=>{if(audio===player)status.textContent="Tap Play to start the music.";});return;}
   if(playing){controller?.pause();return;}
   wantsPlay=true;
   if(controller&&!pending){controller.play();return;}
@@ -61,5 +75,5 @@
  select();picker.onchange=()=>{select();if(!gift.has('parcel'))try{localStorage.setItem(storageKey,picker.value);}catch{}};
  disc.onclick=play;
  window.addEventListener('gift-soundtrack-stop',stop);
- window.addEventListener('gift-soundtrack-start',()=>{if(!playing)play();});
+ window.addEventListener('gift-soundtrack-start',()=>{if(!playing){if(!audio&&!controller&&!pending)select();play();}});
 })();
