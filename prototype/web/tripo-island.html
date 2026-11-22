@@ -62,6 +62,15 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #village-letter{box-sizing:border-box;width:min(360px,90vw);padding:24px;border:1px solid #bea78e;border-radius:18px;background:#fff8ea;color:#503e35}#village-letter::backdrop{background:#21233570}#village-letter textarea{box-sizing:border-box;width:100%;min-height:110px;padding:10px;font:inherit}#village-letter p{white-space:pre-wrap;overflow-wrap:anywhere}#village-letter [hidden]{display:none}
 #gift-station{width:min(860px,94vw);max-height:88vh;overflow:auto;box-sizing:border-box;border:1px solid #60716f;border-radius:20px;color:#faf7ee;background:#192434;padding:14px}#gift-station::backdrop{background:#101728aa}#gift-station form{text-align:right}#gift-station .card{margin:8px 0 0}#gift-station model-viewer{height:clamp(170px,32vh,340px)}#world .gift-station-open{width:36px;height:36px;border-radius:50%;background:#fff7e3;color:#66513d;border:1px solid #c5af87;padding:7px;cursor:pointer}#world .gift-station-open svg{display:block;width:100%}
 #gift-station{width:min(380px,92vw)}#gift-station section{padding:0 12px 10px}#world .box-hit{position:relative;width:22px;min-width:0;height:22px;border:0;background:transparent;padding:0;cursor:pointer;box-shadow:none}#world .box-hit:focus-visible{outline:2px solid #fff5c9}#world .box-hit span{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);font:600 11px/1.4 system-ui;background:#fff8eb;color:#584234;padding:2px 6px;border-radius:8px;white-space:nowrap}#world .box-hit progress{display:block;width:48px;height:5px;accent-color:#487967}#world .box-hit [hidden]{display:none}
+#world .fishing-action{position:relative;display:grid;place-items:center;width:max-content;min-width:30px;height:26px;padding:0 7px;border-radius:14px;background:#fff9e9;color:#344d53;border:1px solid #98b3b3;cursor:pointer;font:600 11px system-ui}
+.fishing-action svg{width:19px;height:14px}
+#world .fishing-float{display:grid;place-items:center;width:24px;height:24px;min-width:0;padding:0;border:0;background:transparent;box-shadow:none;cursor:pointer}
+.fishing-float i{width:8px;height:12px;border-radius:50%;background:linear-gradient(#ac4445 50%,#fff5db 50%);box-shadow:0 1px 2px #3456}
+.fishing-float[data-phase="waiting"] i{animation:float-wait 1.5s ease-in-out infinite alternate}
+.fishing-float[data-phase="bite"] i{animation:float-dip .32s ease-in-out infinite alternate}
+.fishing-float svg{width:24px;height:18px;color:#427d80;animation:fish-rise .55s ease-out both}
+@keyframes float-wait{to{transform:translateY(-2px) rotate(9deg)}}@keyframes float-dip{to{transform:translateY(5px) rotate(27deg)}}@keyframes fish-rise{from{transform:translateY(3px) scale(.65)}to{transform:translateY(-10px) scale(1)}}
+@media(prefers-reduced-motion:reduce){#world .fishing-float *{animation:none}}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -321,6 +330,35 @@ window.addEventListener("village-gift-ready",({detail:id})=>{
   const slot=boxes.findIndex(b=>b.phase==="empty");if(slot<0)return;
   boxes[slot]={phase:"ready",id};persistBoxes();paintBox(slot);
 });
+const fishIcon='<svg viewBox="0 0 28 18" aria-hidden="true"><path fill="currentColor" d="M2 9C7 1 15 1 21 7l5-4v12l-5-4C14 17 7 17 2 9Z"/><circle cx="8" cy="8" r="1.2" fill="#fff9e9"/></svg>';
+let fishingTimer,fishPhase="idle",catchCount=0;
+function resetFishing(){
+  clearTimeout(fishingTimer);fishPhase="idle";
+}
+function drawFishing(){
+  const action=world.querySelector(".fishing-action"),float=world.querySelector(".fishing-float");
+  if(!action||!float)return;
+  const labels={idle:"Tap to cast",waiting:"Wait for a bite…",bite:"Reel in!",caught:"Caught "+catchCount+" · Cast again",early:"Too soon · Cast again",missed:"It got away · Cast again"};
+  const label=labels[fishPhase];
+  action.innerHTML=fishPhase==="idle"?fishIcon:"";if(fishPhase!=="idle")action.textContent=label;
+  action.title=label;action.setAttribute("aria-label","Ice fishing: "+label);
+  float.setAttribute("aria-label",label);float.dataset.phase=fishPhase;
+  float.innerHTML=fishPhase==="caught"?fishIcon:"<i></i>";
+  caption.textContent="Ice fishing · "+label;
+}
+function fishTap(){
+  clearTimeout(fishingTimer);
+  if(fishPhase==="bite"){fishPhase="caught";catchCount++;}
+  else if(fishPhase==="waiting"){fishPhase="early";}
+  else{
+    fishPhase="waiting";
+    fishingTimer=setTimeout(()=>{
+      fishPhase="bite";drawFishing();
+      fishingTimer=setTimeout(()=>{fishPhase="missed";drawFishing();},2400);
+    },1600+Math.random()*2400);
+  }
+  drawFishing();
+}
 function showVillageEffects(){
   if(world.dataset.kind!=="village")return;
   effects.forEach(({kind,position,normal,name},i)=>{
@@ -330,6 +368,15 @@ function showVillageEffects(){
       button.dataset.position=position.map(v=>v+"m").join(" ");
       button.innerHTML='<span hidden><b></b><progress max="100" aria-label="Gift generation progress"></progress></span>';
       button.onclick=e=>{e.stopPropagation();activateBox(slot);};world.append(button);paintBox(slot);return;
+    }
+    if(kind==="fishing-elf"||kind==="fishing-float"){
+      const action=kind==="fishing-elf",button=document.createElement("button");
+      button.type="button";button.slot="hotspot-"+kind;
+      button.className=action?"fishing-action":"fishing-float";
+      button.dataset.position=position.map(v=>v+"m").join(" ");
+      button.title="Tap to cast";button.setAttribute("aria-label",action?"Ice fishing: Tap to cast":"Cast at the fishing hole");
+      button.innerHTML=action?fishIcon:"<i></i>";button.onclick=e=>{e.stopPropagation();fishTap();};
+      world.append(button);return;
     }
     if(kind==="mail"){
       const button=document.createElement("button");
@@ -375,9 +422,10 @@ function showVillageEffects(){
     world.append(anchor);
   });
 }
-world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
+world.addEventListener("load",()=>{resetFishing();clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
 let request = 0;
 async function selectWorld(choice) {
+  resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
   world.alt = choice.textContent;
