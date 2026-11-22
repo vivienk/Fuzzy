@@ -2,41 +2,37 @@
 window.FuzzyDecorations=(()=>{
  const slots=[[-.68,.135,.55],[-.46,.135,.58],[-.08,.135,.40]];
  const maxHeight=.24; // Mailbox rises .2775 m above its .10 m base.
- const cache=new Map(),styleTextureCache=new Map();
- function styleTextureUri(style){
-  if(styleTextureCache.has(style))return styleTextureCache.get(style);
-  const size=256,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
-  let seed=271828;
-  const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
-  if(style==='needle-felt'){
-   for(let n=0;n<900;n++){const x=random()*size,y=random()*size,len=2+random()*10,a=(random()-.5)*.9;ctx.strokeStyle=random()>.5?'rgba(255,247,226,.9)':'rgba(66,43,31,.65)';ctx.lineWidth=.55+random()*.65;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.stroke()}
-   for(let n=0;n<480;n++){const x=random()*size,y=random()*size,r=.35+random()*.8;ctx.fillStyle='rgba(72,49,36,.4)';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
-  }else if(style==='origami-paper'){
-   const cell=64;
-   for(let y=0;y<size;y+=cell)for(let x=0;x<size;x+=cell){
-    ctx.fillStyle=(x/cell+y/cell)%2?'rgba(211,187,151,.24)':'rgba(255,255,255,.32)';
-    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y);ctx.lineTo(x+cell,y+cell);ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(116,87,58,.16)';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.lineTo(x,y+cell);ctx.closePath();ctx.fill();
-    ctx.strokeStyle='rgba(83,60,41,.48)';ctx.lineWidth=1.25;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.moveTo(x+cell,y);ctx.lineTo(x,y+cell);ctx.stroke();
-   }
-  }else if(style==='monument-valley'){
-   const cell=64,offsetX=seed%32,offsetY=(seed>>>7)%32,phase=(seed>>>14)%2;
-   for(let y=-cell+offsetY;y<size+cell;y+=cell)for(let x=-cell+offsetX;x<size+cell;x+=cell){
-    const flip=(Math.floor((x-offsetX)/cell)+Math.floor((y-offsetY)/cell)+phase)%2;
-    ctx.fillStyle=random()>.5?'rgba(255,255,255,.18)':'rgba(145,111,177,.13)';
-    ctx.beginPath();if(flip){ctx.moveTo(x,y);ctx.lineTo(x+cell,y);ctx.lineTo(x+cell,y+cell)}else{ctx.moveTo(x,y);ctx.lineTo(x,y+cell);ctx.lineTo(x+cell,y+cell)}ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(250,211,197,.13)';ctx.beginPath();if(flip){ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.lineTo(x,y+cell)}else{ctx.moveTo(x,y);ctx.lineTo(x+cell,y);ctx.lineTo(x+cell,y+cell)}ctx.closePath();ctx.fill();
-    ctx.strokeStyle='rgba(105,83,142,.19)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.stroke();
-   }
-  }else{
-   for(let x=-size;x<size*2;x+=7){ctx.strokeStyle=(x%14?'rgba(255,255,255,.8)':'rgba(122,83,78,.58)');ctx.lineWidth=1.15;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+size,size);ctx.stroke()}
-   for(let x=-size;x<size*2;x+=7){ctx.strokeStyle=(x%14?'rgba(255,255,255,.65)':'rgba(122,83,78,.48)');ctx.lineWidth=1.15;ctx.beginPath();ctx.moveTo(x,size);ctx.lineTo(x+size,0);ctx.stroke()}
-   for(let y=6;y<size;y+=14)for(let x=6;x<size;x+=14){ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(x,y,1.1,0,Math.PI*2);ctx.fill()}
+ const cache=new Map();
+ function styleTextureUri(st const WORLD_MATERIAL_PALETTES={
+  forest:{
+   'Pearl snow':[.73,.75,.81],'Lavender slate':[.31,.27,.43],'Cedar':[.41,.32,.38],
+   'Deep pine':[.22,.29,.30],'Cranberry':[.45,.34,.40],'Champagne gold':[.62,.51,.37],
+   'Bronze':[.20,.17,.23],'Amber glow':[.80,.57,.34],'Sage':[.31,.39,.37],
+   'Glacier blue':[.37,.44,.57],'Rose sandstone':[.44,.35,.43],'Midnight roof':[.18,.15,.30],
+   'Luminous frost crystals':[.48,.40,.62],'Spring stone':[.31,.38,.40],
+   'forest architectural trim':[.24,.20,.34],'forest enchanted accent':[.80,.57,.34],
+   'Moonlit snow blanket':[.68,.71,.78]
+  },
+  aurora:{
+   'Pearl snow':[.82,.82,.85],'Lavender slate':[.48,.45,.53],'Cedar':[.47,.37,.32],
+   'Deep pine':[.31,.37,.33],'Cranberry':[.51,.38,.38],'Champagne gold':[.73,.62,.47],
+   'Bronze':[.31,.27,.28],'Amber glow':[.88,.65,.42],'Sage':[.48,.53,.46],
+   'Glacier blue':[.57,.65,.75],'Rose sandstone':[.66,.52,.51],'Midnight roof':[.35,.34,.40],
+   'Luminous frost crystals':[.74,.74,.80],'Spring stone':[.49,.53,.56],
+   'aurora architectural trim':[.49,.40,.37],'aurora enchanted accent':[.82,.66,.47],
+   'Moonlit snow blanket':[.80,.80,.84]
+  },
+  alpine:{
+   'Pearl snow':[.87,.86,.83],'Lavender slate':[.64,.59,.67],'Cedar':[.62,.47,.41],
+   'Deep pine':[.42,.50,.46],'Cranberry':[.61,.45,.47],'Champagne gold':[.80,.68,.49],
+   'Bronze':[.39,.35,.36],'Amber glow':[.90,.72,.49],'Sage':[.56,.63,.55],
+   'Glacier blue':[.64,.71,.78],'Rose sandstone':[.71,.57,.56],'Midnight roof':[.44,.41,.48],
+   'Luminous frost crystals':[.79,.77,.82],'Spring stone':[.58,.63,.63],
+   'alpine architectural trim':[.62,.48,.43],'alpine enchanted accent':[.86,.71,.50],
+   'Moonlit snow blanket':[.85,.84,.81]
   }
-  const uri=canvas.toDataURL('image/png');styleTextureCache.set(style,uri);return uri;
- }
- async function base(url){if(!cache.has(url))cache.set(url,fetch(url+'?v=gentle-walk-1').then(r=>{if(!r.ok)throw Error('World unavailable');return r.arrayBuffer()}));return cache.get(url)}
+ };
+(!cache.has(url))cache.set(url,fetch(url+'?v=gentle-walk-1').then(r=>{if(!r.ok)throw Error('World unavailable');return r.arrayBuffer()}));return cache.get(url)}
  function triangles(kind,world){
   const pieces=[];const add=(verts,color)=>pieces.push({verts,color});
   function box(x,y,z,w,h,d,color){const p=[[x-w/2,y,z-d/2],[x+w/2,y,z-d/2],[x+w/2,y+h,z-d/2],[x-w/2,y+h,z-d/2],[x-w/2,y,z+d/2],[x+w/2,y,z+d/2],[x+w/2,y+h,z+d/2],[x-w/2,y+h,z+d/2]];add([...[0,3,2,0,2,1,4,5,6,4,6,7,0,4,7,0,7,3,1,2,6,1,6,5,3,7,6,3,6,2,0,1,5,0,5,4].map(i=>p[i])],color)}
@@ -75,9 +71,12 @@ window.FuzzyDecorations=(()=>{
  }
  async function build(lit,items,world,wrapped=false,sceneStyle='needle-felt'){
   const source=await base(wrapped?'assets/gift.glb':['forest','aurora','alpine'].includes(world)?`assets/worlds/${world}${lit?'-lit':''}.glb`:(lit?'assets/world.glb':'assets/world-unlit.glb')),view=new DataView(source),jl=view.getUint32(12,true),g=JSON.parse(new TextDecoder().decode(new Uint8Array(source,20,jl))),binStart=20+jl+8,bl=view.getUint32(20+jl,true);
-  if(wrapped){
-   const colors={forest:[[.48,.23,.65,1],[.78,.65,1,1]],aurora:[[.48,.07,.07,1],[.72,.48,.19,1]],alpine:[[.72,.07,.12,1],[1,.65,.2,1]]}[world||'alpine'];
-   for(const material of g.materials){if(material.name==='Cranberry')material.pbrMetallicRoughness.baseColorFactor=colors[0];if(material.name==='Champagne gold')material.pbrMetallicRoughness.baseColorFactor=colors[1]}
+  const palette=WORLD_MATERIAL_PALETTES[world||'alpine']||{};
+  for(const material of g.materials||[]){
+   const color=palette[material.name];if(!color)continue;
+   const pbr=material.pbrMetallicRoughness||(material.pbrMetallicRoughness={});
+   const alpha=pbr.baseColorFactor?.[3]??1;
+   pbr.baseColorFactor=[...color,alpha];
   }
   const chunks=[new Uint8Array(source,binStart,bl)];let length=bl;
   function accessor(values,type){const data=new Float32Array(values);const idx=g.bufferViews.length;g.bufferViews.push({buffer:0,byteOffset:length,byteLength:data.byteLength,target:34962});chunks.push(new Uint8Array(data.buffer));length+=data.byteLength;const dim=3,min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];for(let i=0;i<values.length;i++){min[i%dim]=Math.min(min[i%dim],values[i]);max[i%dim]=Math.max(max[i%dim],values[i])}g.accessors.push({bufferView:idx,componentType:5126,count:values.length/3,type,min,max});return g.accessors.length-1}
