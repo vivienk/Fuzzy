@@ -2,7 +2,7 @@ const ALLOWED_ORIGIN = process.env.TRIPO_APP_ORIGIN;
 const API_BASE = "https://api.tripo3d.ai/v2/openapi";
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-const OPERATION_COST = { island: 50, character: 40, rig: 25, animate: 10 };
+const OPERATION_COST = { island: 40, character: 40, rig: 25, animate: 10 };
 const runsByIp = new Map();
 
 async function readImage(req) {
@@ -73,10 +73,9 @@ function clientIp(req) { return String(req.headers["x-forwarded-for"] || "unknow
 async function createTask(operation, body) {
   let payload;
   if (operation === "island") {
-    if (!/^[0-9a-f-]{20,40}$/i.test(String(body.imageToken || ""))) {
-      const e = new Error("Upload the North Pole reference image first."); e.status = 400; throw e;
-    }
-    payload = { type:"image_to_model", file:{type:"image",file_token:body.imageToken}, model_version:"P1-20260311", face_limit:12000, texture:true, pbr:true };
+    const prompt=typeof body.prompt==="string"?body.prompt.trim():"";
+    if (prompt.length<20 || prompt.length>1024) { const e=new Error("Enter an island prompt between 20 and 1024 characters."); e.status=400; throw e; }
+    payload = { type:"text_to_model", prompt, model_version:"P1-20260311", face_limit:12000, texture:true, pbr:true };
   } else if (operation === "character") {
     payload = { type:"text_to_model", prompt:"A single friendly Christmas elf character, full body, standing upright in a relaxed neutral pose, toy-like stylized low-poly 3D, warm muted red and forest-green felt clothing with cream trim, small pointed hat, simple face, clean separated limbs suitable for rigging, centered alone, no props, no scenery, no text. Make a complete biped character with both arms and legs clearly visible.", model_version:"P1-20260311", face_limit:8000, texture:true, pbr:true };
   } else if (operation === "rig") {
@@ -111,13 +110,13 @@ module.exports = async function handler(req,res) {
       let run=runsByIp.get(ip);
       if (!run || now-run.startedAt>24*60*60*1000) { run={startedAt:now,steps:new Map(),reserved:0}; runsByIp.set(ip,run); }
       if (run.steps.has(operation)) return send(res,409,{error:"This step has already been submitted for this preview session.",taskId:run.steps.get(operation)});
-      if (run.reserved+cost>125) return send(res,429,{error:"This run has reached the 125-credit cap."});
+      if (run.reserved+cost>115) return send(res,429,{error:"This run has reached the 115-credit cap."});
       // Reserve the known Tripo credit amount before making a billable call.
       run.reserved+=cost; run.steps.set(operation,"pending");
       try {
         const task=await createTask(operation,body);
         run.steps.set(operation,task.task_id);
-        return send(res,202,{taskId:task.task_id,status:"queued",reservedCredits:run.reserved,creditCap:125});
+        return send(res,202,{taskId:task.task_id,status:"queued",reservedCredits:run.reserved,creditCap:115});
       } catch(e) { run.reserved-=cost; run.steps.delete(operation); throw e; }
     }
     if (req.method==="GET") {
