@@ -300,6 +300,39 @@ export async function villageGeometry() {
     const ease=(v)=>{const u=Math.max(0,Math.min(1,v));return u*u*(3-2*u);};
     const fold=(t,delay)=>ease((cycle(t)-delay)/1.35)*(1-ease((cycle(t)-6.8)/1.2));
     place("Gift maker "+(i+1),"Seated gift maker "+i,()=>elf(paper,true),x,.14,z,.77);
+    if(i===0){
+      // Pause on each end of the bench, then carry the present back.
+      function parcelPosition(t){
+        const phase=t%8,reverse=phase>=4;
+        const progress=ease(((phase%4)-.65)/2.7);
+        const across=reverse?1-progress:progress;
+        return [x-.23+.54*across,.622+.22*Math.sin(Math.PI*progress),parcelZ];
+      }
+      place("Present passed across the bench","Cranberry present with gold bow",()=>{
+        box("red",0,0,0,.122,.086,.10);
+        box("gold",0,0,0,.023,.089,.103);
+        for(const side of [-1,1])ball("gold",side*.043,.109,0,.051,.025,.029);
+      },...parcelPosition(0));
+      track(model.nodes.length-1,"translation",parcelPosition);
+      for(const side of [-1,1]){
+        const shoulder=[x+side*.13,.50,z+.035];
+        place("Gift mover sleeve","Gift mover red sleeve",()=>{
+          rod(paper,[0,0,0],[0,0,.215],.06);
+          ball("skin",0,0,.24,.057,.055,.046);
+        },...shoulder);
+        const arm=model.nodes.length-1;
+        function grip(t){
+          const [px,py,pz]=parcelPosition(t);
+          return [px+side*.128-shoulder[0],py-shoulder[1],pz-.035-shoulder[2]];
+        }
+        track(arm,"rotation",t=>{
+          const [dx,dy,dz]=grip(t),w=Math.hypot(dx,dy,dz)+dz,length=Math.hypot(dx,dy,w);
+          return [-dy/length,dx/length,0,w/length];
+        });
+        track(arm,"scale",t=>[1,1,Math.hypot(...grip(t))/.24]);
+      }
+      continue;
+    }
     place("Parcel to wrap "+(i+1),"Paper parcel "+paper,()=>{
       box(paper,0,.075,0,.115,.075,.109);
       box("cookie",0,.153,0,.109,.005,.103);
