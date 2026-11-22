@@ -193,7 +193,7 @@ export async function villageGeometry() {
   },x,.002,z,.88,i*.6);
   // Open-front toy shop on the near side gives the workbench a clear sightline.
   const shopX=-2.20,shopZ=2.96;
-  prop("Santa's workshop","workshop",shopX,shopZ-.40,2.05);
+  prop("Santa's workshop","workshop",shopX,shopZ-.40,2.5625);
   prop("North Pole entrance sign","sign",1.46,3.65,1.43,.28);
   [[-3.52,2.76],[-.81,2.72],[1.50,-1.35],[3.16,.18]].forEach(([x,z],i)=>prop("Peppermint cane "+(i+1),"cane",x,z,.90,.16));
   place("Gift wrapping bench","Ribbon cutting table",()=>{
