@@ -3,6 +3,7 @@ package com.fuzzy.christmas.content
 import com.fuzzy.christmas.model.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -66,8 +67,8 @@ fun HomeVolume() {
     var clock by remember { mutableFloatStateOf(0f) }
     val opened = greeting.opened
     val lit = greeting.lightsOn
-    val reveal by animateFloatAsState(if (opened) 1f else 0f, tween(if (paused) 0 else 900), label = "unwrap")
-    val angle by animateFloatAsState(if (greeting.turned) 155f else 0f, tween(if (paused) 0 else 1000), label = "turn")
+    val reveal by animateFloatAsState(if (opened) 1f else 0f, tween(if (paused) 0 else 1250, easing = FastOutSlowInEasing), label = "unwrap")
+    val angle by animateFloatAsState(if (greeting.turned) 155f else 0f, tween(if (paused) 0 else 1600, easing = FastOutSlowInEasing), label = "turn")
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var active by remember { mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) }
     DisposableEffect(lifecycle) {
@@ -144,8 +145,9 @@ fun HomeVolume() {
                 attachments.entity("letter")?.let { it.enabled = false; it.transform()?.setPosition(Vector3(-.40f, .22f, 1.0f)); content.addEntity(it) }
             },
             update = { _, attachments ->
+                val drift = if (opened && !paused) sin(clock * .55f) else 0f
                 world?.enabled = reveal > .15f
-                world?.transform()?.apply { setScaleVector(Vector3(maxOf(.01f, reveal * .72f))); setEulerAngles(EulerAngles(0f, angle, 0f)) }
+                world?.transform()?.apply { setPosition(Vector3(-.60f, -.10f + drift * .012f, drift * .008f)); setScaleVector(Vector3(maxOf(.01f, reveal * .72f))); setEulerAngles(EulerAngles(0f, angle + drift * 1.8f, 0f)) }
                 gift?.enabled = reveal < .95f
                 gift?.transform()?.apply { setScaleVector(Vector3(maxOf(.01f, 1f - reveal))); setEulerAngles(EulerAngles(0f, reveal * 120f, 0f)) }
                 treeLights?.enabled = lit
