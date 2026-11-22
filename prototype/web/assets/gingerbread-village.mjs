@@ -1,6 +1,12 @@
 // Each placed object is a named glTF node. Objects of the same design share a mesh.
 import {propsV1} from "./north-pole-props.mjs";
 export const villageEffects=[];
+const walks=[[-.85,1.96,.64,.20],[2.10,.92,.30,.52],[-5.27,1.24,.37,.66],[.52,-1.45,.49,.20]];
+export function walkingElfPosition(i,t){
+  const [cx,cz,rx,rz]=walks[i],phase=t*2*Math.PI/8+i,step=t*2*Math.PI+i;
+  return [cx+rx*Math.cos(phase),.025+.021*Math.abs(Math.cos(step)),cz+rz*Math.sin(phase)];
+}
+export const walkingElfCount=walks.length;
 export async function villageGeometry() {
   const original=await propsV1();
   villageEffects.length=0;
@@ -214,13 +220,12 @@ export async function villageGeometry() {
   const pitch=a=>[Math.sin(a/2),0,0,Math.cos(a/2)];
   const roll=a=>[0,0,Math.sin(a/2),Math.cos(a/2)];
   function track(id,path,sample){motion(id,path,frames,frames.map(sample));}
-  const walks=[[-.85,1.96,.64,.20],[2.10,.92,.30,.52],[-5.27,1.24,.37,.66],[.52,-1.45,.49,.20]];
   walks.forEach(([cx,cz,rx,rz],i)=>{
     const coat=i%2?"red":"pine",phase=t=>t*tau/8+i,step=t=>t*tau+i;
     place("Walking elf "+(i+1),"Walker "+coat,()=>elf(coat,true,true),cx,0,cz,.79);
     const body=model.nodes.length-1;
     model.nodes[body].children=[];
-    track(body,"translation",t=>[cx+rx*Math.cos(phase(t)),.025+.021*Math.abs(Math.cos(step(t))),cz+rz*Math.sin(phase(t))]);
+    track(body,"translation",t=>walkingElfPosition(i,t));
     let previous;
     track(body,"rotation",t=>{
       const a=Math.atan2(-rx*Math.sin(phase(t)),rz*Math.cos(phase(t)));
