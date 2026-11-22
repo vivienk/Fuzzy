@@ -53,10 +53,11 @@ button:not(.secondary):not(.world-choice):not(.mailbox-alert){background:var(--t
 .experience[data-scene-style="origami-paper"]::after{opacity:.42;background-image:repeating-conic-gradient(from 0deg at 50% 50%,#fff4 0deg 43deg,transparent 44deg 88deg,#3d2a202f 89deg 91deg,transparent 92deg 178deg);background-size:132px 132px}
 .experience[data-scene-style="plushy"]::after{opacity:.47;background-image:repeating-linear-gradient(45deg,#fff4 0 1px,transparent 1px 4px),repeating-linear-gradient(135deg,#61433a32 0 1px,transparent 1px 4px),radial-gradient(ellipse at 35% 30%,#fff7 0,transparent 54%);background-size:9px 9px,9px 9px,100% 100%}
 body[data-style="needle-felt"] #scene{filter:saturate(.84) brightness(1.06) contrast(.96)}
-body[data-style="origami-paper"] #scene{filter:saturate(.94) brightness(1.02) contrast(1.1)}
+body[data-style="origami-paper"] #scene{filter:saturate(.76) brightness(1.04) contrast(1.04)}
 body[data-style="plushy"] #scene{filter:saturate(.94) brightness(1.07) contrast(.93)}
 body[data-style="monument-valley"] #scene{filter:saturate(.78) brightness(1.09) contrast(.96)}
-body[data-style="enchanted-night"] #scene{filter:saturate(1.08) contrast(1.08)}
+body[data-style="enchanted-night"] #scene{filter:saturate(.78) brightness(.9) contrast(1.08)}
+body[data-style="north-pole-valley"] #scene{filter:saturate(.76) brightness(1.02) contrast(.97)}
 body[data-style="monument-valley"] #scene{background:linear-gradient(145deg,#aa98c6 0%,#d8b7d6 52%,#f2c9c4 100%)!important}
 @keyframes monument-reveal{0%{opacity:.25;transform:translateY(8px) scale(.98);filter:brightness(1.15)}100%{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}}
 .experience[data-scene-style="monument-valley"] #scene.monument-reveal{animation:monument-reveal 1.6s cubic-bezier(.22,.61,.36,1) both}
@@ -71,39 +72,43 @@ body[data-style="monument-valley"] #scene{background:linear-gradient(145deg,#aa9
 </div><div><button id="unwrap" disabled>Unwrap gift</button><button id="lights" hidden>Lights off</button><button id="rotate" hidden class="secondary">Turn island</button><button id="keep" hidden>Keep this world</button><button id="reopen" hidden class="secondary">Open keepsake</button><button id="motion" hidden class="secondary" aria-pressed="false">Pause effects</button><button id="reset" hidden class="secondary">Wrap again</button></div><div class="sound-controls"><button id="winter-sound" class="secondary" aria-pressed="false">❄ Play winter sounds</button><label for="sound-volume">Sound volume</label><input id="sound-volume" type="range" min="0" max="60" value="22" aria-label="Sound volume"></div><p id="status" role="status">Loading your gift…</p><p class="note">Browser preview of the actual 3D assets. Prepared world with editable notes and small procedural decorations; local browser saves only. This is not a recording of the PICO APK.</p></div></section><section class="album-room" aria-labelledby="album-heading"><div><div class="eyebrow">A soundtrack for your winter world</div><h2 id="album-heading">Christmas listening room</h2><p>Choose a favorite album, then pick a song or let its track list play.</p><label for="christmas-album">Choose a Christmas album</label><select id="christmas-album"><option value="charlie">A Charlie Brown Christmas · Vince Guaraldi Trio</option><option value="buble">Christmas · Michael Bublé</option><option value="mariah">Merry Christmas · Mariah Carey</option></select><button id="load-album">Load album player</button><button id="stop-album" class="secondary" hidden>Stop album</button><p id="album-status" class="note" role="status">Music starts only when you press Play.</p><a id="open-album" target="_blank" rel="noopener">Open in Spotify</a><p class="note">Spotify controls playback availability; you may hear previews or need to sign in. Winter sounds can be switched on or off separately.</p></div><div id="album-player" hidden></div></section><section class="details"><div><h3>A bigger place to explore</h3><p>Explore crystal gardens, Santa’s gift-making workshop, or a snowy alpine ridge. Each world keeps your note, tiny decorations, and warm Christmas lights.</p></div><div><h3>A quiet moment to keep</h3><p>Open, read, play, and save. Messages become persistent parts of a world you build together.</p></div><div><h3>Native PICO candidate</h3><p>The Android build includes the original Christmas village with native spatial UI. These three new world styles are available on the site; the APK has not been updated with them.</p><a href="https://github.com/vivienk/Fuzzy/releases/tag/v0.2.2">Get the latest APK →</a></div></section></main><dialog id="letter" aria-labelledby="letter-heading"><form method="dialog"><button class="letter-close secondary" aria-label="Close note">×</button></form><div class="eyebrow">A little letter, just for you</div><h2 id="letter-heading">From my world to yours</h2><p id="letter-text" class="handwritten"></p><span class="letter-heart" aria-hidden="true">♡</span></dialog><footer>Fuzzy · Original low-poly village geometry. Tiny keepsakes for a world of your own. Live AI generation and recipient delivery are future work. <a href="https://github.com/vivienk/Fuzzy">Source & build notes</a></footer><script>
 const $=id=>document.getElementById(id),scene=$('scene');let opened=false,lit=true,turned=false,kept=false;try{kept=localStorage.getItem('fuzzy-village-kept')==='true'}catch(e){}$('reopen').hidden=!kept;
 
-const SCENE_STYLES={
- 'needle-felt':{roughness:1,metallic:0,tint:[1.04,1.01,.97],label:'Needle Felt'},
- 'origami-paper':{roughness:.86,metallic:0,tint:[1.04,1.02,.96],label:'Origami Paper',palette:{
-  'Pearl snow':[.96,.93,.87],'Lavender slate':[.68,.61,.79],'Cedar':[.76,.48,.43],
-  'Deep pine':[.48,.66,.59],'Cranberry':[.77,.47,.52],'Champagne gold':[.93,.77,.56],
-  'Bronze':[.39,.32,.42],'Amber glow':[1,.81,.60],'Sage':[.66,.77,.67],
-  'Glacier blue':[.68,.78,.86],'Rose sandstone':[.82,.62,.62],'Midnight roof':[.50,.43,.63],
-  'Luminous frost crystals':[.80,.75,.91],'Spring stone':[.68,.61,.79],
-  'forest architectural trim':[.74,.58,.61],'forest enchanted accent':[.94,.77,.55],
-  'aurora architectural trim':[.63,.74,.68],'aurora enchanted accent':[.94,.77,.55],
-  'alpine architectural trim':[.74,.58,.61],'alpine enchanted accent':[.94,.77,.55]
- }},
- 'enchanted-night':{roughness:.9,metallic:0,tint:[1,1,1],label:'Enchanted Night',palette:{
-  'Pearl snow':[.39,.40,.69],'Lavender slate':[.24,.17,.60],'Cedar':[.33,.18,.46],
-  'Deep pine':[.08,.15,.29],'Cranberry':[.48,.20,.59],'Champagne gold':[.88,.48,.16],
-  'Bronze':[.09,.07,.19],'Amber glow':[1,.59,.19],'Sage':[.13,.25,.39],
-  'Glacier blue':[.23,.29,.68],'Rose sandstone':[.39,.21,.43],'Midnight roof':[.12,.09,.34],
-  'Luminous frost crystals':[.43,.27,.86],'Spring stone':[.24,.17,.60],
-  'forest architectural trim':[.15,.10,.38],'forest enchanted accent':[1,.58,.17],
-  'aurora architectural trim':[.63,.74,.68],'aurora enchanted accent':[.94,.77,.55],
-  'alpine architectural trim':[.74,.58,.61],'alpine enchanted accent':[.94,.77,.55]
- }},
- 'plushy':{roughness:1,metallic:0,tint:[1.05,.99,1.02],label:'Plushy'},
- 'monument-valley':{roughness:.96,metallic:0,tint:[1,1,1],label:'Monument Valley',palette:{
-  'Pearl snow':[.98,.94,.88],'Lavender slate':[.50,.42,.69],'Cedar':[.78,.39,.46],
-  'Deep pine':[.23,.44,.45],'Cranberry':[.88,.48,.49],'Champagne gold':[.99,.78,.48],
-  'Bronze':[.22,.19,.35],'Amber glow':[1,.82,.54],'Sage':[.55,.76,.69],
-  'Glacier blue':[.61,.75,.88],'Rose sandstone':[.84,.58,.65],'Midnight roof':[.39,.34,.57],
-  'Luminous frost crystals':[.71,.68,.91],'Spring stone':[.50,.42,.69],
-  'forest architectural trim':[.78,.55,.72],'forest enchanted accent':[.99,.79,.49],
-  'aurora architectural trim':[.55,.76,.69],'aurora enchanted accent':[.99,.82,.54],
-  'alpine architectural trim':[.78,.55,.72],'alpine enchanted accent':[.99,.79,.49]
- }}
+const WORLD_PRESENTATION={
+ forest:{
+  style:'enchanted-night',label:'Enchanted Night',roughness:.9,metallic:0,tint:[1,1,1],exposure:.56,
+  background:'linear-gradient(145deg,#080a22 0%,#171832 48%,#352441 100%)',
+  palette:{
+   'Pearl snow':[.36,.38,.49],'Lavender slate':[.28,.23,.43],'Cedar':[.36,.27,.35],
+   'Deep pine':[.13,.20,.22],'Cranberry':[.42,.31,.39],'Champagne gold':[.66,.53,.36],
+   'Bronze':[.17,.14,.22],'Amber glow':[.88,.60,.31],'Sage':[.22,.30,.28],
+   'Glacier blue':[.33,.40,.55],'Rose sandstone':[.43,.32,.42],'Midnight roof':[.17,.14,.30],
+   'Luminous frost crystals':[.47,.38,.63],'Spring stone':[.28,.23,.43],
+   'forest architectural trim':[.23,.18,.33],'forest enchanted accent':[.88,.60,.31]
+  }
+ },
+ aurora:{
+  style:'north-pole-valley',label:'North Pole Valley',roughness:.82,metallic:0,tint:[1,1,1],exposure:.8,
+  background:'url("assets/worlds/aurora-sky.svg")',
+  palette:{
+   'Pearl snow':[.84,.83,.85],'Lavender slate':[.47,.43,.54],'Cedar':[.46,.35,.29],
+   'Deep pine':[.29,.36,.32],'Cranberry':[.53,.37,.38],'Champagne gold':[.75,.63,.46],
+   'Bronze':[.31,.27,.28],'Amber glow':[.93,.66,.40],'Sage':[.47,.52,.45],
+   'Glacier blue':[.55,.64,.75],'Rose sandstone':[.67,.51,.50],'Midnight roof':[.34,.32,.40],
+   'Luminous frost crystals':[.74,.73,.79],'Spring stone':[.48,.52,.55],
+   'aurora architectural trim':[.49,.39,.35],'aurora enchanted accent':[.83,.66,.46]
+  }
+ },
+ alpine:{
+  style:'origami-paper',label:'Origami Alpine',roughness:.88,metallic:0,tint:[1,1,1],exposure:.76,
+  background:'url("assets/worlds/alpine-sky.svg")',
+  palette:{
+   'Pearl snow':[.88,.87,.84],'Lavender slate':[.65,.60,.69],'Cedar':[.63,.46,.40],
+   'Deep pine':[.43,.51,.47],'Cranberry':[.63,.45,.47],'Champagne gold':[.81,.68,.48],
+   'Bronze':[.39,.34,.36],'Amber glow':[.94,.73,.48],'Sage':[.57,.64,.55],
+   'Glacier blue':[.63,.70,.78],'Rose sandstone':[.72,.56,.55],'Midnight roof':[.44,.40,.48],
+   'Luminous frost crystals':[.79,.77,.82],'Spring stone':[.58,.62,.62],
+   'alpine architectural trim':[.63,.47,.42],'alpine enchanted accent':[.89,.72,.50]
+  }
+ }
 };
 const originalSceneMaterials=new WeakMap();
 let selectedSceneStyle='origami-paper';
@@ -139,7 +144,8 @@ function drawStylePattern(ctx,style,size,seed){
  ctx.restore();
 }
 function applySceneStyle(){
- const preset=SCENE_STYLES[selectedSceneStyle];
+ const preset=WORLD_PRESENTATION[selectedWorld];
+ selectedSceneStyle=preset.style;
  document.body.dataset.style=selectedSceneStyle;
  document.querySelector('.experience').dataset.sceneStyle=selectedSceneStyle;
  for(const material of scene.model?.materials||[]){
@@ -192,11 +198,12 @@ function syncWorldChoice(){
  document.body.dataset.world=selectedWorld;
  const labels={forest:['Crystal-ribbon gift','Silver frost reindeer','Crystal-crowned snowman'],aurora:['Workshop gift','North Pole reindeer','Elf-hat snowman'],alpine:['Red-and-gold gift','Alpine reindeer','Woolly-hat snowman']}[selectedWorld];
  [...$('decoration-type').options].forEach((option,i)=>option.textContent=labels[i]||({lantern:"Glowing lantern",igloo:"Mini igloo","candy-cane":"Candy cane"}[option.value]));
- selectedSceneStyle=selectedWorld==='forest'?'enchanted-night':'origami-paper';
- scene.exposure=selectedWorld==='forest'?.55:.72;
- scene.style.backgroundImage=selectedWorld==='forest'
-  ?'linear-gradient(145deg,#080a27 0%,#17143e 55%,#29204b 100%)'
-  :`url("assets/worlds/${selectedWorld}-sky.svg")`;
+ const presentation=WORLD_PRESENTATION[selectedWorld];
+ selectedSceneStyle=presentation.style;
+ document.body.dataset.style=presentation.style;
+ document.querySelector('.experience').dataset.sceneStyle=presentation.style;
+ scene.exposure=presentation.exposure;
+ scene.style.backgroundImage=presentation.background;
  scene.alt='An interactive low-poly '+WORLD_NAMES[selectedWorld]+' with a Christmas mailbox';
  $('world-name').textContent=WORLD_NAMES[selectedWorld];
  document.querySelectorAll('.world-choice[data-world]').forEach(button=>{const active=button.dataset.world===selectedWorld;button.setAttribute('aria-pressed',String(active));button.querySelector('.choice-state').textContent=active?'Selected'+(selectedWorld==='forest'?' · Default world':''):'Choose this world'});
