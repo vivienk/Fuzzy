@@ -59,10 +59,19 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 <div class="downloads"><a id="island-download" download="fuzzy-christmas-island.glb">Download island GLB</a></div></div>
 <div class="controls"><h2 id="island-title">1. Generate the island</h2>
 <label for="island-prompt">Island description</label>
-<textarea id="island-prompt">A magical Christmas island in a whimsical wizarding-school fantasy: one floating low-poly snowy island, a grand gothic stone academy with tall towers and glowing golden windows, a small cluster of cozy timber cottages, a decorated Christmas tree in the village square, evergreen trees, a tiny owl post hut, floating candles, a few festive elves, a friendly polar bear and a reindeer, distant snowy mountains, icy shoreline, and flowing teal aurora in a deep violet winter sky. Storybook low-poly 3D diorama, crisp triangular facets, warm candlelight, balanced readable layout, full island visible, no text, no logos, no recognizable copyrighted characters.</textarea>
+<textarea id="island-prompt">A floating snowy Christmas island with a gothic academy, tall towers, timber cottages, evergreen trees and a decorated tree in the village square. Add an owl post hut, floating candles, small elves, a polar bear, a reindeer and an icy shoreline.</textarea>
 <button id="island-generate" disabled>Generate island · 30 credits</button>
 <div class="status" id="island-status" role="status" aria-live="polite">Ready to create the island.</div><div class="progress"><i id="island-progress"></i></div>
 </div></section>
+<section class="card" aria-labelledby="object-title">
+<div><model-viewer id="object-model" alt="Generated winter village object" camera-controls disable-pan interaction-prompt="none" shadow-intensity=".55" environment-image="neutral" exposure=".95"></model-viewer>
+<div class="downloads"><a id="object-download" download="fuzzy-object.glb">Download object GLB</a></div></div>
+<div class="controls"><h2 id="object-title">Generate an individual object</h2>
+<label for="object-prompt">Object description</label>
+<textarea id="object-prompt" maxlength="500" placeholder="A Christmas train carriage with evergreen garlands and ribbon bows"></textarea>
+<p class="note">Describe the object and its details. Fuzzy adds the same winter miniature style to every island, character, and prop.</p>
+<button id="object-generate" disabled>Generate object · 30 credits</button>
+<div class="status" id="object-status" role="status" aria-live="polite"></div><div class="progress"><i id="object-progress"></i></div></div></section>
 <section class="card" aria-labelledby="elf-title">
 <div><model-viewer id="elf-model" alt="Separately generated animated festive elf" camera-controls auto-rotate auto-rotate-delay="1500" rotation-per-second="10deg" shadow-intensity="1" exposure="1.05" interaction-prompt="none"></model-viewer>
 <div class="downloads"><a id="elf-download" download="fuzzy-elf-walk.glb">Download animated elf GLB</a></div></div>
@@ -97,16 +106,22 @@ function downloadModel(taskId,asset,viewerId,linkId){
  const url="/api/tripo?taskId="+encodeURIComponent(taskId)+"&download=1&asset="+asset;
  document.querySelector("#"+viewerId).src=url;const link=document.querySelector("#"+linkId);link.href=url;link.style.display="inline-block";
 }
-document.querySelector("#island-generate").onclick=async()=>{
- const button=document.querySelector("#island-generate");button.disabled=true;setStatus("island","Submitting island prompt to Tripo…",4);
- try{
-  const prompt=document.querySelector("#island-prompt").value.trim();if(prompt.length<20||prompt.length>1024)throw new Error("Island prompt must be between 20 and 1024 characters.");
-  const taskId=await beginTask("island",{prompt});await waitTask(taskId,"island","Building the island");
-  downloadModel(taskId,"island","island-model","island-download");setStatus("island","Island ready. Preview or download the GLB.",100);
- }catch(e){setStatus("island",e.message)}finally{button.disabled=false}
-};
+for (const kind of ["island","object"]) {
+ const button=document.querySelector("#"+kind+"-generate");
+ button.onclick=async()=>{
+  const prompt=document.querySelector("#"+kind+"-prompt").value.trim();
+  if(prompt.length<3){setStatus(kind,"Describe the "+kind+" first.");return;}
+  button.disabled=true;setStatus(kind,"Submitting to Tripo…",4);
+  try{
+   const taskId=await beginTask(kind,{prompt});
+   await waitTask(taskId,kind,"Building the "+kind);
+   downloadModel(taskId,kind,kind+"-model",kind+"-download");
+   setStatus(kind,"Ready to preview or download.",100);
+  }catch(error){setStatus(kind,error.message)}finally{button.disabled=false}
+ };
+}
 async function checkApiKey(){
- const status=document.querySelector("#api-status"),buttons=[document.querySelector("#island-generate"),document.querySelector("#elf-generate")];
+ const status=document.querySelector("#api-status"),buttons=[document.querySelector("#object-generate"),document.querySelector("#island-generate"),document.querySelector("#elf-generate")];
  try{const response=await fetch("/api/tripo?check=1",{cache:"no-store"});const data=await response.json();if(!response.ok)throw new Error(data.error||"Tripo authentication failed.");
   status.textContent="Tripo connected";status.style.color="#91e1c4";buttons.forEach(button=>button.disabled=false);
  }catch(error){status.textContent="Tripo key rejected";status.title=error.message;document.querySelector("#island-status").textContent=error.message;buttons.forEach(button=>button.disabled=true);}
