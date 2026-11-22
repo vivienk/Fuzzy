@@ -21,11 +21,14 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 .note{font-size:12px;color:#aaa8b9;margin-top:16px}.downloads a{display:none;margin:12px 14px 0 0}
 @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}model-viewer{animation:drift 7s ease-in-out infinite}
 @media(max-width:850px){.card{grid-template-columns:1fr}.controls{order:-1}model-viewer{height:360px}}@media(prefers-reduced-motion:reduce){.aurora,model-viewer{animation:none}}
-</style>
+#worlds button[aria-pressed="false"]{background:#e4ebec;color:#374451}#diorama{margin:20px 0 32px}#world{height:clamp(340px,62vh,680px);animation:none;background:linear-gradient(150deg,#c9e2ea,#a8bed0 56%,#d8d1d9)}#world[data-kind="north"]{background:linear-gradient(115deg,#acd6ce88,#d6ccdfaa),url("assets/worlds/aurora-sky.svg") center/cover}figcaption{padding:8px 0}summary{cursor:pointer}details h1{font-size:2rem}</style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
 <header><strong>fuzzy</strong><a class="back" href="./index.html">← Back to winter worlds</a></header>
-<main>
+<main><h1>Winter worlds</h1>
+<nav aria-label="Choose a world" id="worlds"><button aria-pressed="true" data-world="north">North Pole</button> <button aria-pressed="false" data-world="academy">Wizarding Christmas</button></nav>
+<figure id="diorama"><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure>
+<details><summary>Tripo models and generation tools</summary>
 <div class="kicker">Tripo · low-poly 3D generation</div>
 <h1>A new Christmas island</h1>
 <p class="intro">Create the snowy wizarding-school island, then generate one separately rigged and animated festive elf. The island and character stay as separate GLB assets.</p>
@@ -48,7 +51,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 <div class="status" id="elf-status" role="status" aria-live="polite">Ready after the island generation; this step can also run independently.</div><div class="progress"><i id="elf-progress"></i></div>
 </div></section>
 <p class="note">Your Tripo key stays server-side. The page checks authentication for free before enabling generation. Each step can only be submitted once per preview session, with a combined 95-credit cap.</p>
-</main>
+</details></main>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function setStatus(prefix,text,progress){document.querySelector("#"+prefix+"-status").textContent=text;if(Number.isFinite(progress))document.querySelector("#"+prefix+"-progress").style.width=Math.max(0,Math.min(100,progress))+"%"}
@@ -99,4 +102,52 @@ document.querySelector("#elf-generate").onclick=async()=>{
   downloadModel(animId,"character","elf-model","elf-download");setStatus("elf","Animated elf ready. Preview or download the GLB.",100);
  }catch(e){setStatus("elf",e.message)}finally{button.disabled=false}
 };
+</script><script type="module">
+const island = "/api/tripo?taskId=af2dcf97-3301-4bd9-aeae-58bc4000c0b8&download=1&asset=island";
+const elf = "/api/tripo?taskId=13805109-1e7f-4ff0-a68d-fcdde2d86568&download=1&asset=character";
+const world = document.querySelector("#world");
+const caption = document.querySelector("#caption");
+function matte(viewer) {
+  for (const material of viewer.model.materials) {
+    const surface = material.pbrMetallicRoughness;
+    surface.metallicRoughnessTexture?.setTexture(null);
+    surface.setMetallicFactor(0);
+    surface.setRoughnessFactor(1);
+    material.setClearcoatFactor?.(0);
+    material.setSpecularFactor?.(0.12);
+    const [r,g,b,a] = surface.baseColorFactor;
+    const gray = .3*r + .59*g + .11*b;
+    surface.setBaseColorFactor([r*.78+gray*.17+.05,g*.78+gray*.17+.045,b*.78+gray*.17+.04,a]);
+  }
+}
+for (const viewer of document.querySelectorAll("model-viewer")) {
+  viewer.addEventListener("load", () => {
+    matte(viewer);
+    if (viewer === world) caption.textContent = world.alt;
+  });
+}
+const choices = document.querySelectorAll("#worlds button");
+function selectWorld(choice) {
+  for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
+  world.dataset.kind = choice.dataset.world;
+  world.alt = choice.textContent;
+  caption.textContent = "Loading " + world.alt + "…";
+  world.src = choice.dataset.world === "north" ? "assets/worlds/aurora-lit.glb" : island;
+}
+world.addEventListener("error", () => caption.textContent = world.alt + " couldn’t load. Select the world again to retry.");
+for (const choice of choices) choice.onclick = () => selectWorld(choice);
+selectWorld(choices[0]);
+const assets = document.querySelector("details");
+assets.addEventListener("toggle", () => {
+  if (!assets.open) return;
+  for (const [prefix, url] of [["island", island], ["elf", elf]]) {
+    const viewer = document.querySelector("#"+prefix+"-model");
+    if (viewer.hasAttribute("src")) continue;
+    viewer.src = url;
+    if (prefix === "elf") viewer.autoplay = true;
+    const link = document.querySelector("#"+prefix+"-download");
+    link.href = url;
+    link.style.display = "inline";
+  }
+});
 </script></body></html>
