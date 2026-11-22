@@ -83,13 +83,18 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 [data-paper="pine"]{--wrap:repeating-linear-gradient(55deg,#486853 0 9px,#628471 10px 13px)}[data-paper="berry"]{--wrap:repeating-linear-gradient(135deg,#a74655 0 12px,#efc7b9 12px 17px)}[data-paper="frost"]{--wrap:radial-gradient(ellipse at center,#f8efd5 0 1.5px,transparent 2px) 0 0/12px 12px,#849cac}
 #paper-options i,.outer-box i,.outer-box b,.outer-box em{background:var(--wrap)}.outer-box{position:relative;width:128px;height:110px;margin:45px auto 28px;perspective:350px}.outer-box>*{position:absolute;display:block;transition:transform .8s,opacity .8s}.outer-box i,.outer-box b{inset:13px 50% 0 0;border-right:5px solid #ebd398;transform-origin:left}.outer-box b{inset:13px 0 0 50%;border-right:0;border-left:5px solid #ebd398;transform-origin:right}.outer-box em{inset:0 -5px auto;height:22px;border-bottom:3px solid #e5c689}.unfolding i{transform:rotateY(-110deg);opacity:0}.unfolding b{transform:rotateY(110deg);opacity:0}.unfolding em{transform:translateY(-42px) rotate(-9deg);opacity:0}
 #world .fishing-action[data-quiet]:not(:hover):not(:focus-visible){opacity:.18}@media(prefers-reduced-motion:reduce){.outer-box>*{transition:none}}
+#island-loader{position:absolute;inset:0 0 auto;height:clamp(340px,62vh,680px);z-index:5;border-radius:16px;overflow:hidden;display:grid;place-content:center;justify-items:center;background:radial-gradient(ellipse at 65% 95%,#57797d 0,transparent 65%),linear-gradient(155deg,#1d233e,#393859);color:#fff3d9;pointer-events:auto}
+#island-loader[hidden]{display:none}#island-loader svg{width:min(260px,66vw);height:auto}#island-loader span{font:500 15px/1.5 system-ui}
+.sleigh-flight{transform-origin:center;animation:sleigh-flight 2.6s ease-in-out infinite alternate}.sleigh-stars{animation:sleigh-stars 2s ease-in-out infinite alternate}
+@keyframes sleigh-flight{from{transform:translate(-9px,3px) rotate(-2deg)}to{transform:translate(9px,-4px) rotate(2deg)}}@keyframes sleigh-stars{to{opacity:.42;transform:translateX(-9px)}}
+@media(prefers-reduced-motion:reduce){.sleigh-flight,.sleigh-stars{animation:none}}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
 <header><strong>fuzzy</strong><a class="back" href="./index.html">← Back to winter worlds</a></header>
 <main><h1>Winter worlds</h1>
 <nav aria-label="Choose a world" id="worlds"><button aria-pressed="true" data-world="north">North Pole</button> <button aria-pressed="false" data-world="village">North Pole v2 · Santa Village</button> <button aria-pressed="false" data-world="academy">Wizarding Christmas</button></nav>
-<figure id="diorama"><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><button id="pack-world" hidden>Wrap &amp; send this world</button><div id="gift-activities" hidden><button id="switch-game" type="button"></button></div>
+<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your island…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><button id="pack-world" hidden>Wrap &amp; send this world</button><div id="gift-activities" hidden><button id="switch-game" type="button"></button></div>
 <details><summary>Tripo models and generation tools</summary>
 <p><a href="/api/tripo?taskId=caabd271-8750-45d4-abc8-579a7fbfc74e&amp;download=1&amp;asset=island" download="santa-village-original.glb">Download original Tripo Santa Village</a></p>
 <div class="kicker">Tripo · low-poly 3D generation</div>
@@ -558,8 +563,16 @@ function showVillageEffects(){
   });
 }
 world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();syncGuide();if(fishPhase!=="idle")drawFishing();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
+const islandLoader=document.querySelector("#island-loader");
+function finishIslandLoad(){
+  islandLoader.hidden=true;
+  world.removeAttribute("aria-busy");
+}
+world.addEventListener("load",()=>{if(world.hasAttribute("src")&&world.loaded)finishIslandLoad();});
 let request = 0;
 async function selectWorld(choice) {
+  if(choice.dataset.world===world.dataset.kind&&world.loaded&&islandLoader.hidden)return;
+  islandLoader.hidden=false;world.setAttribute("aria-busy","true");
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
@@ -594,13 +607,13 @@ async function selectWorld(choice) {
       }else if(turn===request)world.src=url;
     } catch (error) {
       villageModel = null;
-      if (turn === request) caption.textContent = "Santa Village couldn’t load. Select it again to retry.";
+      if (turn === request) {finishIslandLoad();caption.textContent = "Santa Village couldn’t load. Select it again to retry.";}
     }
     return;
   }
   world.src = academy ? "assets/worlds/owl-post-academy.gltf" : "assets/worlds/aurora-lit.glb";
 }
-world.addEventListener("error", () => caption.textContent = world.alt + " couldn’t load. Select the world again to retry.");
+world.addEventListener("error", () => {finishIslandLoad();caption.textContent = world.alt + " couldn’t load. Select the world again to retry.";});
 for (const choice of choices) choice.onclick = () => selectWorld(choice);
 
 boxes.forEach((b,i)=>{if(b.phase==="building")watchBox(i);});
