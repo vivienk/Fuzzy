@@ -71,9 +71,9 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 .fishing-float svg{width:24px;height:18px;color:#427d80;animation:fish-rise .55s ease-out both}
 @keyframes float-wait{to{transform:translateY(-2px) rotate(9deg)}}@keyframes float-dip{to{transform:translateY(5px) rotate(27deg)}}@keyframes fish-rise{from{transform:translateY(3px) scale(.65)}to{transform:translateY(-10px) scale(1)}}
 @media(prefers-reduced-motion:reduce){#world .fishing-float *{animation:none}}
-#world [data-guide-hidden],#gift-activities[hidden]{display:none!important}
+#world [data-guide-hidden]{display:none!important}
 #world .box-hit[data-next]::before{content:"";display:block;width:15px;height:15px;margin:auto;background:#fff8e9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23654d37' stroke-width='1.8'%3E%3Cpath d='M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9C3 9 5 1 9 4l3 5 3-5c4-3 6 5-3 5Z'/%3E%3C/svg%3E") center/15px no-repeat;border:1px solid #baa47b;border-radius:50%;padding:4px;position:absolute;bottom:100%;left:50%;transform:translateX(-50%)}
-#world .box-hit[data-muted] span{display:none}#gift-activities{margin:-20px 0 20px}
+#world .box-hit[data-muted] span{display:none}
 #inspect-gift{width:min(520px,94vw);background:#fff8eb;border:0;border-radius:18px;color:#493833}#inspect-gift model-viewer{height:clamp(220px,46vh,420px);width:100%;background:#e5ebe7}#inspect-gift form{text-align:right}#bike-preset{margin:8px 0;background:#e0e9dc;color:#394d40}
 #world .moose-feed[data-quiet]:not(:hover):not(:focus-visible):not(:disabled){opacity:.15}
 #pack-world[hidden],body.receiving #worlds,body.receiving details,body.receiving #replace-gift{display:none}
@@ -94,7 +94,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 <header><strong>fuzzy</strong><a class="back" href="./index.html">← Back to winter worlds</a></header>
 <main><h1>Winter worlds</h1>
 <nav aria-label="Choose a world" id="worlds"><button aria-pressed="true" data-world="north">North Pole</button> <button aria-pressed="false" data-world="village">North Pole v2 · Santa Village</button> <button aria-pressed="false" data-world="academy">Wizarding Christmas</button></nav>
-<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your island…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><button id="pack-world" hidden>Wrap &amp; send this world</button><div id="gift-activities" hidden><button id="switch-game" type="button"></button></div>
+<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your island…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><button id="pack-world" hidden>Wrap &amp; send this world</button>
 <details><summary>Tripo models and generation tools</summary>
 <p><a href="/api/tripo?taskId=caabd271-8750-45d4-abc8-579a7fbfc74e&amp;download=1&amp;asset=island" download="santa-village-original.glb">Download original Tripo Santa Village</a></p>
 <div class="kicker">Tripo · low-poly 3D generation</div>
@@ -345,9 +345,8 @@ if(parcel){
 const noteKey="fuzzy-village-guided-note";
 let noteVisited=!!parcel;
 try{if(!parcel)noteVisited=localStorage.getItem(noteKey)==="1";}catch{}
-let gameChoice="fish",mooseIndex=0;
+let mooseIndex=0;
 
-const activities=document.querySelector("#gift-activities"),switchGame=document.querySelector("#switch-game");
 function guideStep(){
   const prep=boxes.findIndex(b=>["empty","prepared","retry"].includes(b.phase));
   if(prep>=0)return {kind:"prep",slot:prep};
@@ -358,8 +357,6 @@ function guideStep(){
 function syncGuide(){
   const village=world.dataset.kind==="village",step=guideStep(),gaming=village&&(step.kind==="game"||boxes.every(box=>box.phase==="open"));
   packWorld.hidden=!village||!!parcel||!boxes.every(b=>["ready","open"].includes(b.phase));
-  activities.hidden=!gaming;
-  switchGame.textContent=gameChoice==="fish"?"Feed a moose instead":"Go ice fishing instead";
   if(!village)return;
   world.querySelectorAll(".box-hit").forEach(button=>{
     const slot=Number(button.dataset.box),b=boxes[slot];
@@ -369,12 +366,11 @@ function syncGuide(){
   });
   world.querySelectorAll(".elf-target").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
   world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel);
-  world.querySelector(".fishing-action")?.toggleAttribute("data-quiet",fishPhase==="idle"&&(!gaming||gameChoice!=="fish"));
+  world.querySelector(".fishing-action")?.toggleAttribute("data-quiet",fishPhase==="idle"&&!gaming);
   
-  world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming||gameChoice!=="feed");});
+  world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming);});
 
 }
-switchGame.onclick=()=>{gameChoice=gameChoice==="fish"?"feed":"fish";syncGuide();caption.textContent=gameChoice==="feed"?"Tap the carrot to feed the moose.":"Tap the fish to cast.";};
 letter.addEventListener("close",()=>{
   if(guideStep().kind==="note"){
     noteVisited=true;try{localStorage.setItem(noteKey,"1");}catch{}
@@ -576,7 +572,7 @@ async function selectWorld(choice) {
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
-  activities.hidden=true;packWorld.hidden=true;
+  packWorld.hidden=true;
   world.alt = choice.textContent;
   caption.textContent = "Loading " + world.alt + "…";
   clearElfInteraction();world.replaceChildren();
