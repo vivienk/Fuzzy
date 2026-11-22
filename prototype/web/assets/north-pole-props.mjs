@@ -27,7 +27,9 @@ export async function propsV1() {
   const result={materials:src.materials};
   for(const [key,group] of Object.entries(groups)){
     const low=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity],faces=[];let chimney;
+    const workshopWidth=key==="workshop"?1.30:1;
     const snowline=key==="igloo"?group[0].translation[1]:null;
+    const signY=group.find(n=>n.name==="SANTA WORKSHOP sign board")?.translation[1];
     for(const n of group){
       if(n.mesh===undefined)continue;
       const mat=new DOMMatrix();mat.translateSelf(...(n.translation||[0,0,0]));
@@ -36,10 +38,16 @@ export async function propsV1() {
       for(const p of src.meshes[n.mesh].primitives){
         const xyz=read(p.attributes.POSITION),indices=p.indices===undefined?null:read(p.indices),pts=[];
         for(let k=0;k<xyz.length;k+=3){
-          const v=mat.transformPoint(new DOMPoint(xyz[k],xyz[k+1],xyz[k+2])),point=[v.x,v.y,v.z];pts.push(point);
+          const v=mat.transformPoint(new DOMPoint(xyz[k],xyz[k+1],xyz[k+2])),point=[v.x*workshopWidth,v.y,v.z];
+          if(key==="workshop" && n.name.startsWith("SANTA WORKSHOP ")){
+            // Lift the letters and board clear of the snowy overhang as a single plaque.
+            point[1]=signY+(v.y-signY)*1.65;
+            point[2]+=.09;
+          }
+          pts.push(point);
           point.forEach((v,i)=>{low[i]=Math.min(low[i],v);hi[i]=Math.max(hi[i],v);});
         }
-        if(n.name.startsWith("Chimney snow"))chimney=[n.translation[0],Math.max(...pts.map(p=>p[1])),n.translation[2]];
+        if(n.name.startsWith("Chimney snow"))chimney=[n.translation[0]*workshopWidth,Math.max(...pts.map(p=>p[1])),n.translation[2]];
         for(let k=0;k<(indices?.length||pts.length);k+=3){
           const vertices=[k,k+1,k+2].map(i=>pts[indices?indices[i]:i]);
           const polygon=snowline===null?vertices:aboveSnow(vertices,snowline);
