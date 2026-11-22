@@ -14,13 +14,13 @@ window.FuzzyDecorations=(()=>{
    'Moonlit snow blanket':[.28,.29,.41]
   },
   aurora:{
-   'Pearl snow':[.82,.82,.85],'Lavender slate':[.48,.45,.53],'Cedar':[.47,.37,.32],
-   'Deep pine':[.31,.37,.33],'Cranberry':[.51,.38,.38],'Champagne gold':[.73,.62,.47],
-   'Bronze':[.31,.27,.28],'Amber glow':[.88,.65,.42],'Sage':[.48,.53,.46],
-   'Glacier blue':[.57,.65,.75],'Rose sandstone':[.66,.52,.51],'Midnight roof':[.35,.34,.40],
-   'Luminous frost crystals':[.74,.74,.80],'Spring stone':[.49,.53,.56],
-   'aurora architectural trim':[.49,.40,.37],'aurora enchanted accent':[.82,.66,.47],
-   'Moonlit snow blanket':[.80,.80,.84]
+   'Pearl snow':[.78,.79,.84],'Lavender slate':[.45,.41,.54],'Cedar':[.42,.32,.28],
+   'Deep pine':[.24,.33,.29],'Cranberry':[.45,.31,.32],'Champagne gold':[.70,.56,.38],
+   'Bronze':[.26,.23,.24],'Amber glow':[.89,.59,.34],'Sage':[.38,.47,.39],
+   'Glacier blue':[.47,.57,.70],'Rose sandstone':[.60,.45,.45],'Midnight roof':[.30,.29,.38],
+   'Luminous frost crystals':[.68,.67,.76],'Spring stone':[.40,.47,.53],
+   'aurora architectural trim':[.44,.35,.31],'aurora enchanted accent':[.80,.60,.40],
+   'Moonlit snow blanket':[.78,.79,.84]
   },
   alpine:{
    'Pearl snow':[.87,.86,.83],'Lavender slate':[.64,.59,.67],'Cedar':[.62,.47,.41],
