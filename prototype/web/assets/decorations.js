@@ -72,18 +72,24 @@ window.FuzzyDecorations=(()=>{
  async function build(lit,items,world,wrapped=false,sceneStyle='needle-felt'){
   const source=await base(wrapped?'assets/gift.glb':['forest','aurora','alpine'].includes(world)?`assets/worlds/${world}${lit?'-lit':''}.glb`:(lit?'assets/world.glb':'assets/world-unlit.glb')),view=new DataView(source),jl=view.getUint32(12,true),g=JSON.parse(new TextDecoder().decode(new Uint8Array(source,20,jl))),binStart=20+jl+8,bl=view.getUint32(20+jl,true);
   const palette=WORLD_MATERIAL_PALETTES[world||'alpine']||{};
+  // Reduce chroma in the actual glTF material factors so the art direction is
+  // consistent even when a browser does not composite CSS filters on WebGL.
+  function softenColor(color,strength=.58){
+   const rgb=color.slice(0,3),gray=rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+   return [...rgb.map(channel=>gray+(channel-gray)*strength),color[3]??1];
+  }
   for(const material of g.materials||[]){
-   const color=palette[material.name];if(!color)continue;
    const pbr=material.pbrMetallicRoughness||(material.pbrMetallicRoughness={});
-   const alpha=pbr.baseColorFactor?.[3]??1;
-   pbr.baseColorFactor=[...color,alpha];
+   const color=palette[material.name]||pbr.baseColorFactor;
+   if(color)pbr.baseColorFactor=softenColor(color);
+   if(material.emissiveFactor)material.emissiveFactor=softenColor(material.emissiveFactor).slice(0,3);
   }
   const chunks=[new Uint8Array(source,binStart,bl)];let length=bl;
   function accessor(values,type){const data=new Float32Array(values);const idx=g.bufferViews.length;g.bufferViews.push({buffer:0,byteOffset:length,byteLength:data.byteLength,target:34962});chunks.push(new Uint8Array(data.buffer));length+=data.byteLength;const dim=3,min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];for(let i=0;i<values.length;i++){min[i%dim]=Math.min(min[i%dim],values[i]);max[i%dim]=Math.max(max[i%dim],values[i])}g.accessors.push({bufferView:idx,componentType:5126,count:values.length/3,type,min,max});return g.accessors.length-1}
   items.slice(0,slots.length).forEach((kind,slot)=>triangles(kind,world).forEach(piece=>{
    const pos=[],norm=[],uv=[];for(let i=0;i<piece.verts.length;i+=3){const [a,b,c]=piece.verts.slice(i,i+3),u=b.map((v,j)=>v-a[j]),v=c.map((x,j)=>x-a[j]),n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],l=Math.hypot(...n)||1,axis=Math.abs(n[0])>Math.abs(n[1])&&Math.abs(n[0])>Math.abs(n[2])?[1,2]:Math.abs(n[1])>Math.abs(n[2])?[0,2]:[0,1];for(const p of [a,b,c]){pos.push(...p);norm.push(...n.map(x=>x/l));uv.push(p[axis[0]]*4,p[axis[1]]*4)}}
    function uvAccessor(values){const data=new Float32Array(values),idx=g.bufferViews.length;g.bufferViews.push({buffer:0,byteOffset:length,byteLength:data.byteLength,target:34962});chunks.push(new Uint8Array(data.buffer));length+=data.byteLength;const min=[Infinity,Infinity],max=[-Infinity,-Infinity];for(let i=0;i<values.length;i++){const axis=i%2;min[axis]=Math.min(min[axis],values[i]);max[axis]=Math.max(max[axis],values[i])}g.accessors.push({bufferView:idx,componentType:5126,count:values.length/2,type:'VEC2',min,max});return g.accessors.length-1}
-   const material=g.materials.length;g.materials.push({name:'Mini '+kind,pbrMetallicRoughness:{baseColorFactor:piece.color,metallicFactor:0,roughnessFactor:.8},doubleSided:true});
+   const material=g.materials.length;g.materials.push({name:'Mini '+kind,pbrMetallicRoughness:{baseColorFactor:softenColor(piece.color),metallicFactor:0,roughnessFactor:.8},doubleSided:true});
    const mesh=g.meshes.length;g.meshes.push({primitives:[{attributes:{POSITION:accessor(pos,'VEC3'),NORMAL:accessor(norm,'VEC3'),TEXCOORD_0:uvAccessor(uv)},material}]});const node=g.nodes.length;g.nodes.push({name:'Added '+kind,mesh,translation:slots[slot]});g.scenes[g.scene||0].nodes.push(node);
   }));
   // Keep the imported meshes and transforms, but use flat, solid materials.
