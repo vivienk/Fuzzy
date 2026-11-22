@@ -31,6 +31,7 @@
   player.setAttribute('aria-label',picker.selectedOptions[0].textContent);
   for(const event of ['playing','pause','error'])player.addEventListener(event,()=>{
    if(audio!==player)return;
+   retryOnGesture=false;
    display(event==='playing');
    status.textContent=event==='playing'?'Playing in the background.':event==='pause'?'Playback paused.':'This track could not load.';
   });
@@ -71,9 +72,28 @@
  picker.querySelector('option[value="chimes"]')?.remove();
  let saved=gift.get('album');
  if(!saved&&!gift.has('parcel'))try{saved=localStorage.getItem(storageKey);}catch{}
- if(Array.from(picker.options).some(o=>o.value===saved))picker.value=saved;
- select();picker.onchange=()=>{select();if(!gift.has('parcel'))try{localStorage.setItem(storageKey,picker.value);}catch{}};
- disc.onclick=play;
- window.addEventListener('gift-soundtrack-stop',stop);
+ const explicit=Array.from(picker.options).some(o=>o.value===saved);
+ let useDefault=!explicit;
+ picker.value=explicit?saved:'toymakers-workshop';
+ let retryOnGesture=false;
+ function startDefault(){
+  if(!useDefault||gift.has('parcel')||!byId('diorama').hasAttribute('data-village'))return;
+  if(!audio)select();
+  const player=audio;
+  player.play().catch(error=>{
+   if(player!==audio||!useDefault)return;
+   retryOnGesture=error.name==='NotAllowedError';
+   status.textContent=retryOnGesture?'Tap Play or interact with the village to start the music.':'This track could not play.';
+  });
+ }
+ document.addEventListener('click',event=>{
+  if(!retryOnGesture||event.target.closest('button#disc,.turntable,#christmas-album,audio'))return;
+  retryOnGesture=false;startDefault();
+ });
+ window.addEventListener('gift-music-enter',startDefault);
+ select();picker.onchange=()=>{useDefault=false;retryOnGesture=false;select();if(!gift.has('parcel'))try{localStorage.setItem(storageKey,picker.value);}catch{}};
+ disc.onclick=()=>{retryOnGesture=false;play();};
+ startDefault();
+ window.addEventListener('gift-soundtrack-stop',()=>{retryOnGesture=false;stop();});
  window.addEventListener('gift-soundtrack-start',()=>{if(!playing){if(!audio&&!controller&&!pending)select();play();}});
 })();
