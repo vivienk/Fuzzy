@@ -56,23 +56,13 @@ body[data-style="needle-felt"] #scene{filter:saturate(.84) brightness(1.06) cont
 body[data-style="origami-paper"] #scene{filter:saturate(.94) brightness(1.02) contrast(1.1)}
 body[data-style="plushy"] #scene{filter:saturate(.94) brightness(1.07) contrast(.93)}
 body[data-style="monument-valley"] #scene{filter:saturate(.78) brightness(1.09) contrast(.96)}
+body[data-style="enchanted-night"] #scene{filter:saturate(1.08) contrast(1.08)}
 body[data-style="monument-valley"] #scene{background:linear-gradient(145deg,#aa98c6 0%,#d8b7d6 52%,#f2c9c4 100%)!important}
 @keyframes monument-reveal{0%{opacity:.25;transform:translateY(8px) scale(.98);filter:brightness(1.15)}100%{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}}
 .experience[data-scene-style="monument-valley"] #scene.monument-reveal{animation:monument-reveal 1.6s cubic-bezier(.22,.61,.36,1) both}
 @media(prefers-reduced-motion:reduce){.experience[data-scene-style="monument-valley"] #scene.monument-reveal{animation:none}}
 @media(max-width:800px){.experience::after{inset:0 0 auto;height:440px;border-radius:30px 30px 0 0}.style-picker{padding:18px}.style-options{grid-template-columns:1fr}.style-option{padding:9px 12px}.style-swatch{flex-basis:34px;height:34px}}
 </style><script src="assets/light-anchors.js?v=gentle-walk-1"></script><script src="assets/decorations.js?v=monument-valley-material-texture-2"></script><script type="module">await customElements.whenDefined("model-viewer");customElements.get("model-viewer").minimumRenderScale=1;</script></head><body><header><strong>fuzzy</strong><span>Three winter worlds</span></header><main><div class="intro"><div class="eyebrow">Send your loved ones a 3D card</div><h1>Three little worlds.<br>A little closer to you.</h1><p>Choose a winter night, write a little note, and make a place for someone you love. Your world begins in the Enchanted Frost Forest.</p></div><section class="world-picker" aria-labelledby="world-picker-title"><h2 id="world-picker-title">Choose your winter world</h2><p>One message. A world that feels like you.</p><div class="world-grid"><button class="world-choice" data-world="aurora" aria-pressed="false"><img src="assets/worlds/north-pole-preview.png" alt="Rendered North Pole workshop with elves, candy canes and reindeer" loading="lazy"><span class="copy"><strong>North Pole</strong><small>Snowy workshops, igloos, gentle moose, and polar bears under the northern lights.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="alpine" aria-pressed="false"><img src="assets/worlds/alpine-concept.png" alt="Low-poly concept art for Moonlit Alpine Village" loading="lazy"><span class="copy"><strong>Moonlit Alpine Village</strong><small>Snowy mountain peaks, warm chalets, and a Christmas tree plaza.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="forest" aria-pressed="true"><img src="assets/worlds/forest-concept.png" alt="Low-poly concept art for Enchanted Frost Forest" loading="lazy"><span class="copy"><strong>Enchanted Frost Forest</strong><small>Lavender skies, frosted pines, and luminous crystal gardens.</small><span class="choice-state">Selected · Default world</span></span></button></div><p class="world-caption">North Pole shows the actual 3D model; the other previews are concept artwork. Explore each world below.</p></section>
-<section class="style-picker" aria-labelledby="style-picker-title">
-<h2 id="style-picker-title">Choose your scene style</h2>
-<p>One look for the whole world and every keepsake.</p>
-<div class="style-options" role="group" aria-label="Scene style">
-<button class="style-option" type="button" data-style="needle-felt" aria-pressed="true"><span class="style-swatch felt" aria-hidden="true"></span><span><strong>Needle Felt</strong><small>Warm wool and handcrafted texture</small></span></button>
-<button class="style-option" type="button" data-style="origami-paper" aria-pressed="false"><span class="style-swatch origami" aria-hidden="true"></span><span><strong>Origami Paper</strong><small>Folded planes and crisp creases</small></span></button>
-<button class="style-option" type="button" data-style="plushy" aria-pressed="false"><span class="style-swatch plushy" aria-hidden="true"></span><span><strong>Plushy</strong><small>Soft fabric and rounded forms</small></span></button><button class="style-option" type="button" data-style="monument-valley" aria-pressed="false"><span class="style-swatch monument" aria-hidden="true"></span><span><strong>Monument Valley</strong><small>Pastel facets on every model, calm motion</small></span></button>
-</div>
-<p id="style-status" class="style-note" role="status">Needle Felt is applied across the whole 3D scene.</p>
-<p class="style-note">The Monument Valley look keeps this scene’s existing buildings and layout; it changes the palette, surface treatment, and motion.</p>
-</section>
 <section class="experience"><model-viewer id="scene" src="assets/gift.glb" alt="A wrapped Christmas gift that reveals a snowy Christmas village" camera-controls shadow-intensity="1" exposure="0.72" camera-orbit="25deg 65deg 150%" interaction-prompt="none"></model-viewer><div class="snow-weather" aria-hidden="true"></div><div class="panel"><div id="world-name" class="world-name" aria-live="polite">Enchanted Frost Forest</div><div class="eyebrow" id="step">01 / Something arrived</div><h2 id="heading">Someone is thinking of you.</h2><p id="message">Unwrap your village, write a note, and add a little Christmas magic.</p>
 <div id="editor" hidden>
 <label for="note-input">A note for someone you love</label><textarea id="note-input" rows="4" maxlength="500" placeholder="Write something they’ll want to keep…"></textarea>
@@ -83,7 +73,26 @@ const $=id=>document.getElementById(id),scene=$('scene');let opened=false,lit=tr
 
 const SCENE_STYLES={
  'needle-felt':{roughness:1,metallic:0,tint:[1.04,1.01,.97],label:'Needle Felt'},
- 'origami-paper':{roughness:.86,metallic:0,tint:[1.04,1.02,.96],label:'Origami Paper'},
+ 'origami-paper':{roughness:.86,metallic:0,tint:[1.04,1.02,.96],label:'Origami Paper',palette:{
+  'Pearl snow':[.96,.93,.87],'Lavender slate':[.68,.61,.79],'Cedar':[.76,.48,.43],
+  'Deep pine':[.48,.66,.59],'Cranberry':[.77,.47,.52],'Champagne gold':[.93,.77,.56],
+  'Bronze':[.39,.32,.42],'Amber glow':[1,.81,.60],'Sage':[.66,.77,.67],
+  'Glacier blue':[.68,.78,.86],'Rose sandstone':[.82,.62,.62],'Midnight roof':[.50,.43,.63],
+  'Luminous frost crystals':[.80,.75,.91],'Spring stone':[.68,.61,.79],
+  'forest architectural trim':[.74,.58,.61],'forest enchanted accent':[.94,.77,.55],
+  'aurora architectural trim':[.63,.74,.68],'aurora enchanted accent':[.94,.77,.55],
+  'alpine architectural trim':[.74,.58,.61],'alpine enchanted accent':[.94,.77,.55]
+ }},
+ 'enchanted-night':{roughness:.9,metallic:0,tint:[1,1,1],label:'Enchanted Night',palette:{
+  'Pearl snow':[.39,.40,.69],'Lavender slate':[.24,.17,.60],'Cedar':[.33,.18,.46],
+  'Deep pine':[.08,.15,.29],'Cranberry':[.48,.20,.59],'Champagne gold':[.88,.48,.16],
+  'Bronze':[.09,.07,.19],'Amber glow':[1,.59,.19],'Sage':[.13,.25,.39],
+  'Glacier blue':[.23,.29,.68],'Rose sandstone':[.39,.21,.43],'Midnight roof':[.12,.09,.34],
+  'Luminous frost crystals':[.43,.27,.86],'Spring stone':[.24,.17,.60],
+  'forest architectural trim':[.15,.10,.38],'forest enchanted accent':[1,.58,.17],
+  'aurora architectural trim':[.63,.74,.68],'aurora enchanted accent':[.94,.77,.55],
+  'alpine architectural trim':[.74,.58,.61],'alpine enchanted accent':[.94,.77,.55]
+ }},
  'plushy':{roughness:1,metallic:0,tint:[1.05,.99,1.02],label:'Plushy'},
  'monument-valley':{roughness:.96,metallic:0,tint:[1,1,1],label:'Monument Valley',palette:{
   'Pearl snow':[.98,.94,.88],'Lavender slate':[.50,.42,.69],'Cedar':[.78,.39,.46],
@@ -97,8 +106,7 @@ const SCENE_STYLES={
  }}
 };
 const originalSceneMaterials=new WeakMap();
-let selectedSceneStyle='needle-felt';
-try{const saved=localStorage.getItem('fuzzy-scene-style');if(Object.hasOwn(SCENE_STYLES,saved))selectedSceneStyle=saved}catch(e){}
+let selectedSceneStyle='origami-paper';
 function drawStylePattern(ctx,style,size,seed){
  let state=(Math.floor(seed*1e7)>>>0)||1;
  const random=()=>{state=(state*1664525+1013904223)>>>0;return state/4294967296};
@@ -134,8 +142,6 @@ function applySceneStyle(){
  const preset=SCENE_STYLES[selectedSceneStyle];
  document.body.dataset.style=selectedSceneStyle;
  document.querySelector('.experience').dataset.sceneStyle=selectedSceneStyle;
- document.querySelectorAll('.style-option[data-style]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.style===selectedSceneStyle)));
- $('style-status').textContent=preset.label+' is applied to every model with solid colors.';
  for(const material of scene.model?.materials||[]){
   const pbr=material.pbrMetallicRoughness;if(!pbr)continue;
   let original=originalSceneMaterials.get(pbr);
@@ -150,12 +156,6 @@ function applySceneStyle(){
   // Scene texture maps are stripped during GLB generation; per-material colors stay intact.
  }
 }
-document.querySelectorAll('.style-option[data-style]').forEach(button=>button.addEventListener('click',()=>{
- selectedSceneStyle=button.dataset.style;
- try{localStorage.setItem('fuzzy-scene-style',selectedSceneStyle)}catch(e){}
- void applySceneStyle();
- if(opened)refreshVillage();else refreshGift();syncCharacterMotion();
-}));
 scene.addEventListener('load',()=>{applySceneStyle();syncLightEffects();$('unwrap').disabled=false;$('status').textContent=opened?'Drag to look around your village.':'Your gift is ready.'});scene.addEventListener('error',()=>{$('status').textContent='The 3D model could not load. Refresh this page or serve it with a local web server.'});
 function openWorld(){clearLightEffects();opened=true;refreshVillage();scene.classList.remove('monument-reveal');void scene.offsetWidth;if(selectedSceneStyle==='monument-valley')scene.classList.add('monument-reveal');$('unwrap').hidden=true;$('reopen').hidden=true;['lights','rotate','keep','reset','motion'].forEach(x=>$(x).hidden=false);$('step').textContent='02 / A world made for you';$('heading').textContent='Make it yours.';$('message').hidden=true;$('editor').hidden=false;$('keep').textContent=kept?'Kept ♥':'Keep this world';$('status').textContent='Opening your village…';syncCharacterMotion()}
 $('unwrap').onclick=openWorld;$('reopen').onclick=openWorld;$('lights').onclick=()=>{lit=!lit;clearLightEffects();refreshVillage();$('lights').textContent=lit?'Lights off':'Light the tree'};$('rotate').onclick=()=>{turned=!turned;scene.cameraOrbit=turned?'180deg 65deg 150%':'25deg 65deg 150%';$('rotate').textContent=turned?'Front view':'Turn island'};$('keep').onclick=()=>{try{localStorage.setItem('fuzzy-village-kept','true');kept=true;$('keep').textContent='Kept ♥';$('status').textContent='Saved in this browser. Come back whenever you like.'}catch(e){$('status').textContent='Saving is unavailable in this browser. Please try another browser.'}};$('reset').onclick=()=>{clearLightEffects();opened=false;lit=true;turned=false;refreshGift();scene.cameraOrbit='25deg 65deg 150%';$('unwrap').hidden=false;$('reopen').hidden=!kept;['lights','rotate','keep','reset','motion'].forEach(x=>$(x).hidden=true);$('lights').textContent='Lights off';$('step').textContent='01 / Something arrived';$('heading').textContent='Someone is thinking of you.';$('editor').hidden=true;$('message').hidden=false;$('message').textContent='Unwrap a Christmas village and a little warmth from someone you love.';syncCharacterMotion()};
@@ -192,7 +192,11 @@ function syncWorldChoice(){
  document.body.dataset.world=selectedWorld;
  const labels={forest:['Crystal-ribbon gift','Silver frost reindeer','Crystal-crowned snowman'],aurora:['Workshop gift','North Pole reindeer','Elf-hat snowman'],alpine:['Red-and-gold gift','Alpine reindeer','Woolly-hat snowman']}[selectedWorld];
  [...$('decoration-type').options].forEach((option,i)=>option.textContent=labels[i]||({lantern:"Glowing lantern",igloo:"Mini igloo","candy-cane":"Candy cane"}[option.value]));
- scene.style.backgroundImage=`url("assets/worlds/${selectedWorld}-sky.svg")`;
+ selectedSceneStyle=selectedWorld==='forest'?'enchanted-night':'origami-paper';
+ scene.exposure=selectedWorld==='forest'?.55:.72;
+ scene.style.backgroundImage=selectedWorld==='forest'
+  ?'linear-gradient(145deg,#080a27 0%,#17143e 55%,#29204b 100%)'
+  :`url("assets/worlds/${selectedWorld}-sky.svg")`;
  scene.alt='An interactive low-poly '+WORLD_NAMES[selectedWorld]+' with a Christmas mailbox';
  $('world-name').textContent=WORLD_NAMES[selectedWorld];
  document.querySelectorAll('.world-choice[data-world]').forEach(button=>{const active=button.dataset.world===selectedWorld;button.setAttribute('aria-pressed',String(active));button.querySelector('.choice-state').textContent=active?'Selected'+(selectedWorld==='forest'?' · Default world':''):'Choose this world'});
