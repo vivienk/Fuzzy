@@ -69,14 +69,15 @@ export async function composeGiftBoxes(villageUrl,opened) {
     for(const k of Object.keys(base))for(const item of g[k]||[])m[k].push(item);
     for(const k of ["extensionsUsed","extensionsRequired"])if(g[k])m[k]=[...new Set([...(m[k]||[]),...g[k]])];
     const gift=m.nodes.push({name:"Unwrapped gift "+slot,children:roots.map(i=>i+base.nodes),translation:[-scale*(min[0]+max[0])/2,-scale*min[1],-scale*(min[2]+max[2])/2],scale:[scale,scale,scale]})-1;
-    const final=[x,y+.39,z],start=[x,y+.22,z];
+    const boxScale=box.scale?.[1]??1;
+    const final=[x,y+.39*boxScale,z],start=[x,y+.22*boxScale,z];
     const display=m.nodes.push({name:"Gift reveal "+slot,translation:final,children:[gift]})-1;
     m.scenes[m.scene||0].nodes.push(display);
-    const closed=[...lid.translation],aside=[x,y+.18,z-.56],lidNode=m.nodes.indexOf(lid);
+    const closed=[...lid.translation],aside=[x,y+.18*boxScale,z-.56*boxScale],lidNode=m.nodes.indexOf(lid);
     lid.translation=aside;lid.rotation=[-.38,0,0,.925];
     const times=floats([0,.35,1],"SCALAR"),clip={name:"Unwrap box "+slot,samplers:[],channels:[]};
     function track(node,path,values,type){const sampler=clip.samplers.push({input:times,output:floats(values,type),interpolation:"LINEAR"})-1;clip.channels.push({sampler,target:{node,path}});}
-    track(lidNode,"translation",[closed,[x,y+.95,z-.13],aside],"VEC3");
+    track(lidNode,"translation",[closed,[x,y+.95*boxScale,z-.13*boxScale],aside],"VEC3");
     track(lidNode,"rotation",[[0,0,0,1],[-.2,0,0,.979796],lid.rotation],"VEC4");
     track(display,"translation",[start,start,final],"VEC3");
     track(display,"scale",[[.001,.001,.001],[.01,.01,.01],[1,1,1]],"VEC3");
