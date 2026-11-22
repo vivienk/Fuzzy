@@ -137,6 +137,7 @@ for (const kind of ["island","object"]) {
    await waitTask(taskId,kind,"Building the "+kind);
    downloadModel(taskId,kind,kind+"-model",kind+"-download");
    setStatus(kind,"Ready to preview or download.",100);
+   if(kind==="object")window.dispatchEvent(new CustomEvent("village-gift-ready",{detail:taskId}));
   }catch(error){setStatus(kind,error.message)}finally{button.disabled=false}
  };
 }
@@ -319,6 +320,34 @@ function showVillageEffects(){
 }
 world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();});
 let request = 0;
+let displayedGift=null, giftRevision=0, latestGift="";
+try{latestGift=localStorage.getItem("fuzzy-village-gift-task")||"";}catch{}
+async function prepareGift(taskId){
+  if(displayedGift?.id===taskId)return displayedGift.url;
+  const revision=++giftRevision;
+  const {placeVillageGift}=await import("./assets/place-village-gift.mjs");
+  const giftUrl="/api/tripo?taskId="+encodeURIComponent(taskId)+"&download=1&asset=object";
+  const url=await placeVillageGift(await villageModel,giftUrl);
+  if(revision!==giftRevision){URL.revokeObjectURL(url);return null;}
+  const previous=displayedGift;displayedGift={id:taskId,url};
+  if(previous)URL.revokeObjectURL(previous.url);
+  return url;
+}
+window.addEventListener("village-gift-ready",async({detail:id})=>{
+  latestGift=id;
+  try{localStorage.setItem("fuzzy-village-gift-task",id);}catch{}
+  if(world.dataset.kind!=="village")return;
+  const turn=++request;
+  try{
+    const url=await prepareGift(id);
+    if(url && turn===request){
+      world.src=url;
+      if(stationDialog.open)stationDialog.close();
+    }
+  }catch{
+    if(turn===request)document.querySelector("#object-status").textContent="Gift generated. Island placement failed. Reopen Santa Village to retry, or download the gift here.";
+  }
+});
 async function selectWorld(choice) {
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
@@ -342,8 +371,13 @@ async function selectWorld(choice) {
           try { const url=await animateVillage(source);effects=village.villageEffects;walkingElfPosition=village.walkingElfPosition;walkingElfCount=village.walkingElfCount;return url; }
           finally { URL.revokeObjectURL(source); }
         });
-      const url = await villageModel;
-      if (turn === request) world.src = url;
+      let url=await villageModel;
+      if(turn!==request)return;
+      if(latestGift){
+        try{url=await prepareGift(latestGift)||url;}
+        catch{document.querySelector("#object-status").textContent="The previous gift could not be restored to the island.";}
+      }
+      if(turn===request)world.src=url;
     } catch (error) {
       villageModel = null;
       if (turn === request) caption.textContent = "Santa Village couldn’t load. Select it again to retry.";
