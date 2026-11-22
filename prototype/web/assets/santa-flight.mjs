@@ -114,6 +114,14 @@ export async function animateVillage(url) {
   nodes[flight].translation=path[0];
   const input=floats(times,'SCALAR',{min:[0],max:[24]});
   (model.animations ||= []).push({name:'Santa flight',samplers:[{input,output:floats(path,'VEC3')},{input,output:floats(rot,'VEC4')}],channels:[{sampler:0,target:{node:flight,path:'translation'}},{sampler:1,target:{node:flight,path:'rotation'}}]});
+  const workshop = model.animations.find(clip => clip.name === "Workshop and chimney loops");
+  if (workshop) {
+    const flightClip = model.animations.at(-1);
+    const offset = flightClip.samplers.length;
+    flightClip.samplers.push(...workshop.samplers);
+    flightClip.channels.push(...workshop.channels.map(channel => ({...channel, sampler:channel.sampler+offset})));
+    model.animations = model.animations.filter(clip => clip !== workshop);
+  }
   model.buffers[0].byteLength=bytes;
   const json=new TextEncoder().encode(JSON.stringify(model)), padded=(json.length+3)&~3;
   const head=new ArrayBuffer(20), h=new DataView(head);
