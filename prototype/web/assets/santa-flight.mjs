@@ -65,13 +65,13 @@ export async function animateVillage(url) {
   const width=Math.max(high[0]-low[0],high[2]-low[2]);
   const scale=width*.055, children=[];
   const flight=node('Santa and reindeer flight',scene.nodes,{scale:[scale,scale,scale],children});
-  function part(name,color,x,y,z,sx,sy,sz,angle=0) {
-    return node(name,children,{mesh:meshes[color],translation:[x,y,z],scale:[sx,sy,sz],rotation:[0,0,Math.sin(angle/2),Math.cos(angle/2)]});
+  function part(name,color,x,y,z,sx,sy,sz,angle=0,parent=children) {
+    return node(name,parent,{mesh:meshes[color],translation:[x,y,z],scale:[sx,sy,sz],rotation:[0,0,Math.sin(angle/2),Math.cos(angle/2)]});
   }
-  function rod(name,color,a,b,r) {
+  function rod(name,color,a,b,r,parent=children) {
     const d=b.map((p,i)=>p-a[i]), len=Math.hypot(...d);
     const axis=[d[2]/len,0,-d[0]/len], w=1+d[1]/len, mag=Math.hypot(...axis,w);
-    node(name,children,{mesh:meshes[color],translation:a.map((p,i)=>(p+b[i])/2),scale:[r,len/2+r*.45,r],rotation:mag<1e-6?[1,0,0,0]:[...axis,w].map(v=>v/mag)});
+    node(name,parent,{mesh:meshes[color],translation:a.map((p,i)=>(p+b[i])/2),scale:[r,len/2+r*.45,r],rotation:mag<1e-6?[1,0,0,0]:[...axis,w].map(v=>v/mag)});
   }
   part('Carved sleigh','berry',-1.65,.15,0,.94,.34,.43);
   part('High back','berry',-2.38,.42,0,.18,.48,.42,.25);
@@ -86,7 +86,8 @@ export async function animateVillage(url) {
   part('Cap','berry',-1.47,1.15,0,.20,.20,.19,.42);
   part('Pom','cream',-1.62,1.25,0,.085,.085,.085);
   part('Gift sack','pine',-2.02,.53,0,.32,.34,.31);
-  for(const x of [.55,2.02]) {
+  const legs=[];
+  for(const [deer,x] of [.55,2.02].entries()) {
     part('Reindeer torso','oak',x,.21,0,.47,.23,.18);
     part('Neck','oak',x+.30,.44,0,.16,.31,.14,-.39);
     part('Muzzle','oak',x+.45,.66,0,.24,.13,.13);
@@ -94,9 +95,14 @@ export async function animateVillage(url) {
     part('Harness','berry',x+.17,.24,0,.075,.23,.18);
     for(const z of [-.115,.115]){
       for(const s of [-1,1]){
-        const hip=[x+s*.27,.16,z], knee=[x+s*.38,-.04,z], foot=[x+s*(z>0?.59:.49),-.18,z];
-        rod('Leg','oak',hip,knee,.052);rod('Shin','oak',knee,foot,.041);
-        part('Hoof','hoof',...foot,.069,.045,.052);
+        const upper=[],lower=[];
+        const hip=node('Reindeer hip',children,{translation:[x+s*.27,.16,z],children:upper});
+        const kneeOffset=[s*.095,-.235,0],hoofOffset=[-s*.065,-.215,0];
+        rod('Upper leg','oak',[0,0,0],kneeOffset,.052,upper);
+        const knee=node('Reindeer knee',upper,{translation:kneeOffset,children:lower});
+        rod('Lower leg','oak',[0,0,0],hoofOffset,.041,lower);
+        part('Hoof','hoof',...hoofOffset,.069,.045,.052,0,lower);
+        legs.push({hip,knee,front:s===1,phase:deer*1.18+(z>0?.54:0)+(s<0?Math.PI:0)});
       }
       const tip=[x+.12,1.13,z*1.8];
       rod('Antler','gold',[x+.32,.74,z],tip,.035);
@@ -114,6 +120,20 @@ export async function animateVillage(url) {
   nodes[flight].translation=path[0];
   const input=floats(times,'SCALAR',{min:[0],max:[24]});
   (model.animations ||= []).push({name:'Santa flight',samplers:[{input,output:floats(path,'VEC3')},{input,output:floats(rot,'VEC4')}],channels:[{sampler:0,target:{node:flight,path:'translation'}},{sampler:1,target:{node:flight,path:'rotation'}}]});
+  const clip=model.animations.at(-1);
+  const strideTimes=Array.from({length:385},(_,i)=>i/16);
+  const strideInput=floats(strideTimes,'SCALAR',{min:[0],max:[24]});
+  for(const leg of legs){
+    for(const joint of ["hip","knee"]){
+      const keys=strideTimes.map(t=>{
+        const phase=t*2*Math.PI+leg.phase;
+        const angle=joint==="hip"?.83*Math.sin(phase): (leg.front?-1:1)*(.15+.92*(.5+.5*Math.cos(phase)));
+        return [0,0,Math.sin(angle/2),Math.cos(angle/2)];
+      });
+      const sampler=clip.samplers.push({input:strideInput,output:floats(keys,'VEC4')})-1;
+      clip.channels.push({sampler,target:{node:leg[joint],path:"rotation"}});
+    }
+  }
   const workshop = model.animations.find(clip => clip.name === "Workshop and chimney loops");
   if (workshop) {
     const flightClip = model.animations.at(-1);
