@@ -88,13 +88,14 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 .sleigh-flight{transform-origin:center;animation:sleigh-flight 2.6s ease-in-out infinite alternate}.sleigh-stars{animation:sleigh-stars 2s ease-in-out infinite alternate}
 @keyframes sleigh-flight{from{transform:translate(-9px,3px) rotate(-2deg)}to{transform:translate(9px,-4px) rotate(2deg)}}@keyframes sleigh-stars{to{opacity:.42;transform:translateX(-9px)}}
 @media(prefers-reduced-motion:reduce){.sleigh-flight,.sleigh-stars{animation:none}}
+#preview-world{display:block;width:fit-content;margin-top:16px;color:#315e53;font-weight:650}#pack-hint{color:var(--muted);font-size:14px}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
 <header><strong>fuzzy</strong><a class="back" href="./index.html">← Back to winter worlds</a></header>
 <main><h1>Winter worlds</h1>
 <nav aria-label="Choose a world" id="worlds"><button aria-pressed="true" data-world="north">North Pole</button> <button aria-pressed="false" data-world="village">North Pole v2 · Santa Village</button> <button aria-pressed="false" data-world="academy">Wizarding Christmas</button></nav>
-<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your island…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><button id="pack-world" hidden>Wrap &amp; send this world</button>
+<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your island…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><button id="pack-world" hidden>Email this world</button><span id="pack-hint" hidden> Available when all three gifts are ready.</span>
 <details><summary>Tripo models and generation tools</summary>
 <p><a href="/api/tripo?taskId=caabd271-8750-45d4-abc8-579a7fbfc74e&amp;download=1&amp;asset=island" download="santa-village-original.glb">Download original Tripo Santa Village</a></p>
 <div class="kicker">Tripo · low-poly 3D generation</div>
@@ -131,7 +132,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 </details></main><dialog id="packing" aria-labelledby="packing-title"><form method="dialog"><button class="parcel-close" aria-label="Close wrapping options">×</button></form>
 <h2 id="packing-title">Wrap your world</h2><form id="delivery"><fieldset><legend>Wrapping paper</legend><div id="paper-options"></div></fieldset>
 <fieldset><legend>Send to</legend><div id="receivers"></div><button type="button" id="add-receiver" aria-label="Add another receiver">+ Add receiver</button></fieldset>
-<button type="submit">Open email draft</button> <button type="button" id="copy-parcel">Copy gift link</button><p role="status" id="send-status"></p></form></dialog>
+<button type="submit">Send by email</button> <button type="button" id="copy-parcel">Copy gift link</button><a id="preview-world" href="#" target="_blank" rel="noopener">Preview as receiver</a><p role="status" id="send-status"></p></form></dialog>
 <dialog id="arrival" aria-labelledby="arrival-title"><h2 id="arrival-title">A winter world for you</h2><div class="outer-box" aria-hidden="true"><i></i><b></b><em></em></div><button id="unfold">Open your world</button></dialog>
 <dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button type="button" id="bike-preset">Bicycle · Instant preset</button> <button id="box-generate">Generate gift · 30 credits</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your Christmas note</label><textarea id="letter-input" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
 <script>
@@ -304,7 +305,7 @@ if(parcelParams.has("parcel")){
 }
 const key=parcel?"fuzzy-received:"+location.hash:"fuzzy-village-boxes-v1";
 try{
-  const saved=JSON.parse(localStorage.getItem(key)||"null");
+  const saved=parcel&&parcelParams.has("preview")?null:JSON.parse(localStorage.getItem(key)||"null");
   if(Array.isArray(saved))saved.slice(0,3).forEach((v,i)=>{if((v?.id && ["building","retry","ready","open"].includes(v.phase))||(v?.phase==="prepared"&&typeof v.prompt==="string"))boxes[i]=v;});
   else if(!parcel){const id=localStorage.getItem("fuzzy-village-gift-task");if(id)boxes[0]={id,phase:"ready"};}
 }catch{}
@@ -322,7 +323,13 @@ for(const [value,name] of Object.entries(papers)){
   sample.dataset.paper=value;radio.type="radio";radio.name="paper";radio.value=value;radio.checked=value==="pine";
   label.append(sample,radio,name);document.querySelector("#paper-options").append(label);
 }
-packWorld.onclick=()=>{sendStatus.textContent="";packing.showModal();};
+const previewWorld=document.querySelector("#preview-world");
+function refreshReceiverPreview(){
+  const url=new URL(parcelURL()),params=new URLSearchParams(url.hash.slice(1));
+  params.set("preview","1");url.hash=params.toString();previewWorld.href=url.href;
+}
+packWorld.onclick=()=>{sendStatus.textContent="";refreshReceiverPreview();packing.showModal();};
+document.querySelector("#paper-options").addEventListener("change",refreshReceiverPreview);
 function parcelURL(){
   const params=new URLSearchParams({parcel:"1",paper:document.querySelector('input[name="paper"]:checked').value});
   for(const box of boxes)params.append("gift",box.id);
@@ -334,7 +341,7 @@ document.querySelector("#delivery").onsubmit=e=>{
   const emails=[...new Set(Array.from(recipients.children,input=>input.value.trim()))];
   const url=parcelURL();
   location.href="mailto:?bcc="+encodeURIComponent(emails.join(","))+"&subject="+encodeURIComponent("A winter world for you")+"&body="+encodeURIComponent("I packed a Santa Village with three gifts for you. Open your world here:\n\n"+url);
-  sendStatus.textContent="Send the draft from your email app. You can also copy the gift link.";
+  sendStatus.textContent="Send the draft in your email app, then choose Preview as receiver to open your wrapped world.";
 };
 document.querySelector("#copy-parcel").onclick=async()=>{try{await navigator.clipboard.writeText(parcelURL());sendStatus.textContent="Gift link copied.";}catch{const field=document.createElement("textarea");field.readOnly=true;field.value=parcelURL();sendStatus.replaceChildren(field);field.select();}};
 if(parcel){
@@ -356,7 +363,9 @@ function guideStep(){
 }
 function syncGuide(){
   const village=world.dataset.kind==="village",step=guideStep(),gaming=village&&(step.kind==="game"||boxes.every(box=>box.phase==="open"));
-  packWorld.hidden=!village||!!parcel||!boxes.every(b=>["ready","open"].includes(b.phase));
+  packWorld.hidden=!village||!!parcel;
+  packWorld.disabled=!boxes.every(b=>["ready","open"].includes(b.phase));
+  document.querySelector("#pack-hint").hidden=packWorld.hidden||!packWorld.disabled;
   if(!village)return;
   world.querySelectorAll(".box-hit").forEach(button=>{
     const slot=Number(button.dataset.box),b=boxes[slot];
@@ -378,7 +387,7 @@ letter.addEventListener("close",()=>{
   }
 });
 let selectedBox=0,renderVersion=0,currentModel=null,pendingReveal=null;
-const persistBoxes=()=>{try{localStorage.setItem(key,JSON.stringify(boxes.map(b=>b.phase==="opening"?{...b,phase:"ready"}:b.phase==="starting"?{phase:"prepared",prompt:b.prompt}:b)));}catch{}};
+const persistBoxes=()=>{if(parcel&&parcelParams.has("preview"))return;try{localStorage.setItem(key,JSON.stringify(boxes.map(b=>b.phase==="opening"?{...b,phase:"ready"}:b.phase==="starting"?{phase:"prepared",prompt:b.prompt}:b)));}catch{}};
 function paintBox(slot){
   syncGuide();
   const b=boxes[slot],button=world.querySelector('[data-box="'+slot+'"]');if(!button)return;
@@ -572,7 +581,7 @@ async function selectWorld(choice) {
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
-  packWorld.hidden=true;
+  packWorld.hidden=true;document.querySelector("#pack-hint").hidden=true;
   world.alt = choice.textContent;
   caption.textContent = "Loading " + world.alt + "…";
   clearElfInteraction();world.replaceChildren();
