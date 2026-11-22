@@ -260,6 +260,26 @@ export async function villageGeometry() {
     for(const x of [-.73,.73])for(const z of [-.14,.14])box("dark",x,.28,z,.043,.19,.042);
     box("mint",.02,.51,0,.16,.01,.13);
   },shopX,.025,shopZ+.84);
+  // The elf faces the inlet from the snow between the pool and the igloo.
+  const fisherX=6.12,fisherZ=.30;
+  place("Ice fishing elf","Elf holding a fishing rod",()=>{
+    elf("spruce",true);
+    for(const side of [-1,1]){
+      const hand=[side*.07,.47,.28];
+      rod("spruce",[side*.16,.49,0],hand,.067);
+      ball("skin",...hand,.069,.064,.066);
+    }
+    rod("wood",[.09,.40,.20],[-.12,.86,.86],.031);
+    rod("wood",[-.12,.86,.86],[-.22,.84,1.18],.018);
+    rod("white",[-.22,.84,1.18],[-.22,.12,1.18],.009);
+  },fisherX,.025,fisherZ);
+  const holeX=fisherX-.22,holeZ=fisherZ+1.18;
+  place("Fishing hole","Cut through the ice",()=>{
+    solid("ice",0,0,0,[[0,.35,.27],[.016,.36,.28]],12);
+    solid("deep",0,0,0,[[.018,.29,.21],[.021,.29,.21]],12);
+  },holeX,.036,holeZ);
+  villageEffects.push({kind:"fishing-elf",position:[fisherX,1.43,fisherZ]});
+  villageEffects.push({kind:"fishing-float",position:[holeX,.12,holeZ]});
   prop("Ice igloo by the inlet","igloo",5.61,-.65,1.23,.26);
   prop("Little ice igloo","igloo",.05,3.64,1.14,.52);
   const animation={name:"Workshop and chimney loops",channels:[],samplers:[]};
