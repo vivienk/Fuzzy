@@ -71,6 +71,7 @@ export async function villageGeometry() {
     }
     model.scenes[0].nodes.push(model.nodes.push({name,mesh:designs.get(design),translation:[x,y,z],scale:[scale,scale,scale],rotation:[0,Math.sin(yaw/2),0,Math.cos(yaw/2)]})-1);
   }
+  const islandFootprint=1.10;
   place("Floating island","Faceted snow shelf",()=>{
     const bands=[[0,1],[-.22,1.015],[-.98,.92],[-1.82,.73],[-2.65,.49],[-3.43,.20]];
     const rings=bands.map(([h,s],k)=>Array.from({length:36},(_,i)=>{
@@ -89,6 +90,7 @@ export async function villageGeometry() {
     for(const [x,y,z,h] of [[-4.2,-.90,4.45,1.78],[-4.5,-.90,4.28,.83],[3.65,-1.26,3.66,1.25],[5.36,-.94,-2.29,1.13]])
       solid("ice",x,y,z,[[-h,.018,.018],[0,.15,.18]],5);
   });
+  model.nodes.at(-1).scale=[islandFootprint,1,islandFootprint];
   function peak(){
     const n=11;
     const levels=[[0,1,0],[.43,.68,.05],[.65,.43,-.09],[.84,.24,-.14],[1,.015,-.21]];
@@ -115,6 +117,7 @@ export async function villageGeometry() {
     const shore=[[4.79,.014,.91],[5.85,.014,.36],[6.18,.014,1.10],[5.83,.014,1.86],[5.30,.014,2.50],[4.7,.014,2.86],[4.55,.014,2.36]];
     for(let i=0;i<shore.length;i++)tri(i%3?"ice":"deep",[5.2,.02,1.6],shore[(i+1)%shore.length],shore[i]);
   });
+  model.nodes.at(-1).scale=[islandFootprint,1,islandFootprint];
   function windowAt(x,y,z){
     box("dark",x,y,z,.20,.22,.027);box("lit",x,y,z+.035,.148,.168,.012);
     box("cookie",x,y,z+.052,.015,.17,.012);box("cookie",x,y,z+.052,.15,.017,.012);
@@ -287,7 +290,7 @@ export async function villageGeometry() {
     },x,.725,parcelZ);
     track(model.nodes.length-1,"scale",t=>{const v=Math.max(.001,fold(t,4));return [v,v,v];});
   }
-  const rx=7.18,rz=5.44;
+  const rx=7.18*islandFootprint,rz=5.44*islandFootprint;
   function railPoint(t,side=0){
     const c=Math.cos(t),v=Math.sin(t),n=Math.hypot(rz*c,rx*v);
     return [rx*c+side*rz*c/n,.099,rz*v+side*rx*v/n];
