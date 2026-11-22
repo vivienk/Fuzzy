@@ -42,7 +42,7 @@ window.FuzzyDecorations=(()=>{
   function box(x,y,z,w,h,d,color){const p=[[x-w/2,y,z-d/2],[x+w/2,y,z-d/2],[x+w/2,y+h,z-d/2],[x-w/2,y+h,z-d/2],[x-w/2,y,z+d/2],[x+w/2,y,z+d/2],[x+w/2,y+h,z+d/2],[x-w/2,y+h,z+d/2]];add([...[0,3,2,0,2,1,4,5,6,4,6,7,0,4,7,0,7,3,1,2,6,1,6,5,3,7,6,3,6,2,0,1,5,0,5,4].map(i=>p[i])],color)}
   function cone(x,y,z,r,h,color){let v=[];for(let i=0;i<10;i++){let a=i*Math.PI/5,b=(i+1)*Math.PI/5;v.push([x+r*Math.cos(a),y,z+r*Math.sin(a)],[x,y+h,z],[x+r*Math.cos(b),y,z+r*Math.sin(b)])}add(v,color)}
   function ball(x,y,z,r,color){let v=[];const p=(a,b)=>[x+r*Math.sin(a)*Math.cos(b),y+r*Math.cos(a),z+r*Math.sin(a)*Math.sin(b)];for(let i=0;i<6;i++)for(let j=0;j<10;j++){let a=i*Math.PI/6,b=j*Math.PI/5,c=(i+1)*Math.PI/6,d=(j+1)*Math.PI/5;v.push(p(a,b),p(c,b),p(c,d),p(a,b),p(c,d),p(a,d))}add(v,color)}
-  const palette={forest:{white:[.91,.88,1,1],red:[.48,.23,.65,1],gold:[.78,.65,1,1],fur:[.68,.60,.78,1],antler:[.86,.78,1,1]},aurora:{white:[.94,.93,.89,1],red:[.48,.07,.07,1],gold:[.72,.48,.19,1],fur:[.57,.41,.28,1],antler:[.77,.84,.72,1]},alpine:{white:[.98,.97,.92,1],red:[.72,.07,.12,1],gold:[1,.65,.2,1],fur:[.47,.25,.12,1],antler:[.72,.51,.28,1]}}[world||'alpine'];
+  const palette={forest:{white:[.88,.87,.92,1],red:[.43,.31,.44,1],gold:[.60,.51,.68,1],fur:[.51,.47,.58,1],antler:[.66,.59,.72,1]},aurora:{white:[.91,.90,.88,1],red:[.55,.34,.34,1],gold:[.70,.55,.37,1],fur:[.47,.38,.31,1],antler:[.63,.65,.59,1]},alpine:{white:[.93,.91,.86,1],red:[.57,.36,.37,1],gold:[.78,.62,.42,1],fur:[.46,.34,.27,1],antler:[.64,.52,.38,1]}}[world||'alpine'];
   const {white,red,gold}=palette;
   if(kind==='reindeer'){
    const {fur,antler}=palette,cream=white,hoof=[.17,.10,.08,1];
