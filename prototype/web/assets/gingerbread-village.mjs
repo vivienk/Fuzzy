@@ -152,9 +152,14 @@ export async function villageGeometry() {
       solid(i%2?"spruce":"pine",0,y,0,[[0,r*.85,r*.85],[.12,r,r],[.33,r*.83,r*.83],[.96,r*.11,r*.11],[1.07,0,0]],13);
       if(!decorated)solid("snow",0,y+.20,0,[[0,r*.92,r*.92],[.14,r*.79,r*.79],[.89,0,0]],13);
       if(decorated){let prev;
-        for(let j=0;j<=36;j++){const a=tau*j/36,rr=r*(.89+.05*Math.cos(3*a)),p=[rr*Math.cos(a),y+.23+.079*Math.cos(6*a),rr*Math.sin(a)];
-          if(prev)rod("gold",prev,p,.022);prev=p;
-          if(j%3===1)ball(j%2?"red":"lit",p[0]*1.02,p[1]-.04,p[2]*1.02,.075,.094,.075,8);
+        for(let j=0;j<=36;j++){const a=tau*j/36+i*.27,drop=.5-.5*Math.cos(4*a-i),rr=r*(.94+.09*drop),p=[rr*Math.cos(a),y+.29-.15*drop,rr*Math.sin(a)];
+          if(prev)rod("gold",prev,p,.027);prev=p;
+          if(j<36 && j%6===0){
+            const finish=["red","white","gold"][(j/6+i)%3];
+            const size=.103-i*.009;
+            rod("gold",p,[p[0],p[1]-.065,p[2]],.017);
+            ball(finish,p[0],p[1]-.065-size,p[2],size,size*1.22,size,8);
+          }else if(j%3===1)ball("lit",p[0],p[1],p[2],.038,.044,.038,6);
         }
       }
     }
@@ -220,7 +225,7 @@ export async function villageGeometry() {
     const scale=accessor(sizes.flatMap(s=>[s,s,s]),{});
     feedClips.push({name:"Feed "+name,samplers:[{input,output:rotation},{input,output:scale}],channels:[
       {sampler:0,target:{node:joint,path:"rotation"}},{sampler:1,target:{node:carrot,path:"scale"}}]});
-    villageEffects.push({kind:"feed",name,position:[x,.92*size,z]});
+    villageEffects.push({kind:"feed",name,position:[x,1.8*size+.24,z]});
   }
   for(const [i,[x,z]] of [[-1.1,.69],[.99,.72],[.65,1.02]].entries())place("Wrapped gift "+(i+1),"Ribbon parcel "+i,()=>{
     box(i%2?"mint":"red",0,.15,0,.22,.15,.17);box("gold",0,.155,0,.043,.156,.174);box("gold",0,.31,0,.22,.014,.04);
@@ -228,6 +233,8 @@ export async function villageGeometry() {
   // Open-front toy shop on the near side gives the workbench a clear sightline.
   const shopX=-2.20,shopZ=2.96;
   prop("Santa's workshop","workshop",shopX,shopZ-.40,2.5625);
+  prop("Christmas mailbox","mailbox",-3.61,3.61,.88,.18);
+  villageEffects.push({kind:"mail",position:[-3.61,.95,3.61]});
   prop("North Pole entrance sign","sign",1.46,3.65,1.43,.28);
   [[-3.52,2.76],[-.81,2.72],[1.50,-1.35],[3.16,.18]].forEach(([x,z],i)=>prop("Peppermint cane "+(i+1),"cane",x,z,.90,.16));
   place("Gift wrapping bench","Ribbon cutting table",()=>{
