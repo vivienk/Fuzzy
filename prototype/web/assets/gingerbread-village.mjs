@@ -1,13 +1,13 @@
 // Each placed object is a named glTF node. Objects of the same design share a mesh.
 import {propsV1} from "./north-pole-props.mjs";
 export const villageEffects=[];
-const walks=[[-.85,1.96,.64,.20],[2.10,.92,.30,.52],[-5.27,1.24,.37,.66],[.52,-1.45,.49,.20]];
+const walks=[[-.85,1.96,.64,.20],[2.10,.92,.30,.52],[-5.12,.65,.23,.38],[.52,-1.45,.49,.20]];
 export function walkingElfPosition(i,t){
   const [cx,cz,rx,rz]=walks[i],phase=t*2*Math.PI/8+i,step=t*2*Math.PI+i;
   return [cx+rx*Math.cos(phase),.025+.021*Math.abs(Math.cos(step)),cz+rz*Math.sin(phase)];
 }
 export const walkingElfCount=walks.length;
-export async function villageGeometry() {
+export async function villageGeometry(fishingUnlocked=false) {
   const original=await propsV1();
   villageEffects.length=0;
   const model = {asset:{version:"2.0"},scene:0,scenes:[{nodes:[]}],nodes:[],meshes:[],materials:[],buffers:[],bufferViews:[],accessors:[]};
@@ -232,7 +232,7 @@ export async function villageGeometry() {
   },x,.002,z,.88,i*.6);
   // Open-front toy shop on the near side gives the workbench a clear sightline.
   // Leave room between the enlarged square lids west of the mailbox.
-  const giftBoxes=[[-4.55,4.0,"red"],[-5.64,3.35,"mint"],[-6.02,2.23,"ice"]];
+  const giftBoxes=[[-4.48,3.10,"red"],[-5.55,1.99,"mint"],[-6.12,-.22,"ice"]];
   const boxScale=1.25;
   giftBoxes.forEach(([x,z,color],slot)=>{
     place("Gift box "+slot,"Square gift box "+color,()=>{
@@ -260,26 +260,28 @@ export async function villageGeometry() {
     for(const x of [-.73,.73])for(const z of [-.14,.14])box("dark",x,.28,z,.043,.19,.042);
     box("mint",.02,.51,0,.16,.01,.13);
   },shopX,.025,shopZ+.84);
-  // The elf faces the inlet from the snow between the pool and the igloo.
-  const fisherX=6.12,fisherZ=.30;
-  place("Ice fishing elf","Elf holding a fishing rod",()=>{
-    elf("spruce",true);
-    for(const side of [-1,1]){
-      const hand=[side*.07,.47,.28];
-      rod("spruce",[side*.16,.49,0],hand,.067);
-      ball("skin",...hand,.069,.064,.066);
-    }
-    rod("wood",[.09,.40,.20],[-.12,.86,.86],.031);
-    rod("wood",[-.12,.86,.86],[-.22,.84,1.18],.018);
-    rod("white",[-.22,.84,1.18],[-.22,.12,1.18],.009);
-  },fisherX,.025,fisherZ);
-  const holeX=fisherX-.22,holeZ=fisherZ+1.18;
-  place("Fishing hole","Cut through the ice",()=>{
-    solid("ice",0,0,0,[[0,.35,.27],[.016,.36,.28]],12);
-    solid("deep",0,0,0,[[.018,.29,.21],[.021,.29,.21]],12);
-  },holeX,.036,holeZ);
-  villageEffects.push({kind:"fishing-elf",position:[fisherX,1.43,fisherZ]});
-  villageEffects.push({kind:"fishing-float",position:[holeX,.12,holeZ]});
+  if(fishingUnlocked){
+    // The elf faces the inlet from the snow between the pool and the igloo.
+    const fisherX=6.12,fisherZ=.30;
+    place("Ice fishing elf","Elf holding a fishing rod",()=>{
+      elf("spruce",true);
+      for(const side of [-1,1]){
+        const hand=[side*.07,.47,.28];
+        rod("spruce",[side*.16,.49,0],hand,.067);
+        ball("skin",...hand,.069,.064,.066);
+      }
+      rod("wood",[.09,.40,.20],[-.12,.86,.86],.031);
+      rod("wood",[-.12,.86,.86],[-.22,.84,1.18],.018);
+      rod("white",[-.22,.84,1.18],[-.22,.12,1.18],.009);
+    },fisherX,.025,fisherZ);
+    const holeX=fisherX-.22,holeZ=fisherZ+1.18;
+    place("Fishing hole","Cut through the ice",()=>{
+      solid("ice",0,0,0,[[0,.35,.27],[.016,.36,.28]],12);
+      solid("deep",0,0,0,[[.018,.29,.21],[.021,.29,.21]],12);
+    },holeX,.036,holeZ);
+    villageEffects.push({kind:"fishing-elf",position:[fisherX,1.43,fisherZ]});
+    villageEffects.push({kind:"fishing-float",position:[holeX,.12,holeZ]});
+  }
   prop("Ice igloo by the inlet","igloo",5.61,-.65,1.23,.26);
   prop("Little ice igloo","igloo",.05,3.64,1.14,.52);
   const animation={name:"Workshop and chimney loops",channels:[],samplers:[]};
