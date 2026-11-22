@@ -89,7 +89,8 @@ const SCENE_STYLES={
   'Pearl snow':[.98,.94,.88],'Lavender slate':[.50,.42,.69],'Cedar':[.78,.39,.46],
   'Deep pine':[.23,.44,.45],'Cranberry':[.88,.48,.49],'Champagne gold':[.99,.78,.48],
   'Bronze':[.22,.19,.35],'Amber glow':[1,.82,.54],'Sage':[.55,.76,.69],
-  'Glacier blue':[.61,.75,.88],'Rose sandstone':[.84,.58,.65],'Midnight roof':[.39,.34,.57],\n  'Luminous frost crystals':[.71,.68,.91],'Spring stone':[.50,.42,.69],\n  'forest architectural trim':[.78,.55,.72],'forest enchanted accent':[.99,.79,.49],\n  'aurora architectural trim':[.55,.76,.69],'aurora enchanted accent':[.99,.82,.54],\n  'alpine architectural trim':[.78,.55,.72],'alpine enchanted accent':[.99,.79,.49]
+  'Glacier blue':[.61,.75,.88],'Rose sandstone':[.84,.58,.65],'Midnight roof':[.39,.34,.57],
+  'Luminous frost crystals':[.71,.68,.91],'Spring stone':[.50,.42,.69],\n  'forest architectural trim':[.78,.55,.72],'forest enchanted accent':[.99,.79,.49],\n  'aurora architectural trim':[.55,.76,.69],'aurora enchanted accent':[.99,.82,.54],\n  'alpine architectural trim':[.78,.55,.72],'alpine enchanted accent':[.99,.79,.49]
  }}
 };
 const originalSceneMaterials=new WeakMap();
@@ -131,7 +132,7 @@ function applySceneStyle(){
  document.body.dataset.style=selectedSceneStyle;
  document.querySelector('.experience').dataset.sceneStyle=selectedSceneStyle;
  document.querySelectorAll('.style-option[data-style]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.style===selectedSceneStyle)));
- $('style-status').textContent=preset.label+' is applied across the whole 3D scene.';
+ $('style-status').textContent=preset.label+' is applied to every model and its surface texture.';
  for(const material of scene.model?.materials||[]){
   const pbr=material.pbrMetallicRoughness;if(!pbr)continue;
   let original=originalSceneMaterials.get(pbr);
