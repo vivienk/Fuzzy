@@ -62,14 +62,14 @@ body[data-style="monument-valley"] #scene{background:linear-gradient(145deg,#aa9
 .experience[data-scene-style="monument-valley"] #scene.monument-reveal{animation:monument-reveal 1.6s cubic-bezier(.22,.61,.36,1) both}
 @media(prefers-reduced-motion:reduce){.experience[data-scene-style="monument-valley"] #scene.monument-reveal{animation:none}}
 @media(max-width:800px){.experience::after{inset:0 0 auto;height:440px;border-radius:30px 30px 0 0}.style-picker{padding:18px}.style-options{grid-template-columns:1fr}.style-option{padding:9px 12px}.style-swatch{flex-basis:34px;height:34px}}
-</style><script src="assets/light-anchors.js?v=gentle-walk-1"></script><script src="assets/decorations.js?v=gentle-walk-1"></script><script type="module">await customElements.whenDefined("model-viewer");customElements.get("model-viewer").minimumRenderScale=1;</script></head><body><header><strong>fuzzy</strong><span>Three winter worlds</span></header><main><div class="intro"><div class="eyebrow">Send your loved ones a 3D card</div><h1>Three little worlds.<br>A little closer to you.</h1><p>Choose a winter night, write a little note, and make a place for someone you love. Your world begins in the Enchanted Frost Forest.</p></div><section class="world-picker" aria-labelledby="world-picker-title"><h2 id="world-picker-title">Choose your winter world</h2><p>One message. A world that feels like you.</p><div class="world-grid"><button class="world-choice" data-world="aurora" aria-pressed="false"><img src="assets/worlds/north-pole-preview.png" alt="Rendered North Pole workshop with elves, candy canes and reindeer" loading="lazy"><span class="copy"><strong>North Pole</strong><small>Snowy workshops, igloos, gentle moose, and polar bears under the northern lights.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="alpine" aria-pressed="false"><img src="assets/worlds/alpine-concept.png" alt="Low-poly concept art for Moonlit Alpine Village" loading="lazy"><span class="copy"><strong>Moonlit Alpine Village</strong><small>Snowy mountain peaks, warm chalets, and a Christmas tree plaza.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="forest" aria-pressed="true"><img src="assets/worlds/forest-concept.png" alt="Low-poly concept art for Enchanted Frost Forest" loading="lazy"><span class="copy"><strong>Enchanted Frost Forest</strong><small>Lavender skies, frosted pines, and luminous crystal gardens.</small><span class="choice-state">Selected · Default world</span></span></button></div><p class="world-caption">North Pole shows the actual 3D model; the other previews are concept artwork. Explore each world below.</p></section>
+</style><script src="assets/light-anchors.js?v=gentle-walk-1"></script><script src="assets/decorations.js?v=monument-valley-material-texture-2"></script><script type="module">await customElements.whenDefined("model-viewer");customElements.get("model-viewer").minimumRenderScale=1;</script></head><body><header><strong>fuzzy</strong><span>Three winter worlds</span></header><main><div class="intro"><div class="eyebrow">Send your loved ones a 3D card</div><h1>Three little worlds.<br>A little closer to you.</h1><p>Choose a winter night, write a little note, and make a place for someone you love. Your world begins in the Enchanted Frost Forest.</p></div><section class="world-picker" aria-labelledby="world-picker-title"><h2 id="world-picker-title">Choose your winter world</h2><p>One message. A world that feels like you.</p><div class="world-grid"><button class="world-choice" data-world="aurora" aria-pressed="false"><img src="assets/worlds/north-pole-preview.png" alt="Rendered North Pole workshop with elves, candy canes and reindeer" loading="lazy"><span class="copy"><strong>North Pole</strong><small>Snowy workshops, igloos, gentle moose, and polar bears under the northern lights.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="alpine" aria-pressed="false"><img src="assets/worlds/alpine-concept.png" alt="Low-poly concept art for Moonlit Alpine Village" loading="lazy"><span class="copy"><strong>Moonlit Alpine Village</strong><small>Snowy mountain peaks, warm chalets, and a Christmas tree plaza.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="forest" aria-pressed="true"><img src="assets/worlds/forest-concept.png" alt="Low-poly concept art for Enchanted Frost Forest" loading="lazy"><span class="copy"><strong>Enchanted Frost Forest</strong><small>Lavender skies, frosted pines, and luminous crystal gardens.</small><span class="choice-state">Selected · Default world</span></span></button></div><p class="world-caption">North Pole shows the actual 3D model; the other previews are concept artwork. Explore each world below.</p></section>
 <section class="style-picker" aria-labelledby="style-picker-title">
 <h2 id="style-picker-title">Choose your scene style</h2>
 <p>One look for the whole world and every keepsake.</p>
 <div class="style-options" role="group" aria-label="Scene style">
 <button class="style-option" type="button" data-style="needle-felt" aria-pressed="true"><span class="style-swatch felt" aria-hidden="true"></span><span><strong>Needle Felt</strong><small>Warm wool and handcrafted texture</small></span></button>
 <button class="style-option" type="button" data-style="origami-paper" aria-pressed="false"><span class="style-swatch origami" aria-hidden="true"></span><span><strong>Origami Paper</strong><small>Folded planes and crisp creases</small></span></button>
-<button class="style-option" type="button" data-style="plushy" aria-pressed="false"><span class="style-swatch plushy" aria-hidden="true"></span><span><strong>Plushy</strong><small>Soft fabric and rounded forms</small></span></button><button class="style-option" type="button" data-style="monument-valley" aria-pressed="false"><span class="style-swatch monument" aria-hidden="true"></span><span><strong>Monument Valley</strong><small>Pastel color, clean planes, calm motion</small></span></button>
+<button class="style-option" type="button" data-style="plushy" aria-pressed="false"><span class="style-swatch plushy" aria-hidden="true"></span><span><strong>Plushy</strong><small>Soft fabric and rounded forms</small></span></button><button class="style-option" type="button" data-style="monument-valley" aria-pressed="false"><span class="style-swatch monument" aria-hidden="true"></span><span><strong>Monument Valley</strong><small>Pastel facets on every model, calm motion</small></span></button>
 </div>
 <p id="style-status" class="style-note" role="status">Needle Felt is applied across the whole 3D scene.</p>
 <p class="style-note">The Monument Valley look keeps this scene’s existing buildings and layout; it changes the palette, surface treatment, and motion.</p>
@@ -93,7 +93,7 @@ const SCENE_STYLES={
   'Glacier blue':[.61,.75,.88],'Rose sandstone':[.84,.58,.65],'Midnight roof':[.39,.34,.57],\n  'Luminous frost crystals':[.71,.68,.91],'Spring stone':[.50,.42,.69],\n  'forest architectural trim':[.78,.55,.72],'forest enchanted accent':[.99,.79,.49],\n  'aurora architectural trim':[.55,.76,.69],'aurora enchanted accent':[.99,.82,.54],\n  'alpine architectural trim':[.78,.55,.72],'alpine enchanted accent':[.99,.79,.49]
  }}
 };
-const originalSceneMaterials=new WeakMap(),styledSceneTextures=new WeakMap();
+const originalSceneMaterials=new WeakMap();
 let selectedSceneStyle='needle-felt',sceneStyleRevision=0;
 try{const saved=localStorage.getItem('fuzzy-scene-style');if(Object.hasOwn(SCENE_STYLES,saved))selectedSceneStyle=saved}catch(e){}
 function drawStylePattern(ctx,style,size,seed){
@@ -127,21 +127,8 @@ function drawStylePattern(ctx,style,size,seed){
  }
  ctx.restore();
 }
-async function getStyledSceneTexture(material,original,style){
- if(!original.baseColorTexture||!original.texture?.source)return null;
- let variants=styledSceneTextures.get(original.pbr);
- if(!variants){variants=new Map();styledSceneTextures.set(original.pbr,variants)}
- if(variants.has(style))return variants.get(style);
- const size=512,texture=scene.createCanvasTexture(),canvas=texture.source.element,ctx=canvas.getContext('2d');
- canvas.width=size;canvas.height=size;
- const thumbnail=await original.texture.source.createThumbnail(size,size);
- const image=new Image();image.src=thumbnail;await image.decode();
- ctx.drawImage(image,0,0,size,size);URL.revokeObjectURL(thumbnail);
- drawStylePattern(ctx,style,size,original.base[0]+original.base[1]*3+original.base[2]*7);
- texture.source.update();variants.set(style,texture);return texture;
-}
-async function applySceneStyle(){
- const revision=++sceneStyleRevision,preset=SCENE_STYLES[selectedSceneStyle];
+function applySceneStyle(){
+ const preset=SCENE_STYLES[selectedSceneStyle];
  document.body.dataset.style=selectedSceneStyle;
  document.querySelector('.experience').dataset.sceneStyle=selectedSceneStyle;
  document.querySelectorAll('.style-option[data-style]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.style===selectedSceneStyle)));
@@ -157,7 +144,7 @@ async function applySceneStyle(){
   pbr.setBaseColorFactor(paletteColor?[...paletteColor,original.base[3]]:[original.base[0]*preset.tint[0],original.base[1]*preset.tint[1],original.base[2]*preset.tint[2],original.base[3]]);
   pbr.setRoughnessFactor(Math.min(1,Math.max(.05,original.roughness+(preset.roughness-.8)*.45)));
   pbr.setMetallicFactor(original.metallic*preset.metallic);
-  try{const texture=await getStyledSceneTexture(material,original,selectedSceneStyle);if(revision!==sceneStyleRevision)return;if(texture)original.baseColorTexture.setTexture(texture)}catch(error){console.warn('Fuzzy style texture could not be applied',error)}
+  // Per-material surface textures are built into the scene GLB.
  }
 }
 document.querySelectorAll('.style-option[data-style]').forEach(button=>button.addEventListener('click',()=>{
