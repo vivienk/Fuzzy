@@ -76,13 +76,20 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #world .box-hit[data-muted] span{display:none}#gift-activities{margin:-20px 0 20px}
 #inspect-gift{width:min(520px,94vw);background:#fff8eb;border:0;border-radius:18px;color:#493833}#inspect-gift model-viewer{height:clamp(220px,46vh,420px);width:100%;background:#e5ebe7}#inspect-gift form{text-align:right}#bike-preset{margin:8px 0;background:#e0e9dc;color:#394d40}
 #world .moose-feed[data-quiet]:not(:hover):not(:focus-visible):not(:disabled){opacity:.15}
+#pack-world[hidden],body.receiving #worlds,body.receiving details,body.receiving #replace-gift{display:none}
+#pack-world{margin-top:1rem}#packing,#arrival{width:min(440px,92vw);border:1px solid #bda58b;border-radius:18px;padding:24px;color:#44392e;background:#fff7e8}
+#arrival{text-align:center}#arrival::backdrop{background:#19243c}#packing::backdrop{background:#19182599}#packing h2,#arrival h2{font:32px Georgia,serif;margin:.3em 0 .8em}
+.parcel-close{float:right}#packing fieldset{border:0;padding:0;margin:1em 0}#packing legend{font-weight:650}#paper-options{display:flex;gap:8px;margin:.5em 0}#paper-options label{cursor:pointer;flex:1;font-size:13px}#paper-options i{display:block;height:38px;border-radius:6px;margin-bottom:4px}#receivers{display:grid;gap:6px;margin:.5em 0}#receivers input{width:100%;padding:10px;font:inherit}
+[data-paper="pine"]{--wrap:repeating-linear-gradient(55deg,#486853 0 9px,#628471 10px 13px)}[data-paper="berry"]{--wrap:repeating-linear-gradient(135deg,#a74655 0 12px,#efc7b9 12px 17px)}[data-paper="frost"]{--wrap:radial-gradient(ellipse at center,#f8efd5 0 1.5px,transparent 2px) 0 0/12px 12px,#849cac}
+#paper-options i,.outer-box i,.outer-box b,.outer-box em{background:var(--wrap)}.outer-box{position:relative;width:128px;height:110px;margin:45px auto 28px;perspective:350px}.outer-box>*{position:absolute;display:block;transition:transform .8s,opacity .8s}.outer-box i,.outer-box b{inset:13px 50% 0 0;border-right:5px solid #ebd398;transform-origin:left}.outer-box b{inset:13px 0 0 50%;border-right:0;border-left:5px solid #ebd398;transform-origin:right}.outer-box em{inset:0 -5px auto;height:22px;border-bottom:3px solid #e5c689}.unfolding i{transform:rotateY(-110deg);opacity:0}.unfolding b{transform:rotateY(110deg);opacity:0}.unfolding em{transform:translateY(-42px) rotate(-9deg);opacity:0}
+#world .fishing-action[data-quiet]:not(:hover):not(:focus-visible){opacity:.18}@media(prefers-reduced-motion:reduce){.outer-box>*{transition:none}}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
 <header><strong>fuzzy</strong><a class="back" href="./index.html">← Back to winter worlds</a></header>
 <main><h1>Winter worlds</h1>
 <nav aria-label="Choose a world" id="worlds"><button aria-pressed="true" data-world="north">North Pole</button> <button aria-pressed="false" data-world="village">North Pole v2 · Santa Village</button> <button aria-pressed="false" data-world="academy">Wizarding Christmas</button></nav>
-<figure id="diorama"><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><div id="gift-activities" hidden><button id="switch-game" type="button"></button></div>
+<figure id="diorama"><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><button id="pack-world" hidden>Wrap &amp; send this world</button><div id="gift-activities" hidden><button id="switch-game" type="button"></button></div>
 <details><summary>Tripo models and generation tools</summary>
 <p><a href="/api/tripo?taskId=caabd271-8750-45d4-abc8-579a7fbfc74e&amp;download=1&amp;asset=island" download="santa-village-original.glb">Download original Tripo Santa Village</a></p>
 <div class="kicker">Tripo · low-poly 3D generation</div>
@@ -116,7 +123,12 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 <div class="status" id="elf-status" role="status" aria-live="polite">Ready after the island generation; this step can also run independently.</div><div class="progress"><i id="elf-progress"></i></div>
 </div></section>
 <p class="note">Your Tripo key stays server-side. The page checks authentication for free before enabling generation. Each step can only be submitted once per preview session, with a combined 95-credit cap.</p>
-</details></main><dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button type="button" id="bike-preset">Bicycle · Instant preset</button> <button id="box-generate">Generate gift · 30 credits</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your Christmas note</label><textarea id="letter-input" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
+</details></main><dialog id="packing" aria-labelledby="packing-title"><form method="dialog"><button class="parcel-close" aria-label="Close wrapping options">×</button></form>
+<h2 id="packing-title">Wrap your world</h2><form id="delivery"><fieldset><legend>Wrapping paper</legend><div id="paper-options"></div></fieldset>
+<fieldset><legend>Send to</legend><div id="receivers"></div><button type="button" id="add-receiver" aria-label="Add another receiver">+ Add receiver</button></fieldset>
+<button type="submit">Open email draft</button> <button type="button" id="copy-parcel">Copy gift link</button><p role="status" id="send-status"></p></form></dialog>
+<dialog id="arrival" aria-labelledby="arrival-title"><h2 id="arrival-title">A winter world for you</h2><div class="outer-box" aria-hidden="true"><i></i><b></b><em></em></div><button id="unfold">Open your world</button></dialog>
+<dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button type="button" id="bike-preset">Bicycle · Instant preset</button> <button id="box-generate">Generate gift · 30 credits</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your Christmas note</label><textarea id="letter-input" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function setStatus(prefix,text,progress){document.querySelector("#"+prefix+"-status").textContent=text;if(Number.isFinite(progress))document.querySelector("#"+prefix+"-progress").style.width=Math.max(0,Math.min(100,progress))+"%"}
@@ -259,8 +271,8 @@ let villageNote="A little Christmas warmth from me to you. Wherever we are, you 
 function readEditor(){return JSON.parse(localStorage.getItem("fuzzy-editor")||"{}")||{};}
 function displayLetter(){note.textContent=villageNote;note.hidden=false;edit.hidden=false;form.hidden=true;}
 function openLetter(){
-  try{const state=readEditor();if(state.note?.trim())villageNote=state.note;localStorage.setItem("fuzzy-editor",JSON.stringify({...state,read:true}));}catch{}
-  world.querySelector(".mail-open")?.classList.add("read");statusLine.textContent="";displayLetter();syncGuide();letter.showModal();
+  if(parcel){villageNote=parcel.note||villageNote;}else try{const state=readEditor();if(state.note?.trim())villageNote=state.note;localStorage.setItem("fuzzy-editor",JSON.stringify({...state,read:true}));}catch{}
+  world.querySelector(".mail-open")?.classList.add("read");statusLine.textContent="";displayLetter();edit.hidden=!!parcel;syncGuide();letter.showModal();
 }
 edit.onclick=()=>{form.hidden=false;edit.hidden=true;note.hidden=true;input.value=villageNote;syncGuide();input.focus();};
 input.oninput=()=>input.setCustomValidity("");
@@ -274,16 +286,61 @@ form.onsubmit=e=>{
 document.querySelector("#close-letter").onclick=()=>letter.close();
 const stationDialog=document.querySelector("#gift-station");
 const boxes=Array.from({length:3},()=>({phase:"empty"}));
-const key="fuzzy-village-boxes-v1";
+const papers={pine:"Pine sprigs",berry:"Cranberry stripes",frost:"Frost stars"};
+const packWorld=document.querySelector("#pack-world");
+const parcelParams=new URLSearchParams(location.hash.slice(1));
+let parcel=null;
+if(parcelParams.has("parcel")){
+  const gifts=parcelParams.getAll("gift"),paper=parcelParams.get("paper");
+  if(parcelParams.get("parcel")==="1"&&Object.hasOwn(papers,paper)&&gifts.length===3&&gifts.every(id=>id==="preset:bicycle"||/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))){
+    parcel={gifts,paper,note:(parcelParams.get("note")||"").slice(0,500)};
+    gifts.forEach((id,i)=>boxes[i]={id,phase:"ready"});
+  }else{document.querySelector("main").textContent="This gift link is incomplete. Ask the sender to share it again.";throw Error("Invalid gift link");}
+}
+const key=parcel?"fuzzy-received:"+location.hash:"fuzzy-village-boxes-v1";
 try{
   const saved=JSON.parse(localStorage.getItem(key)||"null");
   if(Array.isArray(saved))saved.slice(0,3).forEach((v,i)=>{if((v?.id && ["building","retry","ready","open"].includes(v.phase))||(v?.phase==="prepared"&&typeof v.prompt==="string"))boxes[i]=v;});
-  else {const id=localStorage.getItem("fuzzy-village-gift-task");if(id)boxes[0]={id,phase:"ready"};}
+  else if(!parcel){const id=localStorage.getItem("fuzzy-village-gift-task");if(id)boxes[0]={id,phase:"ready"};}
 }catch{}
+const packing=document.querySelector("#packing"),arrival=document.querySelector("#arrival");
+const recipients=document.querySelector("#receivers"),sendStatus=document.querySelector("#send-status");
+function addReceiver(){
+  const field=document.createElement("input");
+  field.type="email";field.autocomplete="email";field.required=true;field.placeholder="name@example.com";
+  field.setAttribute("aria-label","Receiver "+(recipients.children.length+1));recipients.append(field);return field;
+}
+addReceiver();
+document.querySelector("#add-receiver").onclick=()=>addReceiver().focus();
+for(const [value,name] of Object.entries(papers)){
+  const label=document.createElement("label"),radio=document.createElement("input"),sample=document.createElement("i");
+  sample.dataset.paper=value;radio.type="radio";radio.name="paper";radio.value=value;radio.checked=value==="pine";
+  label.append(sample,radio,name);document.querySelector("#paper-options").append(label);
+}
+packWorld.onclick=()=>{sendStatus.textContent="";packing.showModal();};
+function parcelURL(){
+  const params=new URLSearchParams({parcel:"1",paper:document.querySelector('input[name="paper"]:checked').value});
+  for(const box of boxes)params.append("gift",box.id);
+  try{const message=readEditor().note;if(message)params.set("note",message.slice(0,500));}catch{}
+  const url=new URL(location.href);url.hash=params.toString();return url.href;
+}
+document.querySelector("#delivery").onsubmit=e=>{
+  e.preventDefault();
+  const emails=[...new Set(Array.from(recipients.children,input=>input.value.trim()))];
+  const url=parcelURL();
+  location.href="mailto:?bcc="+encodeURIComponent(emails.join(","))+"&subject="+encodeURIComponent("A winter world for you")+"&body="+encodeURIComponent("I packed a Santa Village with three gifts for you. Open your world here:\n\n"+url);
+  sendStatus.textContent="Send the draft from your email app. You can also copy the gift link.";
+};
+document.querySelector("#copy-parcel").onclick=async()=>{try{await navigator.clipboard.writeText(parcelURL());sendStatus.textContent="Gift link copied.";}catch{const field=document.createElement("textarea");field.readOnly=true;field.value=parcelURL();sendStatus.replaceChildren(field);field.select();}};
+if(parcel){
+  document.body.classList.add("receiving");arrival.dataset.paper=parcel.paper;
+  arrival.addEventListener("cancel",e=>e.preventDefault());arrival.showModal();
+  document.querySelector("#unfold").onclick=e=>{e.currentTarget.disabled=true;arrival.classList.add("unfolding");setTimeout(()=>arrival.close(),matchMedia("(prefers-reduced-motion: reduce)").matches?0:850);};
+}
 const noteKey="fuzzy-village-guided-note";
-let noteVisited=false;
-try{noteVisited=localStorage.getItem(noteKey)==="1";}catch{}
-let fishingUnlocked=false,gameChoice="fish",mooseIndex=0;
+let noteVisited=!!parcel;
+try{if(!parcel)noteVisited=localStorage.getItem(noteKey)==="1";}catch{}
+let gameChoice="fish",mooseIndex=0;
 
 const activities=document.querySelector("#gift-activities"),switchGame=document.querySelector("#switch-game");
 function guideStep(){
@@ -295,6 +352,7 @@ function guideStep(){
 }
 function syncGuide(){
   const village=world.dataset.kind==="village",step=guideStep(),gaming=village&&step.kind==="game";
+  packWorld.hidden=!village||!!parcel||!boxes.every(b=>["ready","open"].includes(b.phase));
   activities.hidden=!gaming;
   switchGame.textContent=gameChoice==="fish"?"Feed a moose instead":"Go ice fishing instead";
   if(!village)return;
@@ -305,12 +363,11 @@ function syncGuide(){
     button.toggleAttribute("data-guide-hidden",!["building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
   });
   world.querySelectorAll(".elf-target").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
-  world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note");
-  world.querySelector(".fishing-action")?.toggleAttribute("data-guide-hidden",!gaming||gameChoice!=="fish");
-  world.querySelector(".fishing-float")?.toggleAttribute("data-guide-hidden",!gaming||gameChoice!=="fish");
+  world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel);
+  world.querySelector(".fishing-action")?.toggleAttribute("data-quiet",fishPhase==="idle"&&(!gaming||gameChoice!=="fish"));
+  
   world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming||gameChoice!=="feed");});
-  if(!gaming&&fishPhase!=="idle")resetFishing();
-  if(gaming&&!fishingUnlocked)unlockFishing();
+
 }
 switchGame.onclick=()=>{resetFishing();gameChoice=gameChoice==="fish"?"feed":"fish";syncGuide();caption.textContent=gameChoice==="feed"?"Tap the carrot to feed the moose.":"Tap the fish to cast.";};
 letter.addEventListener("close",()=>{
@@ -319,15 +376,6 @@ letter.addEventListener("close",()=>{
     syncGuide();
   }
 });
-function unlockFishing(){
-  if(fishingUnlocked)return;
-  fishingUnlocked=true;
-
-  const oldBase=villageModel;
-  villageModel=null;
-  if(world.dataset.kind==="village")selectWorld(document.querySelector('[data-world="village"]'));
-  if(oldBase)oldBase.then(url=>URL.revokeObjectURL(url)).catch(()=>{});
-}
 let selectedBox=0,renderVersion=0,currentModel=null,pendingReveal=null;
 const persistBoxes=()=>{try{localStorage.setItem(key,JSON.stringify(boxes.map(b=>b.phase==="opening"?{...b,phase:"ready"}:b.phase==="starting"?{phase:"prepared",prompt:b.prompt}:b)));}catch{}};
 function paintBox(slot){
@@ -515,7 +563,7 @@ async function selectWorld(choice) {
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
-  activities.hidden=true;
+  activities.hidden=true;packWorld.hidden=true;
   world.alt = choice.textContent;
   caption.textContent = "Loading " + world.alt + "…";
   clearElfInteraction();world.replaceChildren();
@@ -533,7 +581,7 @@ async function selectWorld(choice) {
     try {
       villageModel ||= Promise.all([import("./assets/santa-flight.mjs"), import("./assets/gingerbread-village.mjs")])
         .then(async ([{animateVillage}, village]) => {
-          const source = URL.createObjectURL(new Blob([await village.villageGeometry(fishingUnlocked)], {type:"model/gltf-binary"}));
+          const source = URL.createObjectURL(new Blob([await village.villageGeometry(true)], {type:"model/gltf-binary"}));
           try { const url=await animateVillage(source);effects=village.villageEffects;walkingElfPosition=village.walkingElfPosition;walkingElfCount=village.walkingElfCount;return url; }
           finally { URL.revokeObjectURL(source); }
         });
@@ -552,9 +600,9 @@ async function selectWorld(choice) {
 }
 world.addEventListener("error", () => caption.textContent = world.alt + " couldn’t load. Select the world again to retry.");
 for (const choice of choices) choice.onclick = () => selectWorld(choice);
-fishingUnlocked=guideStep().kind==="game";
+
 boxes.forEach((b,i)=>{if(b.phase==="building")watchBox(i);});
-selectWorld(location.hash === "#santa-village" ? document.querySelector('[data-world="village"]') : choices[0]);
+selectWorld(parcel || location.hash === "#santa-village" ? document.querySelector('[data-world="village"]') : choices[0]);
 const assets = document.querySelector("details");
 assets.addEventListener("toggle", () => {
   if (!assets.open) return;
