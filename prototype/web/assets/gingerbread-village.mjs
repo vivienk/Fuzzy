@@ -1,5 +1,9 @@
 // Each placed object is a named glTF node. Objects of the same design share a mesh.
-export function villageGeometry() {
+import {propsV1} from "./north-pole-props.mjs";
+export const villageEffects=[];
+export async function villageGeometry() {
+  const original=await propsV1();
+  villageEffects.length=0;
   const model = {asset:{version:"2.0"},scene:0,scenes:[{nodes:[]}],nodes:[],meshes:[],materials:[],buffers:[],bufferViews:[],accessors:[]};
   const parts=[], designs=new Map();
   let data, bytes=0;
@@ -9,6 +13,11 @@ export function villageGeometry() {
   for(const [name,hex] of Object.entries(palette)){
     const rgb=hex.match(/../g).map(c=>Math.pow(parseInt(c,16)/255,2.2));
     model.materials.push({name,pbrMetallicRoughness:{baseColorFactor:[...rgb,1],metallicFactor:0,roughnessFactor:.95},doubleSided:true,...(name==="lit"?{emissiveFactor:[.6,.27,.06]}:{})});
+  }
+  original.materials.forEach(m=>{names.push("Original "+m.name);model.materials.push(m);});
+  function prop(name,key,x,z,height,yaw=0){
+    place(name,"North Pole v1 "+key,()=>original[key].draw(tri),x,0,z,height,yaw);
+    if(original[key].chimney){const [dx,y,dz]=original[key].chimney;villageEffects.push({kind:"smoke",position:[x+dx*height,y*height,z+dz*height]});}
   }
   function accessor(array,bounds,type='VEC3'){
     const buf=new Float32Array(array);
@@ -164,47 +173,17 @@ export function villageGeometry() {
   },x,.002,z,.88,i*.6);
   // Open-front toy shop on the near side gives the workbench a clear sightline.
   const shopX=-2.20,shopZ=2.96;
-  place("Santa's workshop","Open timber toy workshop",()=>{
-    box("cookie",0,.075,0,1.26,.075,.78);
-    box("wood",0,.71,-.65,1.18,.63,.09);
-    for(const x of [-1.13,1.13]){box("dark",x,.75,.46,.075,.68,.075);windowAt(x*.57,.78,-.54);}
-    for(const z of [-.80,.61])rod("dark",[-1.28,1.48,z],[1.28,1.48,z],.085);
-    for(const side of [-1,1]){
-      const x=side*1.37;
-      quad("red",[0,2.05,-.89],[0,2.05,.65],[x,1.43,.65],[x,1.43,-.89]);
-      rod("snow",[0,2.09,.67],[x,1.46,.67],.076);
-    }
-    box("wood",-.78,1.97,-.42,.14,.44,.14);box("snow",-.78,2.43,-.42,.18,.06,.18);
-    box("dark",0,1.56,.68,.42,.15,.05);
-    // A toy train emblem marks the shop.
-    box("gold",-.03,1.57,.75,.18,.052,.024);box("gold",-.16,1.65,.75,.065,.06,.026);
-    for(const x of [-.15,.09])ball("white",x,1.48,.75,.053,.053,.025);
-  },shopX,0,shopZ);
+  prop("Santa's workshop","workshop",shopX,shopZ-.40,2.05);
+  prop("North Pole entrance sign","sign",1.46,3.65,1.43,.28);
+  [[-3.52,2.76],[-.81,2.72],[1.50,-1.35],[3.16,.18]].forEach(([x,z],i)=>prop("Peppermint cane "+(i+1),"cane",x,z,.90,.16));
   place("Gift wrapping bench","Ribbon cutting table",()=>{
     box("cookie",0,.45,0,.84,.055,.19);
     for(const x of [-.73,.73])for(const z of [-.14,.14])box("dark",x,.28,z,.043,.19,.042);
     for(const x of [-.46,.44]){box(x<0?"red":"pine",x,.605,0,.17,.10,.13);box("gold",x,.61,0,.032,.106,.135);}
     box("mint",.02,.51,0,.16,.01,.13);
   },shopX,.025,shopZ+.84);
-  function igloo(){
-    for(let row=0;row<5;row++){
-      const lo=row*Math.PI/10,hi=(row+1)*Math.PI/10-.013,count=14-row*2;
-      for(let j=0;j<count;j++){
-        const a=(j+(row%2)*.5)*tau/count,b=a+tau/count-.021;
-        const p=(lat,t)=>[.82*Math.cos(lat)*Math.cos(t),.79*Math.sin(lat),.82*Math.cos(lat)*Math.sin(t)];
-        quad((row+j)%4?"snow":"ice",p(lo,a),p(hi,a),p(hi,b),p(lo,b));
-      }
-    }
-    for(let i=0;i<8;i++){
-      const a=i*Math.PI/8,b=(i+1)*Math.PI/8-.022;
-      const arch=(t,r,z)=>[r*Math.cos(t),r*Math.sin(t),z];
-      quad("ice",arch(a,.34,.63),arch(b,.34,.63),arch(b,.34,1.02),arch(a,.34,1.02));
-      quad("snow",arch(a,.34,1.02),arch(b,.34,1.02),arch(b,.23,1.02),arch(a,.23,1.02));
-      tri("deep",[0,.001,.99],arch(a,.242,.99),arch(b+.022,.242,.99));
-    }
-  }
-  place("Ice igloo by the inlet","Block-built ice igloo",igloo,5.47,0,-.38,.82,.26);
-  place("Little ice igloo","Block-built ice igloo",igloo,.35,0,3.34,.73,.52);
+  prop("Ice igloo by the inlet","igloo",5.47,-.38,.79,.26);
+  prop("Little ice igloo","igloo",.35,3.34,.73,.52);
   const animation={name:"Workshop and chimney loops",channels:[],samplers:[]};
   function motion(node,path,times,values){
     const input=accessor(times,{min:[times[0]],max:[times.at(-1)]},"SCALAR");
@@ -232,18 +211,12 @@ export function villageGeometry() {
     const s=.85+i%2*.10;
     return [x+s*(.44*Math.cos(r)-.38*Math.sin(r)),1.95*s,z+s*(-.44*Math.sin(r)-.38*Math.cos(r))];
   });
-  chimneys.push([shopX-.78,2.49,shopZ-.42]);
-  chimneys.forEach(([x,y,z],i)=>{
-    for(let j=0;j<3;j++){
-      place("Chimney "+(i+1)+" smoke "+(j+1),"Soft smoke puff",()=>ball("shale",0,0,0,.10,.105,.09,8),x,y,z);
-      const id=model.nodes.length-1,t=[],p=[],size=[];
-      for(let k=0;k<=144;k++){
-        const phase=((k+j*8+i*3)%24)/24, radius=Math.sin(Math.PI*phase)*(.62+phase*.95);
-        t.push(k/6);p.push([x+.32*phase*phase,y+.96*phase,z-.11*phase]);size.push([radius,radius,radius]);
-      }
-      motion(id,"translation",t,p);motion(id,"scale",t,size);
-    }
+  chimneys.forEach(position=>villageEffects.push({kind:"smoke",position}));
+  homes.forEach(([x,z,r],i)=>{
+    const s=.85+i%2*.10;
+    for(const dx of [-.52,.52])villageEffects.push({kind:"window",position:[x+s*(dx*Math.cos(r)+.77*Math.sin(r)),.55*s,z+s*(-dx*Math.sin(r)+.77*Math.cos(r))],normal:[Math.sin(r),0,Math.cos(r)]});
   });
+  villageEffects.push({kind:"star",position:[0,3.49,.05]});
   model.animations=[animation];
   model.buffers.push({byteLength:bytes});
   const json=new TextEncoder().encode(JSON.stringify(model)),size=(json.length+3)&~3,out=new Uint8Array(28+size+bytes);
