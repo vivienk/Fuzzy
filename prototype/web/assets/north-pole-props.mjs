@@ -23,7 +23,7 @@ export async function propsV1() {
   const ns=src.nodes;
   function range(start,end){const a=ns.findIndex(n=>n.name===start),b=ns.findIndex((n,i)=>i>=a&&n.name===end);return ns.slice(a,b+1);}
   const cane=ns.findIndex(n=>n.name==="Candy cane stripe"),hook=ns.findIndex((n,i)=>i>cane&&n.name==="Candy cane hook"),next=ns.findIndex((n,i)=>i>hook&&n.name!=="Candy cane hook");
-  const groups={igloo:range("Igloo continuous ice dome","Igloo tunnel roof"),cane:ns.slice(cane,next),sign:range("North Pole striped signpost","North Pole golden finial"),workshop:ns.find(n=>n.children?.some(i=>ns[i].name==="SANTA WORKSHOP sign board")).children.map(i=>ns[i])};
+  const groups={mailbox:[...range("Mailbox post","Letter slot"),...range("Cedar mailbox lid","Turquoise mailbox stripe")],igloo:range("Igloo continuous ice dome","Igloo tunnel roof"),cane:ns.slice(cane,next),sign:range("North Pole striped signpost","North Pole golden finial"),workshop:ns.find(n=>n.children?.some(i=>ns[i].name==="SANTA WORKSHOP sign board")).children.map(i=>ns[i])};
   const result={materials:src.materials};
   for(const [key,group] of Object.entries(groups)){
     const low=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity],faces=[];let chimney;
