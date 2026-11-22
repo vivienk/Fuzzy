@@ -74,14 +74,20 @@ window.FuzzyDecorations=(()=>{
   const palette=WORLD_MATERIAL_PALETTES[world||'alpine']||{};
   // Reduce chroma in the actual glTF material factors so the art direction is
   // consistent even when a browser does not composite CSS filters on WebGL.
-  function softenColor(color,strength=.58){
-   const rgb=color.slice(0,3),gray=rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
-   return [...rgb.map(channel=>gray+(channel-gray)*strength),color[3]??1];
+  function softenColor(color,strength){
+   const [r,g,b]=color;
+   if(strength==null){
+    const red=r>g*1.18&&r>b*1.12,green=g>r*1.15&&g>b*1.05,gold=r>g*1.12&&g>b*1.12;
+    strength=(red||green)?0.88:gold?0.62:0.76;
+   }
+   const gray=r*.2126+g*.7152+b*.0722;
+   return [r,g,b].map(channel=>gray+(channel-gray)*strength).concat(color[3]??1);
   }
   for(const material of g.materials||[]){
    const pbr=material.pbrMetallicRoughness||(material.pbrMetallicRoughness={});
    const color=palette[material.name]||pbr.baseColorFactor;
-   if(color)pbr.baseColorFactor=softenColor(color);
+   const protectedAccent=/pine|sage|cranberry/i.test(material.name)? .9:undefined;
+   if(color)pbr.baseColorFactor=softenColor(color,protectedAccent);
    if(material.emissiveFactor)material.emissiveFactor=softenColor(material.emissiveFactor).slice(0,3);
   }
   const chunks=[new Uint8Array(source,binStart,bl)];let length=bl;
