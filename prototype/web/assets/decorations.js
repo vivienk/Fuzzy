@@ -87,13 +87,14 @@ window.FuzzyDecorations=(()=>{
    const material=g.materials.length;g.materials.push({name:'Mini '+kind,pbrMetallicRoughness:{baseColorFactor:piece.color,metallicFactor:0,roughnessFactor:.8},doubleSided:true});
    const mesh=g.meshes.length;g.meshes.push({primitives:[{attributes:{POSITION:accessor(pos,'VEC3'),NORMAL:accessor(norm,'VEC3'),TEXCOORD_0:uvAccessor(uv)},material}]});const node=g.nodes.length;g.nodes.push({name:'Added '+kind,mesh,translation:slots[slot]});g.scenes[g.scene||0].nodes.push(node);
   }));
-  const samplers=g.samplers||(g.samplers=[]),images=g.images||(g.images=[]),textures=g.textures||(g.textures=[]);
-  const samplerIndex=samplers.length;samplers.push({magFilter:9729,minFilter:9987,wrapS:10497,wrapT:10497});
-  const imageIndex=images.length;images.push({uri:styleTextureUri(sceneStyle)});
-  const textureIndex=textures.length;textures.push({name:'Fuzzy '+sceneStyle+' surface texture',sampler:samplerIndex,source:imageIndex});
+  // Keep the imported meshes and transforms, but use flat, solid materials.
+  // Strip every standard glTF texture binding from each material.
   for(const material of g.materials||[]){
-   const pbr=material.pbrMetallicRoughness||(material.pbrMetallicRoughness={});
-   pbr.baseColorTexture={index:textureIndex,texCoord:0};
+   const pbr=material.pbrMetallicRoughness;
+   if(pbr){delete pbr.baseColorTexture;delete pbr.metallicRoughnessTexture}
+   delete material.normalTexture;
+   delete material.occlusionTexture;
+   delete material.emissiveTexture;
   }
   g.buffers[0].byteLength=length;let json=new TextEncoder().encode(JSON.stringify(g));const padded=Math.ceil(json.length/4)*4,output=new ArrayBuffer(12+8+padded+8+length),out=new DataView(output),bytes=new Uint8Array(output);out.setUint32(0,0x46546c67,true);out.setUint32(4,2,true);out.setUint32(8,output.byteLength,true);out.setUint32(12,padded,true);out.setUint32(16,0x4e4f534a,true);bytes.fill(32,20,20+padded);bytes.set(json,20);out.setUint32(20+padded,length,true);out.setUint32(24+padded,0x004e4942,true);let cursor=28+padded;for(const chunk of chunks){bytes.set(chunk,cursor);cursor+=chunk.length}return URL.createObjectURL(new Blob([output],{type:'model/gltf-binary'}));
  }
