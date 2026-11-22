@@ -54,6 +54,11 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 .moose-feed:disabled .fed-icon{display:block}
 .moose-feed:focus-visible{outline:2px solid #ffda85;outline-offset:1px;border-radius:50%}
 #world .moose-feed:disabled{cursor:default;opacity:1}
+#world .moose-feed,#world .mail-open{background:#fff8e8;color:#503e35;border:1px solid #bca993;border-radius:50%;box-shadow:0 2px 5px #33263938}
+#world .moose-feed::before,#world .moose-feed::after{content:"";position:absolute;background:#fff8e8;border:1px solid #bca993;border-radius:50%;pointer-events:none}
+#world .moose-feed::before{width:7px;height:7px;bottom:-7px;left:5px}#world .moose-feed::after{width:3px;height:3px;bottom:-12px;left:2px}
+#world .mail-open{width:36px;height:36px;padding:7px;cursor:pointer}#world .mail-open svg{display:block;width:100%}
+#village-letter{box-sizing:border-box;width:min(360px,90vw);padding:24px;border:1px solid #bea78e;border-radius:18px;background:#fff8ea;color:#503e35}#village-letter::backdrop{background:#21233570}#village-letter textarea{box-sizing:border-box;width:100%;min-height:110px;padding:10px;font:inherit}#village-letter p{white-space:pre-wrap;overflow-wrap:anywhere}#village-letter [hidden]{display:none}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -94,7 +99,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 <div class="status" id="elf-status" role="status" aria-live="polite">Ready after the island generation; this step can also run independently.</div><div class="progress"><i id="elf-progress"></i></div>
 </div></section>
 <p class="note">Your Tripo key stays server-side. The page checks authentication for free before enabling generation. Each step can only be submitted once per preview session, with a combined 95-credit cap.</p>
-</details></main>
+</details></main><dialog id="village-letter" aria-labelledby="letter-title"><h2 id="letter-title">North Pole mailbox</h2><p id="village-note"></p><form id="letter-form" hidden><label for="letter-input">Your Christmas note</label><textarea id="letter-input" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function setStatus(prefix,text,progress){document.querySelector("#"+prefix+"-status").textContent=text;if(Number.isFinite(progress))document.querySelector("#"+prefix+"-progress").style.width=Math.max(0,Math.min(100,progress))+"%"}
@@ -231,9 +236,34 @@ const feedIcons=`<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" str
   </g>
   <path class="fed-icon" d="M12 20.3 4.4 13C-1 7.4 6.3 1.2 12 7.5c5.7-6.3 13-.1 7.6 5.5Z" fill="#e8bb71" stroke="#785537" stroke-width="1.5"/>
 </svg>`;
+const letter=document.querySelector("#village-letter"), note=document.querySelector("#village-note"), form=document.querySelector("#letter-form"), input=document.querySelector("#letter-input"), edit=document.querySelector("#edit-letter"), statusLine=document.querySelector("#letter-status");
+let villageNote="A little Christmas warmth from me to you. Wherever we are, you have a place in my world.";
+function readEditor(){return JSON.parse(localStorage.getItem("fuzzy-editor")||"{}")||{};}
+function displayLetter(){note.textContent=villageNote;note.hidden=false;edit.hidden=false;form.hidden=true;}
+function openLetter(){
+  try{const state=readEditor();if(state.note?.trim())villageNote=state.note;localStorage.setItem("fuzzy-editor",JSON.stringify({...state,read:true}));}catch{}
+  statusLine.textContent="";displayLetter();letter.showModal();
+}
+edit.onclick=()=>{form.hidden=false;edit.hidden=true;note.hidden=true;input.value=villageNote;input.focus();};
+input.oninput=()=>input.setCustomValidity("");
+form.onsubmit=e=>{
+  e.preventDefault();const value=input.value.trim();
+  if(!value){input.setCustomValidity("Write a note for the mailbox.");input.reportValidity();return;}
+  villageNote=value;
+  try{localStorage.setItem("fuzzy-editor",JSON.stringify({...readEditor(),note:value,read:false}));statusLine.textContent="Saved to this browser’s mailbox.";}catch{statusLine.textContent="Saved for this visit only.";}
+  displayLetter();edit.focus();
+};
+document.querySelector("#close-letter").onclick=()=>letter.close();
 function showVillageEffects(){
   if(world.dataset.kind!=="village")return;
   effects.forEach(({kind,position,normal,name},i)=>{
+    if(kind==="mail"){
+      const button=document.createElement("button");
+      button.type="button";button.className="mail-open";button.slot="hotspot-mailbox";
+      button.dataset.position=position.map(v=>v+"m").join(" ");button.setAttribute("aria-label","Open North Pole mailbox");
+      button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>';
+      button.onclick=e=>{e.stopPropagation();openLetter();};world.append(button);return;
+    }
     if(kind==="feed"){
       const feed=document.createElement("button");
       feed.type="button";feed.className="moose-feed";feed.slot="hotspot-feed-"+i;
