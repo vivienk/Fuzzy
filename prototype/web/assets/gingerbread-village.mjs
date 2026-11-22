@@ -172,7 +172,6 @@ export async function villageGeometry() {
     ball("skin",0,.674,.219,.055,.043,.046);solid("red",0,.875,0,[[0,.245,.22],[.09,.23,.20],[.23,.14,.12,-.055],[.34,.04,.04,-.16]],11);
     ball("white",-.18,1.20,0,.064,.063,.061);solid("white",0,.86,0,[[0,.25,.22],[.072,.246,.219]],11);
   }
-  [[-1.68,1.66,.28],[1.78,1.45,-.38],[-4.95,.10,.40],[2.15,-.50,-.55]].forEach(([x,z,r],i)=>place("Elf "+(i+1),"Toy elf "+i%2,()=>elf(i%2?"red":"pine"),x,0,z,.79,r));
   function moose(){
     for(const s of [-1,1])for(const end of [-1,1]){
       const x=end*.40,z=s*.17;rod("fur",[x,.80,z],[x+end*.065,.15,z],.089);ball("dark",x+end*.065,.09,z,.125,.09,.107);
@@ -203,14 +202,37 @@ export async function villageGeometry() {
     for(const x of [-.46,.44]){box(x<0?"red":"pine",x,.605,0,.17,.10,.13);box("gold",x,.61,0,.032,.106,.135);}
     box("mint",.02,.51,0,.16,.01,.13);
   },shopX,.025,shopZ+.84);
-  prop("Ice igloo by the inlet","igloo",5.47,-.38,.79,.26);
-  prop("Little ice igloo","igloo",.35,3.34,.73,.52);
+  prop("Ice igloo by the inlet","igloo",5.61,-.65,1.23,.26);
+  prop("Little ice igloo","igloo",.05,3.64,1.14,.52);
   const animation={name:"Workshop and chimney loops",channels:[],samplers:[]};
   function motion(node,path,times,values){
     const input=accessor(times,{min:[times[0]],max:[times.at(-1)]},"SCALAR");
-    const sampler=animation.samplers.push({input,output:accessor(values.flat()),interpolation:"LINEAR"})-1;
+    const sampler=animation.samplers.push({input,output:accessor(values.flat(),{},path==="rotation"?"VEC4":"VEC3"),interpolation:"LINEAR"})-1;
     animation.channels.push({sampler,target:{node,path}});
   }
+  const villagers=[[-1.68,1.35,.28],[1.78,1.45,-.38],[-5.13,.55,.40],[2.15,-.50,-.55]];
+  villagers.forEach(([x,z,yaw],i)=>{
+    const coat=i%2?"red":"pine";
+    place("Elf "+(i+1),"Waving elf "+coat,()=>elf(coat,true),x,0,z,.79,yaw);
+    const body=model.nodes.length-1;
+    model.nodes[body].children=[];
+    for(const side of [-1,1]){
+      place("Elf "+(i+1)+" sleeve "+side,"Village sleeve "+coat+side,()=>{
+        rod(coat,[0,0,0],[side*.15,-.14,.09],.077);
+        ball("skin",side*.15,-.14,.09,.078,.074,.078);
+      },side*.16,.47,0);
+      const arm=model.scenes[0].nodes.pop();
+      model.nodes[body].children.push(arm);
+      const times=[],rotations=[];
+      for(let k=0;k<=96;k++){
+        const t=k/4,cycle=t*tau/(i%2?4:6)+i;
+        const lift=(1-Math.cos(cycle))*.5;
+        const angle=side*(side===(i%2?1:-1)? .18+1.82*lift+.20*lift*Math.sin(cycle*4):.14+.28*lift);
+        times.push(t);rotations.push([0,0,Math.sin(angle/2),Math.cos(angle/2)]);
+      }
+      motion(arm,"rotation",times,rotations);
+    }
+  });
   for(const [i,offset] of [-.46,.44].entries()){
     const x=shopX+offset,z=shopZ+.49;
     place("Gift maker "+(i+1),"Seated gift maker "+i,()=>elf(i?"pine":"red",true),x,.14,z,.77);
