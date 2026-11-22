@@ -170,7 +170,7 @@ for (const viewer of document.querySelectorAll("model-viewer")) {
 }
 const choices = document.querySelectorAll("#worlds button");
 const snow=document.querySelector(".village-snow");
-for(let i=0;i<42;i++){
+for(let i=0;i<55;i++){
   const flake=document.createElement("i");
   flake.style.cssText=`--x:${(i*37)%100}%;--size:${1+i%3}px;--time:${12+i%11}s;--delay:-${i*.91}s`;
   snow.append(flake);
