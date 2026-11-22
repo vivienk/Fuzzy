@@ -48,7 +48,7 @@ button:not(.secondary):not(.world-choice):not(.mailbox-alert){background:var(--t
 .style-swatch.plushy{background-color:#e7cfc6;background-image:radial-gradient(ellipse at 30% 30%,#fff9,transparent 42%),radial-gradient(ellipse at 70% 70%,#bd8f86aa,transparent 55%)}
 .style-swatch.monument{background:linear-gradient(135deg,#f3d4c9 0 30%,#d9bddf 31% 60%,#9b8cbd 61%);box-shadow:inset -7px -6px 0 #8f80ac}
 .style-note{font-size:11px;margin:10px 0 0}
-.experience::after{content:"";position:absolute;inset:0 38.5% 0 0;z-index:3;pointer-events:none;opacity:0;transition:opacity .2s;border-radius:30px 0 0 30px;mix-blend-mode:overlay}
+.experience::after{display:none!important}/* Solid-color scene styles have no texture overlay. */\n.experience::after{content:"";position:absolute;inset:0 38.5% 0 0;z-index:3;pointer-events:none;opacity:0;transition:opacity .2s;border-radius:30px 0 0 30px;mix-blend-mode:overlay}
 .experience[data-scene-style="needle-felt"]::after{opacity:.52;background-image:repeating-linear-gradient(34deg,#fff5 0 1px,transparent 1px 3px),repeating-linear-gradient(116deg,#4e352540 0 1px,transparent 1px 5px),radial-gradient(#fff7 0.7px,transparent 1.8px);background-size:auto,auto,7px 7px}
 .experience[data-scene-style="origami-paper"]::after{opacity:.42;background-image:repeating-conic-gradient(from 0deg at 50% 50%,#fff4 0deg 43deg,transparent 44deg 88deg,#3d2a202f 89deg 91deg,transparent 92deg 178deg);background-size:132px 132px}
 .experience[data-scene-style="plushy"]::after{opacity:.47;background-image:repeating-linear-gradient(45deg,#fff4 0 1px,transparent 1px 4px),repeating-linear-gradient(135deg,#61433a32 0 1px,transparent 1px 4px),radial-gradient(ellipse at 35% 30%,#fff7 0,transparent 54%);background-size:9px 9px,9px 9px,100% 100%}
@@ -135,7 +135,7 @@ function applySceneStyle(){
  document.body.dataset.style=selectedSceneStyle;
  document.querySelector('.experience').dataset.sceneStyle=selectedSceneStyle;
  document.querySelectorAll('.style-option[data-style]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.style===selectedSceneStyle)));
- $('style-status').textContent=preset.label+' is applied to every model and its surface texture.';
+ $('style-status').textContent=preset.label+' is applied to every model with solid colors.';
  for(const material of scene.model?.materials||[]){
   const pbr=material.pbrMetallicRoughness;if(!pbr)continue;
   let original=originalSceneMaterials.get(pbr);
@@ -147,7 +147,7 @@ function applySceneStyle(){
   pbr.setBaseColorFactor(paletteColor?[...paletteColor,original.base[3]]:[original.base[0]*preset.tint[0],original.base[1]*preset.tint[1],original.base[2]*preset.tint[2],original.base[3]]);
   pbr.setRoughnessFactor(Math.min(1,Math.max(.05,original.roughness+(preset.roughness-.8)*.45)));
   pbr.setMetallicFactor(original.metallic*preset.metallic);
-  // Per-material surface textures are built into the scene GLB.
+  // Scene texture maps are stripped during GLB generation; per-material colors stay intact.
  }
 }
 document.querySelectorAll('.style-option[data-style]').forEach(button=>button.addEventListener('click',()=>{
