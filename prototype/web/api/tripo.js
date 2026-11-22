@@ -1,6 +1,21 @@
 const ALLOWED_ORIGIN = process.env.TRIPO_APP_ORIGIN;
 const API_BASE = "https://openapi.tripo3d.ai/v3";
-const OPERATION_COST = { island: 30, character: 30, "rig-check": 0, rig: 25, animate: 10 };
+const OPERATION_COST = { island: 30, object: 30, character: 30, "rig-check": 0, rig: 25, animate: 10 };
+const OBJECT_STYLE = "A handcrafted low-poly winter miniature. Use crisp triangular facets, softly beveled edges, chunky readable silhouettes and restrained detail. Matte painted surfaces, soft diffuse shading, no glossy reflections or baked shadows. Palette: pearl snow, icy blue, muted pine, cranberry red, cedar brown and small warm-gold accents. Keep these proportions, materials and palette consistent throughout the set.";
+const ELF_SUBJECT = "One friendly, short Christmas elf with an oversized head, pointed cap and cream-trimmed outfit. Full body in a neutral upright pose with separated limbs suitable for biped rigging.";
+const SINGLE_OBJECT = "One complete freestanding asset, centered, with no terrain, scenery or display base.";
+function generationPrompt(operation, body) {
+  const subject = operation === "character" ? ELF_SUBJECT : String(typeof body.prompt === "string" ? body.prompt : "").trim();
+  const framing = operation === "island" ? "Show the full floating island." : SINGLE_OBJECT;
+  const suffix = "\n\n" + framing + "\n" + OBJECT_STYLE;
+  const maxLength = 1024 - suffix.length;
+  if (subject.length < 3 || subject.length > maxLength) {
+    const error = new Error("Describe the subject in 3 to " + maxLength + " characters. The shared style is added automatically.");
+    error.status = 400;
+    throw error;
+  }
+  return subject + suffix;
+}
 const CREDIT_CAP = 95;
 const runsByIp = new Map();
 
@@ -48,10 +63,8 @@ async function tripo(path,init={}) {
 }
 async function createTask(operation,body) {
   let path,payload;
-  if(operation==="island"||operation==="character") {
-    const prompt=operation==="island"?(typeof body.prompt==="string"?body.prompt.trim():""):
-      "A single friendly Christmas elf character, full body, standing upright in a relaxed neutral pose, toy-like stylized low-poly 3D, warm muted red and forest-green clothing with cream trim, small pointed hat, simple face, clean separated limbs suitable for rigging, centered alone, no props, no scenery, no text. Complete biped with both arms and legs clearly visible.";
-    if(prompt.length<20||prompt.length>1024){const e=new Error("Prompt must be between 20 and 1024 characters.");e.status=400;throw e;}
+  if(["island","object","character"].includes(operation)) {
+    const prompt=generationPrompt(operation,body);
     path="/generation/text-to-model";
     payload={prompt,model:"v3.1-20260211",face_limit:operation==="island"?12000:8000,texture:true,pbr:true,smart_low_poly:true};
   } else if(operation==="rig-check") {
@@ -85,17 +98,18 @@ module.exports=async function handler(req,res) {
       const operation=String(body.operation||"");
       const cost=OPERATION_COST[operation];
       if(cost===undefined)return send(res,400,{error:"Choose a valid generation step."});
+      const key=operation==="object" ? "object:"+generationPrompt(operation,body) : operation;
       const ip=clientIp(req),now=Date.now();
       let run=runsByIp.get(ip);
       if(!run||now-run.startedAt>24*60*60*1000){run={startedAt:now,steps:new Map(),reserved:0};runsByIp.set(ip,run);}
-      if(run.steps.has(operation))return send(res,409,{error:"This step was already submitted for this preview session.",taskId:run.steps.get(operation)});
+      if(run.steps.has(key))return send(res,409,{error:"This step was already submitted for this preview session.",taskId:run.steps.get(key)});
       if(run.reserved+cost>CREDIT_CAP)return send(res,429,{error:"This run reached the 95-credit cap."});
-      run.reserved+=cost;run.steps.set(operation,"pending");
+      run.reserved+=cost;run.steps.set(key,"pending");
       try {
         const task=await createTask(operation,body);
-        run.steps.set(operation,task.task_id);
+        run.steps.set(key,task.task_id);
         return send(res,202,{taskId:task.task_id,status:"queued",reservedCredits:run.reserved,creditCap:CREDIT_CAP});
-      } catch(e) {run.reserved-=cost;run.steps.delete(operation);throw e;}
+      } catch(e) {run.reserved-=cost;run.steps.delete(key);throw e;}
     }
     if(req.method==="GET") {
       const taskId=taskIdFrom(req);
@@ -108,7 +122,7 @@ module.exports=async function handler(req,res) {
         const file=await fetch(modelUrl);if(!file.ok)return send(res,502,{error:"Could not download the generated model."});
         const bytes=Buffer.from(await file.arrayBuffer());res.status(200);
         res.setHeader("Content-Type","model/gltf-binary");
-        res.setHeader("Content-Disposition",`inline; filename="${req.query?.asset==="character"?"fuzzy-elf-walk":"fuzzy-christmas-island"}.glb"`);
+        res.setHeader("Content-Disposition",`inline; filename="${req.query?.asset==="character"?"fuzzy-elf-walk":req.query?.asset==="object"?"fuzzy-object":"fuzzy-christmas-island"}.glb"`);
         res.setHeader("Cache-Control","private, no-store");return res.end(bytes);
       }
       return send(res,200,{taskId:task.task_id,status:task.status,progress:task.progress||0,consumedCredits:task.credits_consumed??null,output:task.output||undefined,error:task.status==="failed"?"Tripo could not complete this generation.":undefined});
