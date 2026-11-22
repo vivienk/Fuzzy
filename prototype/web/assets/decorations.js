@@ -5,13 +5,13 @@ window.FuzzyDecorations=(()=>{
  const cache=new Map();
  const WORLD_MATERIAL_PALETTES={
   forest:{
-   'Pearl snow':[.73,.75,.81],'Lavender slate':[.31,.27,.43],'Cedar':[.41,.32,.38],
-   'Deep pine':[.22,.29,.30],'Cranberry':[.45,.34,.40],'Champagne gold':[.62,.51,.37],
-   'Bronze':[.20,.17,.23],'Amber glow':[.80,.57,.34],'Sage':[.31,.39,.37],
-   'Glacier blue':[.37,.44,.57],'Rose sandstone':[.44,.35,.43],'Midnight roof':[.18,.15,.30],
-   'Luminous frost crystals':[.48,.40,.62],'Spring stone':[.31,.38,.40],
+   'Pearl snow':[.34,.35,.47],'Lavender slate':[.27,.21,.40],'Cedar':[.34,.25,.34],
+   'Deep pine':[.10,.18,.17],'Cranberry':[.39,.28,.37],'Champagne gold':[.65,.51,.34],
+   'Bronze':[.20,.17,.23],'Amber glow':[.94,.60,.30],'Sage':[.15,.23,.20],
+   'Glacier blue':[.31,.36,.53],'Rose sandstone':[.44,.35,.43],'Midnight roof':[.18,.15,.30],
+   'Luminous frost crystals':[.46,.35,.66],'Spring stone':[.31,.38,.40],
    'forest architectural trim':[.24,.20,.34],'forest enchanted accent':[.80,.57,.34],
-   'Moonlit snow blanket':[.68,.71,.78]
+   'Moonlit snow blanket':[.28,.29,.41]
   },
   aurora:{
    'Pearl snow':[.82,.82,.85],'Lavender slate':[.48,.45,.53],'Cedar':[.47,.37,.32],
