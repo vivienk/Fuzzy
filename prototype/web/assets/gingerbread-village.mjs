@@ -262,13 +262,19 @@ export async function villageGeometry() {
       track(model.nodes.length-1,"rotation",t=>roll(side*Math.PI*fold(t,delay)));
       const start=[x+side*.14,.50,z+.035];
       place("Gift maker wrapping sleeve","Wrapping sleeve "+i+" "+side,()=>{
-        rod(paper,[0,0,0],[side*.018,-.015,.23],.065);
-        ball("skin",side*.018,-.025,.245,.065,.06,.065);
+        rod(paper,[0,0,0],[0,0,.215],.060);
+        ball("skin",0,0,.24,.062,.06,.06);
       },...start);
-      track(model.nodes.length-1,"translation",t=>{
+      const arm=model.nodes.length-1;
+      function reach(t){
         const f=fold(t,delay),angle=f*Math.PI;
-        return [x+side*(.115+.082*Math.cos(angle)),.70+.082*Math.sin(angle),parcelZ-.23+.023*f];
+        return [x+side*(.115+.082*Math.cos(angle))-start[0],.70+.082*Math.sin(angle)-start[1],parcelZ+.023*f-start[2]];
+      }
+      track(arm,"rotation",t=>{
+        const [dx,dy,dz]=reach(t),w=Math.hypot(dx,dy,dz)+dz,n=Math.hypot(dx,dy,w);
+        return [-dy/n,dx/n,0,w/n];
       });
+      track(arm,"scale",t=>[1,1,Math.hypot(...reach(t))/.24]);
     }
     place("Finishing ribbon","Gold bow",()=>{
       box("gold",0,0,0,.025,.008,.112);
