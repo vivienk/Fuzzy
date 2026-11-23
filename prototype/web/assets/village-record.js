@@ -2,7 +2,6 @@
  const byId=id=>document.getElementById(id);
  const picker=byId('christmas-album'),disc=byId('disc'),host=byId('album-player'),status=byId('album-status'),link=byId('open-album');
  const gift=new URLSearchParams(location.hash.slice(1));
- const storageKey='fuzzy-christmas-album'+(gift.has('draft')?':'+gift.get('draft'):'');
  let controller=null,sdk=null,version=0,playing=false,pending=false;
  let wantsPlay=false, audio=null;
  const spotifyId=()=>picker.selectedOptions[0].dataset.spotify;
@@ -32,6 +31,7 @@
   for(const event of ['playing','pause','error'])player.addEventListener(event,()=>{
    if(audio!==player)return;
    retryOnGesture=false;
+   if(event==='pause')useDefault=false;
    display(event==='playing');
    status.textContent=event==='playing'?'Playing in the background.':event==='pause'?'Playback paused.':'This track could not load.';
   });
@@ -70,16 +70,16 @@
   status.textContent='Loading album…';prepareAlbum();
  }
  picker.querySelector('option[value="chimes"]')?.remove();
- let saved=gift.get('album');
- if(!saved&&!gift.has('parcel'))try{saved=localStorage.getItem(storageKey);}catch{}
+ const saved=gift.has('parcel')?gift.get('album'):null;
  const explicit=Array.from(picker.options).some(o=>o.value===saved);
  let useDefault=!explicit;
  picker.value=explicit?saved:'toymakers-workshop';
  let retryOnGesture=false;
  function startDefault(){
-  if(!useDefault||gift.has('parcel')||!byId('world').dataset.kind)return;
+  if(!useDefault||gift.has('parcel'))return;
   if(!audio)select();
   const player=audio;
+  if(!player.paused)return;
   player.play().catch(error=>{
    if(player!==audio||!useDefault)return;
    retryOnGesture=error.name==='NotAllowedError';
@@ -90,8 +90,11 @@
   if(!retryOnGesture||event.target.closest('button#disc,.turntable,#christmas-album,audio'))return;
   retryOnGesture=false;startDefault();
  });
+ document.addEventListener('keydown',event=>{
+  if(retryOnGesture&&!event.repeat&&!event.target.closest('button,select,input,textarea,audio'))startDefault();
+ });
  window.addEventListener('gift-music-enter',startDefault);
- select();picker.onchange=()=>{useDefault=false;retryOnGesture=false;select();if(!gift.has('parcel'))try{localStorage.setItem(storageKey,picker.value);}catch{}};
+ select();picker.onchange=()=>{useDefault=false;retryOnGesture=false;select();play();};
  disc.onclick=()=>{retryOnGesture=false;play();};
  startDefault();
  window.addEventListener('gift-soundtrack-stop',()=>{retryOnGesture=false;stop();});

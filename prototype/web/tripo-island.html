@@ -195,7 +195,7 @@ body.choosing main>:is(#diorama,#world-gifts,.album-room,#pack-world,#pack-hint)
 <figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><section id="world-gifts" hidden aria-label="Gift preparation"><button data-slot="0"></button><button data-slot="1"></button><button data-slot="2"></button><button id="world-note">Mailbox note</button></section>
 <section class="album-room" aria-labelledby="album-heading">
 <div class="turntable"><span class="vinyl" aria-hidden="true"><i></i></span><i class="tonearm" aria-hidden="true"></i><button id="disc" type="button" aria-label="Play record"><span class="disc-symbol" aria-hidden="true">▶</span></button></div>
-<div><h2 id="album-heading">Gift soundtrack</h2><select id="christmas-album" aria-label="Gift soundtrack"><option value="charlie" data-spotify="2XnNY3GEkbWHor5kyvXLu4">A Charlie Brown Christmas · Vince Guaraldi Trio</option><option value="buble" data-spotify="3CKVXhODttZebJAzjUs2un">Christmas · Michael Bublé</option><option value="mariah" data-spotify="0cS9prZ8u3fdbc7lmtCaMV">Merry Christmas · Mariah Carey</option><option value="festive-commotion" data-spotify="57inreLG2hAF7YYt1W9nnL">Festive Commotion · Howard Harper-Barnes</option><option value="toymakers-workshop" data-audio="assets/toymakers-workshop.mp3">Toymaker’s Workshop · David Celeste</option></select><p id="album-status" role="status">Tap the record to play.</p><a id="open-album" hidden target="_blank" rel="noopener">Open in Spotify</a></div><div id="album-player" hidden></div></section><button id="pack-world" hidden>Send Gift</button><span id="pack-hint" hidden> Available when all three gifts are ready.</span></main><dialog id="packing" aria-labelledby="packing-title"><form method="dialog"><button class="parcel-close" aria-label="Close wrapping options">×</button></form>
+<div><h2 id="album-heading">Gift soundtrack</h2><select id="christmas-album" aria-label="Gift soundtrack"><option value="charlie" data-spotify="2XnNY3GEkbWHor5kyvXLu4">A Charlie Brown Christmas · Vince Guaraldi Trio</option><option value="buble" data-spotify="3CKVXhODttZebJAzjUs2un">Christmas · Michael Bublé</option><option value="mariah" data-spotify="0cS9prZ8u3fdbc7lmtCaMV">Merry Christmas · Mariah Carey</option><option value="festive-commotion" data-spotify="57inreLG2hAF7YYt1W9nnL">Festive Commotion · Howard Harper-Barnes</option><option value="toymakers-workshop" selected data-audio="assets/toymakers-workshop.mp3">Toymaker’s Workshop · David Celeste</option></select><p id="album-status" role="status">Tap the record to play.</p><a id="open-album" hidden target="_blank" rel="noopener">Open in Spotify</a></div><div id="album-player" hidden></div></section><button id="pack-world" hidden>Send Gift</button><span id="pack-hint" hidden> Available when all three gifts are ready.</span></main><dialog id="packing" aria-labelledby="packing-title"><form method="dialog"><button class="parcel-close" aria-label="Close wrapping options">×</button></form>
 <h2 id="packing-title">Wrap your world</h2><form id="delivery"><label>Your name <input id="sender-name" autocomplete="given-name" maxlength="60" placeholder="Name shown to the recipient"></label><fieldset><legend>Wrapping paper</legend><div id="paper-options"></div></fieldset>
 <fieldset><legend>Send to</legend><div id="receivers"></div><button type="button" id="add-receiver" aria-label="Add another receiver">+ Add receiver</button></fieldset>
 <button type="submit">Send by email</button> <div class="gift-link-row"><a id="gift-url" target="_blank" rel="noopener"></a><button type="button" id="copy-parcel" aria-label="Copy gift link" title="Copy gift link"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 5V4a1 1 0 0 0-1-1H5a2 2 0 0 0-2 2v10a1 1 0 0 0 1 1h1"/></svg></button></div><a id="preview-world" href="#" target="_blank" rel="noopener">Preview as receiver</a><p role="status" id="send-status"></p></form></dialog>
@@ -214,7 +214,7 @@ async function waitTask(taskId,label,onProgress){
  for(let i=0;i<180;i++){
   await sleep(i<3?1600:3000);const response=await fetch("/api/tripo?taskId="+encodeURIComponent(taskId),{cache:"no-store"});const data=await response.json();
   if(!response.ok)throw new Error(data.error||"Could not check task status.");
-  const progress=data.progress||4;onProgress(progress);
+  const progress=data.progress||4;if(onProgress(progress)===false)return;
   if(data.status==="success")return data;
   if(["failed","banned","cancelled","expired"].includes(data.status))throw Object.assign(new Error(data.error||label+" failed."),{terminal:true});
  }
@@ -359,7 +359,8 @@ form.onsubmit=e=>{
 };
 document.querySelector("#close-letter").onclick=()=>letter.close();
 const stationDialog=document.querySelector("#gift-station");
-const boxes=Array.from({length:3},()=>({phase:"empty"}));
+const freshBoxes=()=>Array.from({length:3},()=>({phase:"empty"}));
+let boxes=freshBoxes();
 const papers={pine:"Pine sprigs",berry:"Cranberry stripes",frost:"Frost stars"};
 const packWorld=document.querySelector("#pack-world");
 const parcelParams=new URLSearchParams(location.hash.slice(1));
@@ -382,11 +383,12 @@ if(parcel){
   friendWorld.href=draftURL.href;
   friendWorld.hidden=false;
 }
-const key=parcel?"fuzzy-received:"+location.hash:"fuzzy-village-boxes-v1"+draftSuffix;
-try{
-  const saved=parcel&&parcelParams.has("preview")?null:JSON.parse(localStorage.getItem(key)||"null");
-  if(Array.isArray(saved))saved.slice(0,3).forEach((v,i)=>{if((v?.id && ["building","retry","ready","open"].includes(v.phase))||(v?.phase==="prepared"&&typeof v.prompt==="string"))boxes[i]=v;});
-  else if(!parcel&&!draftSuffix){const id=localStorage.getItem("fuzzy-village-gift-task");if(id)boxes[0]={id,phase:"ready"};}
+const key="fuzzy-received:"+location.hash;
+if(parcel&&!parcelParams.has("preview"))try{
+  const saved=JSON.parse(localStorage.getItem(key)||"null");
+  boxes.forEach((box,i)=>{
+    if(saved?.[i]?.id===box.id&&saved[i].phase==="open")box.phase="open";
+  });
 }catch{}
 const packing=document.querySelector("#packing"),arrival=document.querySelector("#arrival");
 const recipients=document.querySelector("#receivers"),sendStatus=document.querySelector("#send-status");
@@ -461,9 +463,9 @@ function syncGuide(){
   }
   world.querySelectorAll(".box-hit").forEach(button=>{
     const slot=Number(button.dataset.box),b=boxes[slot];
-    button.toggleAttribute("data-next",step.kind==="prep"&&step.slot===slot&&["empty","prepared"].includes(b.phase));
+    button.toggleAttribute("data-next",["empty","prepared"].includes(b.phase));
     button.toggleAttribute("data-muted",step.slot!==slot&&b.phase!=="building");
-    button.toggleAttribute("data-guide-hidden",!["building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
+    button.toggleAttribute("data-guide-hidden",!["empty","prepared","retry","building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
   });
   world.querySelectorAll(".elf-target:not(.wizard-target,.cookie-target)").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
   world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel);
@@ -479,7 +481,7 @@ letter.addEventListener("close",()=>{
   }
 });
 let selectedBox=0,renderVersion=0,currentModel=null,pendingReveal=null;
-const persistBoxes=()=>{if(parcel&&parcelParams.has("preview"))return;try{localStorage.setItem(key,JSON.stringify(boxes.map(b=>b.phase==="opening"?{...b,phase:"ready"}:b.phase==="starting"?{phase:"prepared",prompt:b.prompt}:b)));}catch{}};
+const persistBoxes=()=>{if(!parcel||parcelParams.has("preview"))return;try{localStorage.setItem(key,JSON.stringify(boxes.map(b=>b.phase==="opening"?{...b,phase:"ready"}:b.phase==="starting"?{phase:"prepared",prompt:b.prompt}:b)));}catch{}};
 function paintBox(slot){
   syncGuide();
   const b=boxes[slot],button=world.querySelector('[data-box="'+slot+'"]');if(!button)return;
@@ -492,7 +494,7 @@ function paintBox(slot){
 }
 async function watchBox(slot){
   const b=boxes[slot];b.phase="building";paintBox(slot);persistBoxes();
-  try{await waitTask(b.id,"Building gift",p=>{b.progress=Math.min(99,p);paintBox(slot);});b.phase="ready";rememberBicycle(b);}
+  try{await waitTask(b.id,"Building gift",p=>{if(boxes[slot]!==b)return false;b.progress=Math.min(99,p);paintBox(slot);});if(boxes[slot]!==b)return;b.phase="ready";rememberBicycle(b);}
   catch(error){b.phase=error.terminal?"empty":"retry";b.error=error.message;}
   persistBoxes();paintBox(slot);
 }
@@ -508,8 +510,11 @@ const inspector=document.querySelector("#inspect-gift"),inspectModel=document.qu
 let inspectedSlot=0;
 async function inspectGift(slot){
   inspectedSlot=slot;
+  const box=boxes[slot];
   const {giftURL}=await import("./assets/place-village-gift.mjs");
-  inspectModel.src=await giftURL(boxes[slot].id);inspector.showModal();
+  const url=await giftURL(box.id);
+  if(boxes[slot]!==box)return;
+  inspectModel.src=url;inspector.showModal();
 }
 document.querySelector("#replace-gift").onclick=()=>{inspector.close();openGiftForm(inspectedSlot);};
 function openGiftForm(slot){
@@ -531,9 +536,11 @@ document.querySelector("#box-generate").onclick=async()=>{
   const b=boxes[slot]={phase:"starting",progress:0,prompt};
   stationDialog.close();paintBox(slot);
   try{
-    b.id=await beginTask("object",{prompt});if(previous.phase==="open")refreshBoxes().catch(()=>{});
+    b.id=await beginTask("object",{prompt});
+    if(boxes[slot]!==b)return;
+    if(previous.phase==="open")refreshBoxes().catch(()=>{});
     await watchBox(slot);
-  }catch(error){boxes[slot]=previous;previous.error=error.message;persistBoxes();paintBox(slot);caption.textContent=error.message;}
+  }catch(error){if(boxes[slot]!==b)return;boxes[slot]=previous;previous.error=error.message;persistBoxes();paintBox(slot);caption.textContent=error.message;}
 };
 async function refreshBoxes(reveal=null){
   const kind=world.dataset.kind;
@@ -704,6 +711,7 @@ let request = 0;
 async function selectWorld(choice) {
   if(choice.dataset.world===world.dataset.kind&&world.loaded&&islandLoader.hidden)return;
   islandLoader.hidden=false;world.setAttribute("aria-busy","true");
+  if(!parcel&&choice.dataset.world!==world.dataset.kind)boxes=freshBoxes();
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
@@ -781,4 +789,4 @@ enter.hidden=!draftSuffix;
 
 boxes.forEach((b,i)=>{if(b.phase==="building")watchBox(i);});
 pick(selected);
-</script><script src="assets/village-record.js?v=world-picker"></script></body></html>
+</script><script src="assets/village-record.js?v=arrival-music"></script></body></html>
