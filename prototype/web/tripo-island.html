@@ -654,7 +654,7 @@ async function selectWorld(choice) {
   ++renderVersion;pendingReveal=null;
   const village = choice.dataset.world === "village";
   const academy = choice.dataset.world === "academy";
-  const allowTilt = village || academy;
+  const allowTilt = village || academy || choice.dataset.world === "candy";
   document.querySelector("#diorama").toggleAttribute("data-village",village);
   document.querySelector("#world-gifts").hidden=village;
   if(!parcel)window.dispatchEvent(new Event("gift-music-enter"));
