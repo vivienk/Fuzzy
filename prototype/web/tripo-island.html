@@ -189,14 +189,14 @@ body.choosing main>:is(#diorama,#world-gifts,.album-room,#pack-world,#pack-hint)
 #world-gifts:not([hidden]){display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 #enter-world[hidden],#world-gifts[hidden]{display:none}
 #world:is([data-kind="academy"],[data-kind="candy"]) .mail-open{-webkit-backdrop-filter:none;backdrop-filter:none}
-#world[data-kind="candy"] .mail-open{top:0;width:46px;height:56px;padding:0;border:0;background:transparent;box-shadow:none}
+#world[data-kind="candy"] .mail-open{top:0;width:44px;height:44px;padding:0;border:0;background:transparent;box-shadow:none}
 #world[data-kind="candy"] .mail-open svg{display:none}
 #world .mail-open .badge{box-sizing:border-box;padding:0;margin:0;text-align:center;font-weight:700}
-#world[data-kind="candy"] .mail-open:not(.read) svg{display:block;position:absolute;left:50%;top:1px;transform:translate(-50%,-50%);box-sizing:border-box;width:24px;height:20px;padding:3px;color:#603e32;background:#fff7df;border:1px solid #ac8568;border-radius:6px;box-shadow:0 1px 4px #61362466}
-#world[data-kind="candy"] .mail-open .badge{top:-13px;left:calc(50% + 6px);right:auto;width:14px;height:14px;font:700 10px/12px system-ui;background:#a63245;color:white;border:1px solid white}
-#world[data-kind="academy"] .mail-open{top:0;width:54px;height:50px;padding:0;border:0;background:transparent;box-shadow:none}
+#world:is([data-kind="candy"],[data-kind="academy"]) .mail-open:not(.read) svg{display:block;position:absolute;left:50%;top:1px;transform:translate(-50%,-50%);box-sizing:border-box;width:24px;height:20px;padding:3px;color:#603e32;background:#fff7df;border:1px solid #ac8568;border-radius:6px;box-shadow:0 1px 4px #61362466}
+#world:is([data-kind="candy"],[data-kind="academy"]) .mail-open .badge{top:-13px;left:calc(50% + 6px);right:auto;width:14px;height:14px;font:700 10px/12px system-ui;background:#a63245;color:white;border:1px solid white}
+#world[data-kind="academy"] .mail-open{top:0;width:44px;height:44px;padding:0;border:0;background:transparent;box-shadow:none}
 #world[data-kind="academy"] .mail-open svg{display:none}
-#world[data-kind="academy"] .mail-open .badge{width:13px;height:13px;font:9px/13px system-ui;top:auto;bottom:0;right:0}
+
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -235,7 +235,7 @@ async function waitTask(taskId,label,onProgress){
 }
 </script><script type="module">
 import {presets,giftURL,composeGiftBoxes} from "./assets/place-village-gift.mjs?v=gift-icons";
-import {stationEffects,stationWorld,owlMailPosition} from "./assets/world-gift-stations.mjs?v=postman-badge";
+import {stationEffects,stationWorld,owlMailPosition} from "./assets/world-gift-stations.mjs?v=half-size-mail";
 const world = document.querySelector("#world");
 const caption = document.querySelector("#caption");
 function matte(viewer) {
