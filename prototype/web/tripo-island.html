@@ -826,11 +826,11 @@ async function selectWorld(choice) {
   document.querySelector("#diorama").toggleAttribute("data-snowy",village || academy || choice.dataset.world==="candy");
   document.querySelector("#world-gifts").hidden=village;
   if(!parcel)window.dispatchEvent(new Event("gift-music-enter"));
-  world.setAttribute("min-camera-orbit", allowTilt ? "auto 52deg auto" : "auto 65deg auto");
-  world.setAttribute("max-camera-orbit", allowTilt ? "auto 76deg auto" : "auto 65deg auto");
+  world.setAttribute("min-camera-orbit", allowTilt ? "auto 44deg auto" : "auto 65deg auto");
+  world.setAttribute("max-camera-orbit", allowTilt ? "auto 85deg auto" : "auto 65deg auto");
   // Narrow the opening field of view for a 1.2× larger projected island.
   world.setAttribute("field-of-view", village ? "30deg" : "25.17deg");
-  world.setAttribute("camera-orbit", village ? "18deg 65deg 87%" : "30deg 65deg auto");
+  world.setAttribute("camera-orbit", village ? "18deg 68deg 87%" : "30deg 68deg auto");
   world.autoplay = !matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (village) world.setAttribute("animation-name", "Santa flight");
   else if(academy)world.setAttribute("animation-name","Winter post");
