@@ -70,6 +70,39 @@ async function buildWorld(kind){
     return node;
   }
   if(kind==="candy"){
+    const sphere=model.meshes[model.nodes.find(node=>node.name==="round snow").mesh];
+    const parts=[
+      ["Belly",[0,.42,0],[.30,.35,.23]],["Head",[0,.83,0],[.30,.27,.22]],
+      ["Snout",[0,.78,.19],[.15,.10,.09]]
+    ];
+    for(const side of [-1,1]){
+      parts.push(["Ear",[side*.21,1.04,0],[.13,.14,.11]],
+        ["Arm",[side*.28,.50,.045],[.12,.19,.12]],
+        ["Foot",[side*.16,.14,.09],[.15,.15,.20]]);
+    }
+    function gummyMesh(name,color){
+      const material=model.materials.push({name,pbrMetallicRoughness:{
+        baseColorFactor:[...color,1],metallicFactor:0,roughnessFactor:.22}})-1;
+      return model.meshes.push({primitives:sphere.primitives.map(p=>({...p,material}))})-1;
+    }
+    const eyes=gummyMesh("Dark berry eyes",[.12,.035,.045]);
+    for(const [name,color,x,z,yaw] of [
+      ["Raspberry",[.86,.055,.18],4.4,2.55,.28],
+      ["Lime",[.38,.76,.09],-5.25,.10,.65],
+      ["Tangerine",[1,.34,.035],1.05,-1.65,.38]
+    ]){
+      const ground=-.36+1.06*Math.sqrt(1-(x/7.34)**2-(z/5.26)**2);
+      const bear=group(name+" gummy bear",[x,ground,z]);
+      bear.rotation=[0,Math.sin(yaw/2),0,Math.cos(yaw/2)];
+      const mesh=gummyMesh(name+" jelly",color);
+      for(const [name,translation,scale] of parts){
+        bear.children.push(model.nodes.push({name,mesh,translation,scale})-1);
+      }
+      for(const side of [-1,1]){
+        bear.children.push(model.nodes.push({name:"Eye",mesh:eyes,
+          translation:[side*.11,.88,.20],scale:[.031,.039,.026]})-1);
+      }
+    }
     const [x,y,z]=layout.mail;
     const carrier=group("Gingerbread postman",[x,y-.5625,z]);
     carrier.scale=[.69,.69,.69];
