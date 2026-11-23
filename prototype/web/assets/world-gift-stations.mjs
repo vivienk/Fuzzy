@@ -2,7 +2,7 @@ import {worldGLB} from "./place-village-gift.mjs";
 
 const layouts={
   academy:{file:"owl-post-academy.gltf?v=snowy-mail-owl",boxes:[[-2.15,.02,4.22],[-.82,.02,4.42],[.54,.02,4.35]],mail:[3.9,1.1,.9]},
-  candy:{file:"funky-candy-land.gltf?v=leaning-candies",boxes:[[-2.55,.24,3.73],[-.88,.28,4.0],[.66,.30,3.92]],mail:[-3.72,.705,3.27]}
+  candy:{file:"funky-candy-land.gltf?v=leaning-candies",boxes:[[-2.55,.24,3.73],[-.88,.28,4.0],[.66,.30,3.92]],mail:[-3.72,.8925,3.27]}
 };
 const cookieActions={
   "Candy cane greeter":["Twirl the candy cane","Peppermint twirl","One peppermint spin!"],
@@ -71,8 +71,8 @@ async function buildWorld(kind){
   }
   if(kind==="candy"){
     const [x,y,z]=layout.mail;
-    const carrier=group("Gingerbread postman",[x,y-.375,z]);
-    carrier.scale=[.46,.46,.46];
+    const carrier=group("Gingerbread postman",[x,y-.5625,z]);
+    carrier.scale=[.69,.69,.69];
     carrier.rotation=[0,Math.sin(.22),0,Math.cos(.22)];
     const cookie=model.nodes.find(node=>node.name==="Wrapped gift courier");
     for(const index of cookie.children){
@@ -170,7 +170,7 @@ async function buildWorld(kind){
         rotations.push([0,Math.sin(yaw/2),0,Math.cos(yaw/2)]);
       }
       actor.translation=positions[0];actor.rotation=rotations[0];
-      walkTracks.set(name,{positions,height:name==="Gingerbread postman"?.375:.78});
+      walkTracks.set(name,{positions,height:name==="Gingerbread postman"?.5625:.78});
       animate(index,"translation",positions);animate(index,"rotation",rotations);
       for(const id of actor.children){
         const boot=model.nodes[id];
