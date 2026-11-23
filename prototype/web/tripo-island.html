@@ -90,7 +90,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 @media(prefers-reduced-motion:reduce){.sleigh-flight,.sleigh-stars{animation:none}}
 #preview-world{display:block;width:fit-content;margin-top:16px;color:#315e53;font-weight:650}#pack-hint{color:var(--muted);font-size:14px}
 #friend-world:not([hidden]){display:inline-block;margin:16px 0;padding:10px 18px;background:#f1ca78;color:#31283b;border-radius:24px;font-weight:650;text-decoration:none}
-main:not(:has(#diorama[data-village])) .album-room,.album-room [hidden]{display:none}
+.album-room [hidden]{display:none}
 .album-room{margin:1.5rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));align-items:center;gap:1.5rem;padding:clamp(16px,3vw,32px);border:1px solid #fff3;border-radius:20px;background:#182034}.album-room h2{font:30px Georgia,serif;margin:0}.album-room label{display:block}.album-room select{display:block;max-width:100%;padding:.6rem;margin:.4rem 0 .8rem}.album-room .note{font-size:.87rem;color:var(--muted)}
 .chime-track{margin:0}.chime-track audio{display:block;width:100%;margin:.4rem 0}.chime-track a{font-size:.9rem}
 
@@ -169,49 +169,20 @@ header #friend-world:not([hidden]){margin:0;--glass-fill:#dbc572f5;--glass-ink:#
 .gift-link-row{display:flex;align-items:center;gap:8px;margin:14px 0;padding-left:12px;border:1px solid #a6aea4;border-radius:12px;background:#fffaf2}
 #gift-url{flex:1;min-width:0;color:#315e53;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #copy-parcel{flex:none;display:grid;place-items:center;width:44px;height:44px;margin:0;padding:0;color:#315e53}
+body.choosing main>:is(#diorama,#world-gifts,.album-room,#pack-world,#pack-hint){display:none}
+#world-gifts:not([hidden]){display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+#enter-world[hidden],#world-gifts[hidden]{display:none}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
 <header><img class="brand-logo" src="assets/fuzzy-wordmark.png" width="320" height="106" alt="Fuzzy"><a class="back" href="./index.html">← Back to winter worlds</a><a id="friend-world" hidden target="_blank" rel="noopener">Create a gift</a></header>
-<main><h1>Winter worlds</h1>
-<nav aria-label="Choose a world" id="worlds"><button aria-pressed="true" data-world="north">North Pole</button> <button aria-pressed="false" data-world="village">North Pole v2 · Santa Village</button> <button aria-pressed="false" data-world="academy">Wizarding Christmas</button></nav>
-<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure>
+<main><h1 id="world-heading">Choose your winter world</h1>
+<nav aria-labelledby="world-heading" id="worlds"><button aria-pressed="true" data-world="village">North Pole – Santa Village</button><button aria-pressed="false" data-world="academy">Wizardry Magic Christmas</button><button aria-pressed="false" data-world="candy">Funky Candy Land</button></nav>
+<button id="enter-world" type="button" hidden>Open world</button>
+<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><section id="world-gifts" hidden aria-label="Gift preparation"><button data-slot="0"></button><button data-slot="1"></button><button data-slot="2"></button><button id="world-note">Mailbox note</button></section>
 <section class="album-room" aria-labelledby="album-heading">
 <div class="turntable"><span class="vinyl" aria-hidden="true"><i></i></span><i class="tonearm" aria-hidden="true"></i><button id="disc" type="button" aria-label="Play record"><span class="disc-symbol" aria-hidden="true">▶</span></button></div>
-<div><h2 id="album-heading">Gift soundtrack</h2><select id="christmas-album" aria-label="Gift soundtrack"><option value="charlie" data-spotify="2XnNY3GEkbWHor5kyvXLu4">A Charlie Brown Christmas · Vince Guaraldi Trio</option><option value="buble" data-spotify="3CKVXhODttZebJAzjUs2un">Christmas · Michael Bublé</option><option value="mariah" data-spotify="0cS9prZ8u3fdbc7lmtCaMV">Merry Christmas · Mariah Carey</option><option value="festive-commotion" data-spotify="57inreLG2hAF7YYt1W9nnL">Festive Commotion · Howard Harper-Barnes</option><option value="toymakers-workshop" data-audio="assets/toymakers-workshop.mp3">Toymaker’s Workshop · David Celeste</option></select><p id="album-status" role="status">Tap the record to play.</p><a id="open-album" hidden target="_blank" rel="noopener">Open in Spotify</a></div><div id="album-player" hidden></div></section><button id="pack-world" hidden>Send Gift</button><span id="pack-hint" hidden> Available when all three gifts are ready.</span><details><summary>Tripo models and generation tools</summary>
-<p><a href="/api/tripo?taskId=caabd271-8750-45d4-abc8-579a7fbfc74e&amp;download=1&amp;asset=island" download="santa-village-original.glb">Download original Tripo Santa Village</a></p>
-<div class="kicker">Tripo · low-poly 3D generation</div>
-<h1>A new Christmas island</h1>
-<p class="intro">Create the snowy wizarding-school island, then generate one separately rigged and animated festive elf. The island and character stay as separate GLB assets.</p>
-<div><span class="badge">Storybook low-poly</span><span class="badge">Separate animated character</span><span class="badge">Credit cap: 95 credits · $0.95</span> <span id="api-status" class="badge">Checking Tripo API key…</span></div>
-<section class="card" aria-labelledby="island-title">
-<div><model-viewer id="island-model" alt="Generated low-poly Christmas island" camera-controls auto-rotate auto-rotate-delay="1500" rotation-per-second="10deg" shadow-intensity="1" exposure="1.05" interaction-prompt="none"></model-viewer>
-<div class="downloads"><a id="island-download" download="fuzzy-christmas-island.glb">Download island GLB</a></div></div>
-<div class="controls"><h2 id="island-title">1. Generate the island</h2>
-<label for="island-prompt">Island description</label>
-<textarea id="island-prompt">A floating snowy Christmas island with a gothic academy, tall towers, timber cottages, evergreen trees and a decorated tree in the village square. Add an owl post hut, floating candles, small elves, a polar bear, a reindeer and an icy shoreline.</textarea>
-<button id="island-generate" disabled>Generate island · 30 credits</button>
-<div class="status" id="island-status" role="status" aria-live="polite">Ready to create the island.</div><div class="progress"><i id="island-progress"></i></div>
-</div></section>
-<section class="card" aria-labelledby="object-title">
-<div><model-viewer id="object-model" alt="Generated winter village object" camera-controls disable-pan interaction-prompt="none" shadow-intensity=".55" environment-image="neutral" exposure=".95"></model-viewer>
-<div class="downloads"><a id="object-download" download="fuzzy-object.glb">Download object GLB</a></div></div>
-<div class="controls"><h2 id="object-title">Gift making station</h2>
-<label for="object-prompt">What gift would they love?</label>
-<textarea id="object-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea>
-<p class="note">Describe the object and its details. Fuzzy adds the same winter miniature style to every island, character, and prop.</p>
-<button id="object-generate" disabled>Generate gift · 30 credits</button>
-<div class="status" id="object-status" role="status" aria-live="polite"></div><div class="progress"><i id="object-progress"></i></div></div></section>
-<section class="card" aria-labelledby="elf-title">
-<div><model-viewer id="elf-model" alt="Separately generated animated festive elf" camera-controls auto-rotate auto-rotate-delay="1500" rotation-per-second="10deg" shadow-intensity="1" exposure="1.05" interaction-prompt="none"></model-viewer>
-<div class="downloads"><a id="elf-download" download="fuzzy-elf-walk.glb">Download animated elf GLB</a></div></div>
-<div class="controls"><h2 id="elf-title">2. Generate and animate one elf</h2>
-<p class="intro">This creates a separate biped elf, rigs it, and applies an in-place walk cycle. Estimated total: 95 credits (about $0.95): island 30, elf 30, rig 25, walk animation 10; rig check is free.</p>
-<button id="elf-generate" disabled>Generate + animate elf · 65 credits</button>
-<div class="status" id="elf-status" role="status" aria-live="polite">Ready after the island generation; this step can also run independently.</div><div class="progress"><i id="elf-progress"></i></div>
-</div></section>
-<p class="note">Your Tripo key stays server-side. The page checks authentication for free before enabling generation. Each step can only be submitted once per preview session, with a combined 95-credit cap.</p>
-</details></main><dialog id="packing" aria-labelledby="packing-title"><form method="dialog"><button class="parcel-close" aria-label="Close wrapping options">×</button></form>
+<div><h2 id="album-heading">Gift soundtrack</h2><select id="christmas-album" aria-label="Gift soundtrack"><option value="charlie" data-spotify="2XnNY3GEkbWHor5kyvXLu4">A Charlie Brown Christmas · Vince Guaraldi Trio</option><option value="buble" data-spotify="3CKVXhODttZebJAzjUs2un">Christmas · Michael Bublé</option><option value="mariah" data-spotify="0cS9prZ8u3fdbc7lmtCaMV">Merry Christmas · Mariah Carey</option><option value="festive-commotion" data-spotify="57inreLG2hAF7YYt1W9nnL">Festive Commotion · Howard Harper-Barnes</option><option value="toymakers-workshop" data-audio="assets/toymakers-workshop.mp3">Toymaker’s Workshop · David Celeste</option></select><p id="album-status" role="status">Tap the record to play.</p><a id="open-album" hidden target="_blank" rel="noopener">Open in Spotify</a></div><div id="album-player" hidden></div></section><button id="pack-world" hidden>Send Gift</button><span id="pack-hint" hidden> Available when all three gifts are ready.</span></main><dialog id="packing" aria-labelledby="packing-title"><form method="dialog"><button class="parcel-close" aria-label="Close wrapping options">×</button></form>
 <h2 id="packing-title">Wrap your world</h2><form id="delivery"><label>Your name <input id="sender-name" autocomplete="given-name" maxlength="60" placeholder="Name shown to the recipient"></label><fieldset><legend>Wrapping paper</legend><div id="paper-options"></div></fieldset>
 <fieldset><legend>Send to</legend><div id="receivers"></div><button type="button" id="add-receiver" aria-label="Add another receiver">+ Add receiver</button></fieldset>
 <button type="submit">Send by email</button> <div class="gift-link-row"><a id="gift-url" target="_blank" rel="noopener"></a><button type="button" id="copy-parcel" aria-label="Copy gift link" title="Copy gift link"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 5V4a1 1 0 0 0-1-1H5a2 2 0 0 0-2 2v10a1 1 0 0 0 1 1h1"/></svg></button></div><a id="preview-world" href="#" target="_blank" rel="noopener">Preview as receiver</a><p role="status" id="send-status"></p></form></dialog>
@@ -219,7 +190,6 @@ header #friend-world:not([hidden]){margin:0;--glass-fill:#dbc572f5;--glass-ink:#
 <dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button type="button" id="bike-preset">Bicycle · Instant preset</button> <button id="box-generate">Generate gift · 30 credits</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your Christmas note</label><textarea id="letter-input" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function setStatus(prefix,text,progress){document.querySelector("#"+prefix+"-status").textContent=text;if(Number.isFinite(progress))document.querySelector("#"+prefix+"-progress").style.width=Math.max(0,Math.min(100,progress))+"%"}
 async function beginTask(operation,body){
  const response=await fetch("/api/tripo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({operation,...body})});
  const data=await response.json();
@@ -227,56 +197,17 @@ async function beginTask(operation,body){
  if(!data.taskId)throw new Error("Tripo did not return a task ID.");
  return data.taskId;
 }
-async function waitTask(taskId,prefix,label,onProgress){
+async function waitTask(taskId,label,onProgress){
  for(let i=0;i<180;i++){
   await sleep(i<3?1600:3000);const response=await fetch("/api/tripo?taskId="+encodeURIComponent(taskId),{cache:"no-store"});const data=await response.json();
   if(!response.ok)throw new Error(data.error||"Could not check task status.");
-  const progress=data.progress||4;if(onProgress)onProgress(progress);else setStatus(prefix,label+" · "+data.status+" ("+progress+"%)",progress);
+  const progress=data.progress||4;onProgress(progress);
   if(data.status==="success")return data;
   if(["failed","banned","cancelled","expired"].includes(data.status))throw Object.assign(new Error(data.error||label+" failed."),{terminal:true});
  }
  throw new Error(label+" is taking longer than expected. Refresh and retry this step.");
 }
-function downloadModel(taskId,asset,viewerId,linkId){
- const url="/api/tripo?taskId="+encodeURIComponent(taskId)+"&download=1&asset="+asset;
- document.querySelector("#"+viewerId).src=url;const link=document.querySelector("#"+linkId);link.href=url;link.style.display="inline-block";
-}
-for (const kind of ["island","object"]) {
- const button=document.querySelector("#"+kind+"-generate");
- button.onclick=async()=>{
-  const prompt=document.querySelector("#"+kind+"-prompt").value.trim();
-  if(prompt.length<3){setStatus(kind,"Describe the "+kind+" first.");return;}
-  button.disabled=true;setStatus(kind,"Submitting to Tripo…",4);
-  try{
-   const taskId=await beginTask(kind,{prompt});
-   await waitTask(taskId,kind,"Building the "+kind);
-   downloadModel(taskId,kind,kind+"-model",kind+"-download");
-   setStatus(kind,"Ready to preview or download.",100);
-   if(kind==="object")window.dispatchEvent(new CustomEvent("village-gift-ready",{detail:taskId}));
-  }catch(error){setStatus(kind,error.message)}finally{button.disabled=false}
- };
-}
-async function checkApiKey(){
- const status=document.querySelector("#api-status"),buttons=[document.querySelector("#object-generate"),document.querySelector("#island-generate"),document.querySelector("#elf-generate")];
- try{const response=await fetch("/api/tripo?check=1",{cache:"no-store"});const data=await response.json();if(!response.ok)throw new Error(data.error||"Tripo authentication failed.");
-  status.textContent="Tripo connected";status.style.color="#91e1c4";buttons.forEach(button=>button.disabled=false);
- }catch(error){status.textContent="Tripo key rejected";status.title=error.message;document.querySelector("#island-status").textContent=error.message;buttons.forEach(button=>button.disabled=true);}
-}
-checkApiKey();
-document.querySelector("#elf-generate").onclick=async()=>{
- const button=document.querySelector("#elf-generate");button.disabled=true;setStatus("elf","Generating the elf…",3);
- try{
-  const charId=await beginTask("character",{});await waitTask(charId,"elf","Generating the elf");
-  setStatus("elf","Checking the elf rig for free…",42);const checkId=await beginTask("rig-check",{characterTaskId:charId});const checked=await waitTask(checkId,"elf","Checking rig compatibility");
-  if(!checked.output?.riggable||checked.output?.rig_type!=="biped")throw new Error("Tripo could not confirm a biped rig for this elf; stopped before the paid rig step.");
-  setStatus("elf","Rigging the elf…",50);const rigId=await beginTask("rig",{characterTaskId:charId});await waitTask(rigId,"elf","Rigging");
-  setStatus("elf","Applying the walk animation…",75);const animId=await beginTask("animate",{rigTaskId:rigId});await waitTask(animId,"elf","Animating");
-  downloadModel(animId,"character","elf-model","elf-download");setStatus("elf","Animated elf ready. Preview or download the GLB.",100);
- }catch(e){setStatus("elf",e.message)}finally{button.disabled=false}
-};
 </script><script type="module">
-const island = "/api/tripo?taskId=af2dcf97-3301-4bd9-aeae-58bc4000c0b8&download=1&asset=island";
-const elf = "/api/tripo?taskId=13805109-1e7f-4ff0-a68d-fcdde2d86568&download=1&asset=character";
 const world = document.querySelector("#world");
 const caption = document.querySelector("#caption");
 function matte(viewer) {
@@ -391,7 +322,7 @@ const editorKey="fuzzy-editor"+draftSuffix;
 if(draftSuffix)document.querySelector("a.back").href="./index.html"+location.hash;
 const friendWorld=document.querySelector("#friend-world");
 if(parcel){
-  const draftURL=new URL("./index.html",location.href);
+  const draftURL=new URL("./tripo-island.html",location.href);
   draftURL.hash=new URLSearchParams({draft:crypto.randomUUID()}).toString();
   friendWorld.href=draftURL.href;
   friendWorld.hidden=false;
@@ -429,6 +360,7 @@ document.querySelector("#sender-name").addEventListener("input",refreshReceiverP
 function parcelURL(){
   const params=new URLSearchParams({parcel:"1",paper:document.querySelector('input[name="paper"]:checked').value});
   const sender=document.querySelector("#sender-name").value.trim();if(sender)params.set("sender",sender);
+  params.set("world",world.dataset.kind);
   params.set("album",document.querySelector("#christmas-album").value);
   for(const box of boxes)params.append("gift",box.id);
   try{const message=readEditor().note;if(message)params.set("note",message.slice(0,500));}catch{}
@@ -438,7 +370,7 @@ document.querySelector("#delivery").onsubmit=e=>{
   e.preventDefault();
   const emails=[...new Set(Array.from(recipients.children,input=>input.value.trim()))];
   const url=parcelURL();
-  location.href="mailto:?bcc="+encodeURIComponent(emails.join(","))+"&subject="+encodeURIComponent("A winter world for you")+"&body="+encodeURIComponent("I packed a Santa Village with three gifts for you. Open your world here:\n\n"+url);
+  location.href="mailto:?bcc="+encodeURIComponent(emails.join(","))+"&subject="+encodeURIComponent("A winter world for you")+"&body="+encodeURIComponent("I packed a winter world with three gifts for you. Open your world here:\n\n"+url);
   sendStatus.textContent="Send the draft in your email app, then choose Preview as receiver to open your wrapped world.";
 };
 document.querySelector("#copy-parcel").onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector("#gift-url").href);sendStatus.textContent="Gift link copied.";}catch{const field=document.createElement("textarea");field.readOnly=true;field.value=parcelURL();sendStatus.replaceChildren(field);field.select();}};
@@ -461,10 +393,18 @@ function guideStep(){
 }
 function syncGuide(){
   const village=world.dataset.kind==="village",step=guideStep(),gaming=village&&(step.kind==="game"||boxes.every(box=>box.phase==="open"));
-  packWorld.hidden=!village||!!parcel;
+  packWorld.hidden=!!parcel;
   packWorld.disabled=!boxes.every(b=>["ready","open"].includes(b.phase));
   document.querySelector("#pack-hint").hidden=packWorld.hidden||!packWorld.disabled;
-  if(!village)return;
+  if(!village){
+    document.querySelectorAll("#world-gifts [data-slot]").forEach((button,i)=>{
+      const b=boxes[i];
+      const action={ready:"Unwrap",open:"Rotate",retry:"Retry",starting:"Starting…",building:Math.round(b.progress||0)+"%",opening:"Opening…"}[b.phase]||"Make gift";
+      button.textContent=action+" · Box "+(i+1);
+      button.disabled=["starting","building","opening"].includes(b.phase);
+    });
+    return;
+  }
   world.querySelectorAll(".box-hit").forEach(button=>{
     const slot=Number(button.dataset.box),b=boxes[slot];
     button.toggleAttribute("data-next",step.kind==="prep"&&step.slot===slot&&["empty","prepared"].includes(b.phase));
@@ -498,7 +438,7 @@ function paintBox(slot){
 }
 async function watchBox(slot){
   const b=boxes[slot];b.phase="building";paintBox(slot);persistBoxes();
-  try{await waitTask(b.id,"object","Building gift",p=>{b.progress=Math.min(99,p);paintBox(slot);});b.phase="ready";rememberBicycle(b);}
+  try{await waitTask(b.id,"Building gift",p=>{b.progress=Math.min(99,p);paintBox(slot);});b.phase="ready";rememberBicycle(b);}
   catch(error){b.phase=error.terminal?"empty":"retry";b.error=error.message;}
   persistBoxes();paintBox(slot);
 }
@@ -542,6 +482,7 @@ document.querySelector("#box-generate").onclick=async()=>{
   }catch(error){boxes[slot]=previous;previous.error=error.message;persistBoxes();paintBox(slot);caption.textContent=error.message;}
 };
 async function refreshBoxes(reveal=null){
+  if(world.dataset.kind!=="village"){if(reveal!==null)await inspectGift(reveal);return;}
   const version=++renderVersion;
   const gifts=boxes.flatMap((b,slot)=>["open","opening"].includes(b.phase)?[{slot,id:b.id}]:[]);
   const base=await villageModel;
@@ -564,10 +505,6 @@ async function activateBox(slot){
   if(b.phase==="open"){try{await inspectGift(slot);}catch{caption.textContent="Could not open this gift. Tap to try again.";}return;}
   if(["empty","prepared"].includes(b.phase))openGiftForm(slot);
 }
-window.addEventListener("village-gift-ready",({detail:id})=>{
-  const slot=boxes.findIndex(b=>b.phase==="empty");if(slot<0)return;
-  boxes[slot]={phase:"ready",id};persistBoxes();paintBox(slot);
-});
 const fishIcon='<svg viewBox="0 0 28 18" aria-hidden="true"><path fill="currentColor" d="M2 9C7 1 15 1 21 7l5-4v12l-5-4C14 17 7 17 2 9Z"/><circle cx="8" cy="8" r="1.2" fill="#fff9e9"/></svg>';
 let fishingTimer,fishPhase="idle",catchCount=0;
 function resetFishing(){
@@ -678,7 +615,6 @@ async function selectWorld(choice) {
   islandLoader.hidden=false;world.setAttribute("aria-busy","true");
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
-  if(world.dataset.kind==="village" && choice.dataset.world!=="village")window.dispatchEvent(new Event("gift-soundtrack-stop"));
   world.dataset.kind = choice.dataset.world;
   packWorld.hidden=true;document.querySelector("#pack-hint").hidden=true;
   world.alt = choice.textContent;
@@ -688,7 +624,8 @@ async function selectWorld(choice) {
   ++renderVersion;pendingReveal=null;
   const village = choice.dataset.world === "village";
   document.querySelector("#diorama").toggleAttribute("data-village",village);
-  if(village&&!parcel)window.dispatchEvent(new Event("gift-music-enter"));
+  document.querySelector("#world-gifts").hidden=village;
+  if(!parcel)window.dispatchEvent(new Event("gift-music-enter"));
   world.setAttribute("min-camera-orbit", village ? "auto 52deg auto" : "auto 65deg auto");
   world.setAttribute("max-camera-orbit", village ? "auto 76deg auto" : "auto 65deg auto");
   world.setAttribute("camera-orbit", village ? "18deg 65deg 87%" : "30deg 65deg auto");
@@ -716,24 +653,31 @@ async function selectWorld(choice) {
     }
     return;
   }
-  world.src = academy ? "assets/worlds/owl-post-academy.gltf" : "assets/worlds/aurora-lit.glb";
+  world.src = academy ? "assets/worlds/owl-post-academy.gltf" : "assets/worlds/funky-candy-land.gltf";
+  syncGuide();
 }
 world.addEventListener("error", () => {finishIslandLoad();caption.textContent = world.alt + " couldn’t load. Select the world again to retry.";});
-for (const choice of choices) choice.onclick = () => selectWorld(choice);
+const enter=document.querySelector("#enter-world");
+let preferredWorld=parcelParams.get("world");
+if(draftSuffix)try{preferredWorld=localStorage.getItem("fuzzy-draft-world"+draftSuffix)||preferredWorld;}catch{}
+let selected=Array.from(choices).find(button=>button.dataset.world===preferredWorld)||choices[0];
+function pick(choice){
+  selected=choice;
+  if(draftSuffix)try{localStorage.setItem("fuzzy-draft-world"+draftSuffix,choice.dataset.world);}catch{}
+  for(const button of choices)button.setAttribute("aria-pressed",String(button===choice));
+  if(!document.body.classList.contains("choosing"))selectWorld(choice);
+}
+for(const choice of choices)choice.onclick=()=>pick(choice);
+enter.onclick=()=>{
+  document.body.classList.remove("choosing");enter.hidden=true;
+  selectWorld(selected);document.querySelector("#diorama").scrollIntoView({block:"start"});
+};
+document.querySelectorAll("#world-gifts [data-slot]").forEach(button=>button.onclick=()=>activateBox(Number(button.dataset.slot)));
+document.querySelector("#world-note").onclick=openLetter;
+if(parcel)document.querySelector("#world-heading").textContent=selected.textContent;
+document.body.classList.toggle("choosing",!!draftSuffix);
+enter.hidden=!draftSuffix;
 
 boxes.forEach((b,i)=>{if(b.phase==="building")watchBox(i);});
-selectWorld(parcel || draftSuffix || location.hash === "#santa-village" ? document.querySelector('[data-world="village"]') : choices[0]);
-const assets = document.querySelector("details");
-assets.addEventListener("toggle", () => {
-  if (!assets.open) return;
-  for (const [prefix, url] of [["island", island], ["elf", elf]]) {
-    const viewer = document.querySelector("#"+prefix+"-model");
-    if (viewer.hasAttribute("src")) continue;
-    viewer.src = url;
-    if (prefix === "elf") viewer.autoplay = true;
-    const link = document.querySelector("#"+prefix+"-download");
-    link.href = url;
-    link.style.display = "inline";
-  }
-});
-</script><script src="assets/village-record.js?v=mint-default"></script></body></html>
+pick(selected);
+</script><script src="assets/village-record.js?v=world-picker"></script></body></html>
