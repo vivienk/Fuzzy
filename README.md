@@ -34,7 +34,7 @@ Fuzzy V3 is the current **native PICO Christmas Worlds** candidate. Explore thre
 | **[V3 release status](https://github.com/vivienk/Fuzzy/releases)** | V3.0 APK is uploaded to a **draft release**; it is **not publicly downloadable** until the release is published. |
 | **[V3 source code](https://github.com/vivienk/Fuzzy/tree/feat/native-christmas-worlds-v3)** | Native Android/Kotlin PICO OS 6 project, including Santa Village, Wizardry Magic Christmas, and Funky Candy Land. |
 | **[Build and run V3](#build-and-test)** | Build with JDK 21 and Android SDK 35; use a clean PICO OS 6 Swan emulator for testing. |
-| **[Browser prototype](prototype/web/)** | Explore the separate browser prototype. Browser behavior does **not** verify the native APK. |
+| **[Open Santa Village in 3D](https://fuzzy-preview-git-feat-tripo-w-af628c-viviens-projects-842ec178.vercel.app/tripo-island.html#santa-village)** · [Prototype source](prototype/web/) | Explore the separate browser prototype. Browser behavior does **not** verify the native APK. |
 | **[Test checklist](TESTING.md)** and **[build verification](BUILD-VERIFICATION.md)** | Reference testing documents; see the V3 verification note above for the actual V3 status. |
 | **[Submission materials (Google Drive)](https://drive.google.com/drive/folders/1CRVMRI06iP5BajKrthzkdanl4s72C9_m)** | Supporting materials; access and contents should be confirmed before sharing with judges. |
 
