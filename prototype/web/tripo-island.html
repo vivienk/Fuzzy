@@ -21,7 +21,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 .note{font-size:12px;color:#aaa8b9;margin-top:16px}.downloads a{display:none;margin:12px 14px 0 0}
 @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}model-viewer{animation:drift 7s ease-in-out infinite}
 @media(max-width:850px){.card{grid-template-columns:1fr}.controls{order:-1}model-viewer{height:360px}}@media(prefers-reduced-motion:reduce){.aurora,model-viewer{animation:none}}
-#diorama{margin:20px 0 32px}#world{height:clamp(340px,62vh,680px);animation:none;background:linear-gradient(150deg,#c9e2ea,#a8bed0 56%,#d8d1d9)}#world[data-kind="north"]{background:linear-gradient(115deg,#acd6ce88,#d6ccdfaa),url("assets/worlds/aurora-sky.svg") center/cover}figcaption{padding:8px 0}summary{cursor:pointer}details h1{font-size:2rem}
+#diorama{margin:20px 0 32px}#world{height:clamp(340px,62vh,680px);animation:none;background:linear-gradient(150deg,#c9e2ea,#a8bed0 56%,#d8d1d9)}#world[data-kind="north"]{background:linear-gradient(115deg,#acd6ce88,#d6ccdfaa),url("assets/worlds/aurora-sky.svg") center/cover}figcaption{padding:8px 0;text-align:left}summary{cursor:pointer}details h1{font-size:2rem}
 #world[data-kind="academy"]{background:#777893 url("assets/worlds/academy-blue-hour.svg?v=twinkling") center/cover no-repeat}
 #world[data-kind="candy"]{
   background:
@@ -282,7 +282,7 @@ function matte(viewer) {
 for (const viewer of document.querySelectorAll("model-viewer")) {
   viewer.addEventListener("load", () => {
     try { if (viewer !== world || world.dataset.kind !== "village") matte(viewer); } catch (error) { console.warn("Material adjustment skipped", error); }
-    if (viewer === world) updateMailReminder();
+    if (viewer === world) caption.textContent=world.alt;
   });
 }
 const choices = document.querySelectorAll("#worlds button");
@@ -415,13 +415,11 @@ function composeMail(){
 edit.onclick=composeMail;
 const quill=document.querySelector("#quill");
 quill.onclick=composeMail;
-function updateMailReminder(){
+function updateQuillLabel(){
   const hasLetter=!!savedMailNote().trim();
   quill.title=hasLetter?"Edit your letter":"Write your letter";
   quill.setAttribute("aria-label",quill.title);
-  if(parcel||hasLetter){caption.textContent=world.alt;return;}
-  const mailbox={village:"village mailbox",academy:"snowy owl",candy:"gingerbread postman"}[world.dataset.kind];
-  caption.textContent="Tap the "+mailbox+" to tuck a personal letter into your gift.";
+
 }
 input.oninput=()=>input.setCustomValidity("");
 form.onsubmit=e=>{
@@ -430,7 +428,7 @@ form.onsubmit=e=>{
   try{localStorage.removeItem(mailboxReadKey());}catch{}
   authoredNote=value;villageNote=value;world.querySelector(".mail-open")?.classList.remove("read");
   try{localStorage.setItem(editorKey,JSON.stringify({...readEditor(),note:value,read:false}));statusLine.textContent="Your letter is tucked into your gift.";}catch{statusLine.textContent="Saved for this visit only.";}
-  updateMailReminder();displayLetter();syncGuide();edit.focus();
+  updateQuillLabel();displayLetter();syncGuide();edit.focus();
 };
 document.querySelector("#close-letter").onclick=()=>letter.close();
 const stationDialog=document.querySelector("#gift-station");
@@ -835,7 +833,8 @@ async function selectWorld(choice) {
   world.exposure = ({ candy: 0.82, academy: 0.72 })[choice.dataset.world] ?? 0.95;
   packWorld.hidden=true;document.querySelector("#pack-hint").hidden=true;
   world.alt = choice.textContent;
-  updateMailReminder();
+  caption.textContent=world.alt;
+  updateQuillLabel();
   clearElfInteraction();world.replaceChildren();
   const turn = ++request;
   ++renderVersion;pendingReveal=null;
