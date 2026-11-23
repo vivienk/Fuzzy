@@ -15,10 +15,12 @@ export async function villageGeometry(fishingUnlocked=false) {
   let data, bytes=0;
   const tau=Math.PI*2;
   const palette={carrot:"df8b4b",snowShadow:"e2eaf0",rock:"655f56",rockBlue:"4c5663",snow:"fff5ed",ice:"93bfd1",deep:"658ba9",cliff:"807581",shale:"a59aa2",path:"dcc8b9",wood:"a76a45",dark:"603e35",cookie:"d89c65",red:"b9504c",tile:"c7685a",white:"fff0d3",gold:"e6b35e",lit:"ffce76",pine:"527966",spruce:"3c6055",mint:"81a18a",skin:"efbc97",fur:"8e604c",antler:"c39976",black:"3d3534",blush:"d98074"};
+  const glacierLayers=["glacierFrost","glacierBlue","glacierCore","glacierDeep"];
+  Object.assign(palette,{glacierFrost:"c5e9f3",glacierBlue:"a4d6e8",glacierCore:"8abfd9",glacierDeep:"75a9ca"});
   const names=Object.keys(palette);
   for(const [name,hex] of Object.entries(palette)){
     const rgb=hex.match(/../g).map(c=>Math.pow(parseInt(c,16)/255,2.2));
-    model.materials.push({name,pbrMetallicRoughness:{baseColorFactor:[...rgb,1],metallicFactor:0,roughnessFactor:.95},doubleSided:true,...(name==="lit"?{emissiveFactor:[.6,.27,.06]}:{})});
+    model.materials.push({name,pbrMetallicRoughness:{baseColorFactor:[...rgb,1],metallicFactor:0,roughnessFactor:glacierLayers.includes(name) ? .48 : .95},doubleSided:true,...(name==="lit"?{emissiveFactor:[.6,.27,.06]}:{})});
   }
   original.materials.forEach(m=>{names.push("Original "+m.name);model.materials.push(m);});
   function prop(name,key,x,z,height,yaw=0){
@@ -83,9 +85,11 @@ export async function villageGeometry(fishingUnlocked=false) {
       tri(i%5?"snow":"snowShadow",[0,0,0],top[j],top[i]);
       quad(i%4?"snow":"snowShadow",top[i],top[j],rings[0][j],rings[0][i]);
       for(let k=1;k<bands.length;k++){
-        const colors=k===1?["snow","snowShadow"]:["rock",i%3?"rockBlue":"shale"];
+        const depth=k-2;
+        const adjacent=Math.max(0,Math.min(3,depth+(i%4===0?-1:1)));
+        const colors=k===1?["snow","snowShadow"]:[glacierLayers[depth],glacierLayers[adjacent]];
         tri(colors[0],rings[k][i],rings[k-1][i],rings[k-1][j]);tri(colors[1],rings[k][i],rings[k-1][j],rings[k][j]);}
-      tri("rockBlue",[.57,-5.25,-.36],rings.at(-1)[i],rings.at(-1)[j]);
+      tri("glacierDeep",[.57,-5.25,-.36],rings.at(-1)[i],rings.at(-1)[j]);
     }
     for(const [x,y,z,h] of [[-4.2,-.90,4.45,1.78],[-4.5,-.90,4.28,.83],[3.65,-1.26,3.66,1.25],[5.36,-.94,-2.29,1.13]])
       solid("ice",x,y,z,[[-h,.018,.018],[0,.15,.18]],5);
