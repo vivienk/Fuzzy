@@ -643,15 +643,16 @@ async function selectWorld(choice) {
   const turn = ++request;
   ++renderVersion;pendingReveal=null;
   const village = choice.dataset.world === "village";
+  const academy = choice.dataset.world === "academy";
+  const allowTilt = village || academy;
   document.querySelector("#diorama").toggleAttribute("data-village",village);
   document.querySelector("#world-gifts").hidden=village;
   if(!parcel)window.dispatchEvent(new Event("gift-music-enter"));
-  world.setAttribute("min-camera-orbit", village ? "auto 52deg auto" : "auto 65deg auto");
-  world.setAttribute("max-camera-orbit", village ? "auto 76deg auto" : "auto 65deg auto");
+  world.setAttribute("min-camera-orbit", allowTilt ? "auto 52deg auto" : "auto 65deg auto");
+  world.setAttribute("max-camera-orbit", allowTilt ? "auto 76deg auto" : "auto 65deg auto");
   // Narrow the opening field of view for a 1.2× larger projected island.
   world.setAttribute("field-of-view", village ? "30deg" : "25.17deg");
   world.setAttribute("camera-orbit", village ? "18deg 65deg 87%" : "30deg 65deg auto");
-  const academy = choice.dataset.world === "academy";
   world.autoplay = (village || academy || choice.dataset.world === "north") && !matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (village) world.setAttribute("animation-name", "Santa flight");
   else world.removeAttribute("animation-name");
@@ -675,7 +676,7 @@ async function selectWorld(choice) {
     }
     return;
   }
-  world.src = academy ? "assets/worlds/owl-post-academy.gltf?v=smaller-candles" : "assets/worlds/funky-candy-land.gltf?v=biscuit-base";
+  world.src = academy ? "assets/worlds/owl-post-academy.gltf?v=standing-spells" : "assets/worlds/funky-candy-land.gltf?v=biscuit-base";
   syncGuide();
 }
 world.addEventListener("error", () => {finishIslandLoad();caption.textContent = world.alt + " couldn’t load. Select the world again to retry.";});
