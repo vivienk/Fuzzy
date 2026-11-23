@@ -28,14 +28,131 @@ body[data-world="forest"]{--theme-accent:#7852a1;--theme-paper:#f7f0ff;--theme-i
 body[data-world="aurora"]{--theme-accent:#59644c;--theme-paper:#faf6e9;--theme-ink:#56503d;--theme-border:#c7bea3;--light-hue:0deg}
 body[data-world="alpine"]{--theme-accent:#a84e42;--theme-paper:#fff8e8;--theme-ink:#614432;--theme-border:#e3cfab;--light-hue:0deg}
 button:not(.secondary):not(.world-choice):not(.mailbox-alert){background:var(--theme-accent)}.world-name,.eyebrow{color:var(--theme-accent)}dialog{background:var(--theme-paper);border-color:var(--theme-border)}.handwritten,dialog h2{color:var(--theme-ink)}.letter-heart{color:var(--theme-accent)}.mailbox-alert{background:var(--theme-paper);color:var(--theme-ink);border-color:var(--theme-border)}.mailbox-alert .badge{background:var(--theme-accent)}.light-anchor .halo,.light-anchor .spark{filter:hue-rotate(var(--light-hue))}.world-choice[aria-pressed="true"]{border-color:var(--theme-accent)}.world-choice[aria-pressed="true"] .choice-state{color:var(--theme-accent)}
-.world-choice[data-world="aurora"] img{object-fit:contain;background:#1b2333}.light-anchor .halo{width:30px;height:30px;left:-15px;top:-15px}.light-anchor.window .halo,.light-anchor.lantern .halo{width:42px;height:42px;left:-21px;top:-21px}.light-anchor.star .halo{width:54px;height:54px;left:-27px;top:-27px}.sound-controls{border-top:1px solid #e4d9cc;padding-top:12px;margin-top:14px}.sound-controls label{display:inline-block;margin-right:10px}.sound-controls input{width:110px;vertical-align:middle;accent-color:#59644c}.experience{position:relative}.snow-weather{position:absolute;inset:0 38.5% 0 0;pointer-events:none;overflow:hidden;z-index:2;border-radius:30px 0 0 30px}.snow-weather i{position:absolute;top:-12px;left:var(--x);width:var(--size);height:var(--size);background:#dce8f0;border-radius:50%;opacity:.5;animation:snow-fall var(--time) linear infinite;animation-delay:var(--delay)}@keyframes snow-fall{to{transform:translate(40px,1000px)}}.snow-weather.paused i{animation-play-state:paused}@media(prefers-reduced-motion:reduce){.snow-weather{display:none}}@media(max-width:800px){.snow-weather{inset:0 0 auto;height:440px;border-radius:30px 30px 0 0}}.album-room{margin-top:30px;padding:28px;border:1px solid #e4d9cc;border-radius:24px;background:#fffaf4;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}.album-room h2{margin:8px 0}.album-room select{margin-bottom:12px}.album-room iframe{display:block;min-width:280px}@media(max-width:800px){.album-room{grid-template-columns:1fr;padding:20px}}</style><script src="assets/light-anchors.js?v=gentle-walk-1"></script><script src="assets/decorations.js?v=gentle-walk-1"></script><script type="module">await customElements.whenDefined("model-viewer");customElements.get("model-viewer").minimumRenderScale=1;</script></head><body><header><strong>fuzzy</strong><span>Three winter worlds</span></header><main><div class="intro"><div class="eyebrow">Send your loved ones a 3D card</div><h1>Three little worlds.<br>A little closer to you.</h1><p>Choose a winter night, write a little note, and make a place for someone you love. Your world begins in the Enchanted Frost Forest.</p></div><section class="world-picker" aria-labelledby="world-picker-title"><h2 id="world-picker-title">Choose your winter world</h2><p>One message. A world that feels like you.</p><div class="world-grid"><button class="world-choice" data-world="aurora" aria-pressed="false"><img src="assets/worlds/north-pole-preview.png" alt="Rendered North Pole workshop with elves, candy canes and reindeer" loading="lazy"><span class="copy"><strong>North Pole</strong><small>Snowy workshops, igloos, gentle moose, and polar bears under the northern lights.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="alpine" aria-pressed="false"><img src="assets/worlds/alpine-concept.png" alt="Low-poly concept art for Moonlit Alpine Village" loading="lazy"><span class="copy"><strong>Moonlit Alpine Village</strong><small>Snowy mountain peaks, warm chalets, and a Christmas tree plaza.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="forest" aria-pressed="true"><img src="assets/worlds/forest-concept.png" alt="Low-poly concept art for Enchanted Frost Forest" loading="lazy"><span class="copy"><strong>Enchanted Frost Forest</strong><small>Lavender skies, frosted pines, and luminous crystal gardens.</small><span class="choice-state">Selected · Default world</span></span></button></div><p class="world-caption">North Pole shows the actual 3D model; the other previews are concept artwork. Explore each world below.</p></section><section class="experience"><model-viewer id="scene" src="assets/gift.glb" alt="A wrapped Christmas gift that reveals a snowy Christmas village" camera-controls shadow-intensity="1" exposure="0.72" camera-orbit="25deg 65deg 150%" interaction-prompt="none"></model-viewer><div class="snow-weather" aria-hidden="true"></div><div class="panel"><div id="world-name" class="world-name" aria-live="polite">Enchanted Frost Forest</div><div class="eyebrow" id="step">01 / Something arrived</div><h2 id="heading">Someone is thinking of you.</h2><p id="message">Unwrap your village, write a note, and add a little Christmas magic.</p>
+.world-choice[data-world="aurora"] img{object-fit:contain;background:#1b2333}.light-anchor .halo{width:30px;height:30px;left:-15px;top:-15px}.light-anchor.window .halo,.light-anchor.lantern .halo{width:42px;height:42px;left:-21px;top:-21px}.light-anchor.star .halo{width:54px;height:54px;left:-27px;top:-27px}.sound-controls{border-top:1px solid #e4d9cc;padding-top:12px;margin-top:14px}.sound-controls label{display:inline-block;margin-right:10px}.sound-controls input{width:110px;vertical-align:middle;accent-color:#59644c}.experience{position:relative}.snow-weather{position:absolute;inset:0 38.5% 0 0;pointer-events:none;overflow:hidden;z-index:2;border-radius:30px 0 0 30px}.snow-weather i{position:absolute;top:-12px;left:var(--x);width:var(--size);height:var(--size);background:#dce8f0;border-radius:50%;opacity:.5;animation:snow-fall var(--time) linear infinite;animation-delay:var(--delay)}@keyframes snow-fall{to{transform:translate(40px,1000px)}}.snow-weather.paused i{animation-play-state:paused}@media(prefers-reduced-motion:reduce){.snow-weather{display:none}}@media(max-width:800px){.snow-weather{inset:0 0 auto;height:440px;border-radius:30px 30px 0 0}}.album-room{margin-top:30px;padding:28px;border:1px solid #e4d9cc;border-radius:24px;background:#fffaf4;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}.album-room h2{margin:8px 0}.album-room select{margin-bottom:12px}.album-room iframe{display:block;min-width:280px}@media(max-width:800px){.album-room{grid-template-columns:1fr;padding:20px}}
+.style-picker{margin:0 0 24px;padding:22px 24px;border:1px solid #e4d9cc;border-radius:22px;background:#fffaf4}
+.style-picker h2{font-size:23px;margin:0 0 4px}
+.style-picker>p{margin:0 0 14px}
+.style-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.style-option{margin:0;text-align:left;display:flex;align-items:center;gap:12px;padding:12px 15px;border:1.5px solid #e2d5c8;border-radius:16px;background:#fff;color:#49362f;transition:border-color .2s,box-shadow .2s,transform .2s}
+.style-option:hover{transform:translateY(-1px)}
+.style-option[aria-pressed="true"]{border-color:#8c6f9f;box-shadow:0 0 0 3px #8c6f9f1e}
+.style-picker button.style-option{background:#fffaf4!important;color:#49362f!important}
+.style-picker button.style-option[aria-pressed="true"]{background:#f4eafa!important;border-color:#7852a1!important;box-shadow:0 0 0 3px #7852a11e}
+
+.style-option strong,.style-option small{display:block}
+.style-option strong{font-size:14px}
+.style-option small{font-size:11px;line-height:1.35;color:#776157;margin-top:2px}
+.style-swatch{display:block;flex:0 0 38px;height:38px;border-radius:12px;border:1px solid #d8c9ba}
+.style-swatch.felt{background-color:#d5c3aa;background-image:radial-gradient(#fff9 1px,transparent 1.5px),radial-gradient(#69524255 1px,transparent 1.5px);background-position:0 0,3px 4px;background-size:7px 7px}
+.style-swatch.origami{background:linear-gradient(135deg,#faf0da 0 48%,#c7a879 49% 51%,#fff8eb 52%);box-shadow:inset -7px -6px 0 #e8d7bb}
+.style-swatch.plushy{background-color:#e7cfc6;background-image:radial-gradient(ellipse at 30% 30%,#fff9,transparent 42%),radial-gradient(ellipse at 70% 70%,#bd8f86aa,transparent 55%)}
+.style-note{font-size:11px;margin:10px 0 0}
+.experience::after{content:"";position:absolute;inset:0 38.5% 0 0;z-index:3;pointer-events:none;opacity:0;transition:opacity .2s;border-radius:30px 0 0 30px;mix-blend-mode:overlay}
+.experience[data-scene-style="needle-felt"]::after{opacity:.52;background-image:repeating-linear-gradient(34deg,#fff5 0 1px,transparent 1px 3px),repeating-linear-gradient(116deg,#4e352540 0 1px,transparent 1px 5px),radial-gradient(#fff7 0.7px,transparent 1.8px);background-size:auto,auto,7px 7px}
+.experience[data-scene-style="origami-paper"]::after{opacity:.42;background-image:repeating-conic-gradient(from 0deg at 50% 50%,#fff4 0deg 43deg,transparent 44deg 88deg,#3d2a202f 89deg 91deg,transparent 92deg 178deg);background-size:132px 132px}
+.experience[data-scene-style="plushy"]::after{opacity:.47;background-image:repeating-linear-gradient(45deg,#fff4 0 1px,transparent 1px 4px),repeating-linear-gradient(135deg,#61433a32 0 1px,transparent 1px 4px),radial-gradient(ellipse at 35% 30%,#fff7 0,transparent 54%);background-size:9px 9px,9px 9px,100% 100%}
+body[data-style="needle-felt"] #scene{filter:saturate(.84) brightness(1.06) contrast(.96)}
+body[data-style="origami-paper"] #scene{filter:saturate(.94) brightness(1.02) contrast(1.1)}
+body[data-style="plushy"] #scene{filter:saturate(.94) brightness(1.07) contrast(.93)}
+@media(max-width:800px){.experience::after{inset:0 0 auto;height:440px;border-radius:30px 30px 0 0}.style-picker{padding:18px}.style-options{grid-template-columns:1fr}.style-option{padding:9px 12px}.style-swatch{flex-basis:34px;height:34px}}
+</style><script src="assets/light-anchors.js?v=gentle-walk-1"></script><script src="assets/decorations.js?v=gentle-walk-1"></script><script type="module">await customElements.whenDefined("model-viewer");customElements.get("model-viewer").minimumRenderScale=1;</script></head><body><header><strong>fuzzy</strong><span>Three winter worlds</span></header><main><div class="intro"><div class="eyebrow">Send your loved ones a 3D card</div><h1>Three little worlds.<br>A little closer to you.</h1><p>Choose a winter night, write a little note, and make a place for someone you love. Your world begins in the Enchanted Frost Forest.</p></div><section class="world-picker" aria-labelledby="world-picker-title"><h2 id="world-picker-title">Choose your winter world</h2><p>One message. A world that feels like you.</p><div class="world-grid"><button class="world-choice" data-world="aurora" aria-pressed="false"><img src="assets/worlds/north-pole-preview.png" alt="Rendered North Pole workshop with elves, candy canes and reindeer" loading="lazy"><span class="copy"><strong>North Pole</strong><small>Snowy workshops, igloos, gentle moose, and polar bears under the northern lights.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="alpine" aria-pressed="false"><img src="assets/worlds/alpine-concept.png" alt="Low-poly concept art for Moonlit Alpine Village" loading="lazy"><span class="copy"><strong>Moonlit Alpine Village</strong><small>Snowy mountain peaks, warm chalets, and a Christmas tree plaza.</small><span class="choice-state">Choose this world</span></span></button><button class="world-choice" data-world="forest" aria-pressed="true"><img src="assets/worlds/forest-concept.png" alt="Low-poly concept art for Enchanted Frost Forest" loading="lazy"><span class="copy"><strong>Enchanted Frost Forest</strong><small>Lavender skies, frosted pines, and luminous crystal gardens.</small><span class="choice-state">Selected · Default world</span></span></button></div><p class="world-caption">North Pole shows the actual 3D model; the other previews are concept artwork. Explore each world below.</p></section>
+<section class="style-picker" aria-labelledby="style-picker-title">
+<h2 id="style-picker-title">Choose your scene style</h2>
+<p>One look for the whole world and every keepsake.</p>
+<div class="style-options" role="group" aria-label="Scene style">
+<button class="style-option" type="button" data-style="needle-felt" aria-pressed="true"><span class="style-swatch felt" aria-hidden="true"></span><span><strong>Needle Felt</strong><small>Warm wool and handcrafted texture</small></span></button>
+<button class="style-option" type="button" data-style="origami-paper" aria-pressed="false"><span class="style-swatch origami" aria-hidden="true"></span><span><strong>Origami Paper</strong><small>Folded planes and crisp creases</small></span></button>
+<button class="style-option" type="button" data-style="plushy" aria-pressed="false"><span class="style-swatch plushy" aria-hidden="true"></span><span><strong>Plushy</strong><small>Soft fabric and rounded forms</small></span></button>
+</div>
+<p id="style-status" class="style-note" role="status">Needle Felt is applied across the whole 3D scene.</p>
+<p class="style-note">First-pass preview treatment. True wool fibers, folded geometry, and plush shapes need dedicated model assets.</p>
+</section>
+<section class="experience"><model-viewer id="scene" src="assets/gift.glb" alt="A wrapped Christmas gift that reveals a snowy Christmas village" camera-controls shadow-intensity="1" exposure="0.72" camera-orbit="25deg 65deg 150%" interaction-prompt="none"></model-viewer><div class="snow-weather" aria-hidden="true"></div><div class="panel"><div id="world-name" class="world-name" aria-live="polite">Enchanted Frost Forest</div><div class="eyebrow" id="step">01 / Something arrived</div><h2 id="heading">Someone is thinking of you.</h2><p id="message">Unwrap your village, write a note, and add a little Christmas magic.</p>
 <div id="editor" hidden>
 <label for="note-input">A note for someone you love</label><textarea id="note-input" rows="4" maxlength="500" placeholder="Write something they’ll want to keep…"></textarea>
 <div class="editor-row"><small id="note-count">0 / 500</small><button id="save-note">Add note to mailbox</button></div>
 <div class="decorate"><h3>Create a low-poly keepsake</h3><p class="note">Choose an object to generate in low-poly 3D for an open patch of snow. Every piece stays shorter than the mailbox.</p><label for="decoration-type">Choose a decoration</label><select id="decoration-type"><option value="gift">Ribbon-wrapped gift</option><option value="reindeer">Little reindeer</option><option value="snowman">Little snowman</option><option value="lantern">Glowing lantern</option><option value="igloo">Mini igloo</option><option value="candy-cane">Candy cane</option></select><div class="editor-row"><button id="generate">Generate & add</button><button id="undo" class="secondary" disabled>Undo last</button></div><small id="decoration-count">0 / 3 snow spots filled</small><p class="note">Built instantly from low-poly shapes and saved in this browser. Live AI generation is not connected.</p></div>
 </div><div><button id="unwrap" disabled>Unwrap gift</button><button id="lights" hidden>Lights off</button><button id="rotate" hidden class="secondary">Turn island</button><button id="keep" hidden>Keep this world</button><button id="reopen" hidden class="secondary">Open keepsake</button><button id="motion" hidden class="secondary" aria-pressed="false">Pause effects</button><button id="reset" hidden class="secondary">Wrap again</button></div><div class="sound-controls"><button id="winter-sound" class="secondary" aria-pressed="false">❄ Play winter sounds</button><label for="sound-volume">Sound volume</label><input id="sound-volume" type="range" min="0" max="60" value="22" aria-label="Sound volume"></div><p id="status" role="status">Loading your gift…</p><p class="note">Browser preview of the actual 3D assets. Prepared world with editable notes and small procedural decorations; local browser saves only. This is not a recording of the PICO APK.</p></div></section><section class="album-room" aria-labelledby="album-heading"><div><div class="eyebrow">A soundtrack for your winter world</div><h2 id="album-heading">Christmas listening room</h2><p>Choose a favorite album, then pick a song or let its track list play.</p><label for="christmas-album">Choose a Christmas album</label><select id="christmas-album"><option value="charlie">A Charlie Brown Christmas · Vince Guaraldi Trio</option><option value="buble">Christmas · Michael Bublé</option><option value="mariah">Merry Christmas · Mariah Carey</option></select><button id="load-album">Load album player</button><button id="stop-album" class="secondary" hidden>Stop album</button><p id="album-status" class="note" role="status">Music starts only when you press Play.</p><a id="open-album" target="_blank" rel="noopener">Open in Spotify</a><p class="note">Spotify controls playback availability; you may hear previews or need to sign in. Winter sounds can be switched on or off separately.</p></div><div id="album-player" hidden></div></section><section class="details"><div><h3>A bigger place to explore</h3><p>Explore crystal gardens, Santa’s gift-making workshop, or a snowy alpine ridge. Each world keeps your note, tiny decorations, and warm Christmas lights.</p></div><div><h3>A quiet moment to keep</h3><p>Open, read, play, and save. Messages become persistent parts of a world you build together.</p></div><div><h3>Native PICO candidate</h3><p>The Android build includes the original Christmas village with native spatial UI. These three new world styles are available on the site; the APK has not been updated with them.</p><a href="https://github.com/vivienk/Fuzzy/releases/tag/v0.2.2">Get the latest APK →</a></div></section></main><dialog id="letter" aria-labelledby="letter-heading"><form method="dialog"><button class="letter-close secondary" aria-label="Close note">×</button></form><div class="eyebrow">A little letter, just for you</div><h2 id="letter-heading">From my world to yours</h2><p id="letter-text" class="handwritten"></p><span class="letter-heart" aria-hidden="true">♡</span></dialog><footer>Fuzzy · Original low-poly village geometry. Tiny keepsakes for a world of your own. Live AI generation and recipient delivery are future work. <a href="https://github.com/vivienk/Fuzzy">Source & build notes</a></footer><script>
 const $=id=>document.getElementById(id),scene=$('scene');let opened=false,lit=true,turned=false,kept=false;try{kept=localStorage.getItem('fuzzy-village-kept')==='true'}catch(e){}$('reopen').hidden=!kept;
-scene.addEventListener('load',()=>{syncLightEffects();$('unwrap').disabled=false;$('status').textContent=opened?'Drag to look around your village.':'Your gift is ready.'});scene.addEventListener('error',()=>{$('status').textContent='The 3D model could not load. Refresh this page or serve it with a local web server.'});
+
+const SCENE_STYLES={
+ 'needle-felt':{roughness:1,metallic:0,tint:[1.04,1.01,.97],label:'Needle Felt'},
+ 'origami-paper':{roughness:.86,metallic:0,tint:[1.04,1.02,.96],label:'Origami Paper'},
+ 'plushy':{roughness:1,metallic:0,tint:[1.05,.99,1.02],label:'Plushy'}
+};
+const originalSceneMaterials=new WeakMap(),styledSceneTextures=new WeakMap();
+let selectedSceneStyle='needle-felt',sceneStyleRevision=0;
+try{const saved=localStorage.getItem('fuzzy-scene-style');if(Object.hasOwn(SCENE_STYLES,saved))selectedSceneStyle=saved}catch(e){}
+function drawStylePattern(ctx,style,size,seed){
+ let state=(Math.floor(seed*1e7)>>>0)||1;
+ const random=()=>{state=(state*1664525+1013904223)>>>0;return state/4294967296};
+ ctx.save();
+ if(style==='needle-felt'){
+  ctx.globalCompositeOperation='soft-light';
+  for(let i=0;i<1700;i++){
+   const x=random()*size,y=random()*size,len=3+random()*15,a=(random()-.5)*.9;
+   ctx.strokeStyle=random()>.5?'rgba(255,248,230,.72)':'rgba(74,51,35,.62)';
+   ctx.lineWidth=.45+random()*.65;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.stroke();
+  }
+  ctx.globalCompositeOperation='multiply';
+  for(let i=0;i<900;i++){const x=random()*size,y=random()*size,r=.35+random()*.9;ctx.fillStyle='rgba(89,62,44,.28)';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
+ }else if(style==='origami-paper'){
+  ctx.globalCompositeOperation='multiply';
+  const cell=128;
+  for(let y=0;y<size;y+=cell)for(let x=0;x<size;x+=cell){
+   ctx.fillStyle=(Math.floor(x/cell+y/cell)%2)?'rgba(255,250,238,.16)':'rgba(66,50,38,.12)';
+   ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y);ctx.lineTo(x+cell,y+cell);ctx.closePath();ctx.fill();
+   ctx.fillStyle='rgba(255,255,255,.20)';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.lineTo(x,y+cell);ctx.closePath();ctx.fill();
+   ctx.strokeStyle='rgba(55,40,30,.38)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.moveTo(x+cell,y);ctx.lineTo(x,y+cell);ctx.stroke();
+  }
+ }else{
+  ctx.globalCompositeOperation='soft-light';
+  for(let x=0;x<=size;x+=5){ctx.strokeStyle=(x%10?'rgba(255,255,255,.48)':'rgba(76,52,46,.38)');ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,size);ctx.stroke()}
+  for(let y=0;y<=size;y+=5){ctx.strokeStyle=(y%10?'rgba(255,255,255,.42)':'rgba(76,52,46,.32)');ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(size,y);ctx.stroke()}
+  ctx.globalCompositeOperation='screen';
+  for(let y=2;y<size;y+=10)for(let x=2;x<size;x+=10){ctx.fillStyle='rgba(255,255,255,.20)';ctx.beginPath();ctx.arc(x,y,1.2,0,Math.PI*2);ctx.fill()}
+ }
+ ctx.restore();
+}
+async function getStyledSceneTexture(material,original,style){
+ if(!original.baseColorTexture||!original.texture?.source)return null;
+ let variants=styledSceneTextures.get(original.pbr);
+ if(!variants){variants=new Map();styledSceneTextures.set(original.pbr,variants)}
+ if(variants.has(style))return variants.get(style);
+ const size=512,texture=scene.createCanvasTexture(),canvas=texture.source.element,ctx=canvas.getContext('2d');
+ canvas.width=size;canvas.height=size;
+ const thumbnail=await original.texture.source.createThumbnail(size,size);
+ const image=new Image();image.src=thumbnail;await image.decode();
+ ctx.drawImage(image,0,0,size,size);URL.revokeObjectURL(thumbnail);
+ drawStylePattern(ctx,style,size,original.base[0]+original.base[1]*3+original.base[2]*7);
+ texture.source.update();variants.set(style,texture);return texture;
+}
+async function applySceneStyle(){
+ const revision=++sceneStyleRevision,preset=SCENE_STYLES[selectedSceneStyle];
+ document.body.dataset.style=selectedSceneStyle;
+ document.querySelector('.experience').dataset.sceneStyle=selectedSceneStyle;
+ document.querySelectorAll('.style-option[data-style]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.style===selectedSceneStyle)));
+ $('style-status').textContent=preset.label+' is applied across the whole 3D scene.';
+ for(const material of scene.model?.materials||[]){
+  const pbr=material.pbrMetallicRoughness;if(!pbr)continue;
+  let original=originalSceneMaterials.get(pbr);
+  if(!original){
+   original={pbr,base:[...(pbr.baseColorFactor||[1,1,1,1])],roughness:pbr.roughnessFactor??.8,metallic:pbr.metallicFactor??0,baseColorTexture:pbr.baseColorTexture,texture:pbr.baseColorTexture?.texture||null};
+   originalSceneMaterials.set(pbr,original);
+  }
+  pbr.setBaseColorFactor([original.base[0]*preset.tint[0],original.base[1]*preset.tint[1],original.base[2]*preset.tint[2],original.base[3]]);
+  pbr.setRoughnessFactor(Math.min(1,Math.max(.05,original.roughness+(preset.roughness-.8)*.45)));
+  pbr.setMetallicFactor(original.metallic*preset.metallic);
+  try{const texture=await getStyledSceneTexture(material,original,selectedSceneStyle);if(revision!==sceneStyleRevision)return;if(texture)original.baseColorTexture.setTexture(texture)}catch(error){console.warn('Fuzzy style texture could not be applied',error)}
+ }
+}
+document.querySelectorAll('.style-option[data-style]').forEach(button=>button.addEventListener('click',()=>{
+ selectedSceneStyle=button.dataset.style;
+ try{localStorage.setItem('fuzzy-scene-style',selectedSceneStyle)}catch(e){}
+ void applySceneStyle();
+ if(opened)refreshVillage();else refreshGift();
+}));
+scene.addEventListener('load',()=>{applySceneStyle();syncLightEffects();$('unwrap').disabled=false;$('status').textContent=opened?'Drag to look around your village.':'Your gift is ready.'});scene.addEventListener('error',()=>{$('status').textContent='The 3D model could not load. Refresh this page or serve it with a local web server.'});
 function openWorld(){clearLightEffects();opened=true;refreshVillage();$('unwrap').hidden=true;$('reopen').hidden=true;['lights','rotate','keep','reset','motion'].forEach(x=>$(x).hidden=false);$('step').textContent='02 / A world made for you';$('heading').textContent='Make it yours.';$('message').hidden=true;$('editor').hidden=false;$('keep').textContent=kept?'Kept ♥':'Keep this world';$('status').textContent='Opening your village…'}
 $('unwrap').onclick=openWorld;$('reopen').onclick=openWorld;$('lights').onclick=()=>{lit=!lit;clearLightEffects();refreshVillage();$('lights').textContent=lit?'Lights off':'Light the tree'};$('rotate').onclick=()=>{turned=!turned;scene.cameraOrbit=turned?'180deg 65deg 150%':'25deg 65deg 150%';$('rotate').textContent=turned?'Front view':'Turn island'};$('keep').onclick=()=>{try{localStorage.setItem('fuzzy-village-kept','true');kept=true;$('keep').textContent='Kept ♥';$('status').textContent='Saved in this browser. Come back whenever you like.'}catch(e){$('status').textContent='Saving is unavailable in this browser. Please try another browser.'}};$('reset').onclick=()=>{clearLightEffects();opened=false;lit=true;turned=false;refreshGift();scene.cameraOrbit='25deg 65deg 150%';$('unwrap').hidden=false;$('reopen').hidden=!kept;['lights','rotate','keep','reset','motion'].forEach(x=>$(x).hidden=true);$('lights').textContent='Lights off';$('step').textContent='01 / Something arrived';$('heading').textContent='Someone is thinking of you.';$('editor').hidden=true;$('message').hidden=false;$('message').textContent='Unwrap a Christmas village and a little warmth from someone you love.'};
 
@@ -93,12 +210,12 @@ function persistEditor(){try{localStorage.setItem('fuzzy-editor',JSON.stringify(
 function readMailbox(){$('letter-text').textContent=mailboxNote;$('letter').showModal();mailRead=true;persistEditor();const icon=scene.querySelector('.mailbox-alert');if(icon){icon.classList.add('read');icon.setAttribute('aria-label','Read mailbox note')}}
 $('note-input').oninput=editorCounts;
 $('save-note').onclick=()=>{const value=$('note-input').value.trim();if(!value){$('status').textContent='Write a note before adding it to the mailbox.';$('note-input').focus();return}mailboxNote=value;mailRead=false;const saved=persistEditor();syncLightEffects();$('status').textContent=saved?'Your note is in the mailbox. Tap the envelope to read it.':'Your note is ready for this visit, but browser saving is unavailable.'};
-async function refreshVillage(){const request=++worldRequest;$('generate').disabled=true;try{const url=await FuzzyDecorations.build(lit,decorations,selectedWorld);if(request!==worldRequest||!opened){URL.revokeObjectURL(url);return}const previous=worldUrl;worldUrl=url;scene.src=url;if(previous)URL.revokeObjectURL(previous)}catch(e){$('status').textContent='The village could not update. Please try again.';editorCounts()}}
+async function refreshVillage(){const request=++worldRequest;$('generate').disabled=true;try{const url=await FuzzyDecorations.build(lit,decorations,selectedWorld,false,selectedSceneStyle);if(request!==worldRequest||!opened){URL.revokeObjectURL(url);return}const previous=worldUrl;worldUrl=url;scene.src=url;if(previous)URL.revokeObjectURL(previous)}catch(e){$('status').textContent='The village could not update. Please try again.';editorCounts()}}
 $('generate').onclick=()=>{if(decorations.length>=3)return;decorations.push($('decoration-type').value);const saved=persistEditor();refreshVillage();editorCounts();$('status').textContent=saved?'Adding your miniature to an empty snow spot…':'Adding your miniature for this visit; browser saving is unavailable.'};
 $('undo').onclick=()=>{decorations.pop();persistEditor();refreshVillage();editorCounts()};
 async function refreshGift(){
  const request=++worldRequest;
- try{const url=await FuzzyDecorations.build(false,[],selectedWorld,true);if(request!==worldRequest||opened){URL.revokeObjectURL(url);return}const previous=worldUrl;worldUrl=url;scene.src=url;if(previous)URL.revokeObjectURL(previous)}catch(e){$('status').textContent='Your gift could not update. Please refresh and try again.'}
+ try{const url=await FuzzyDecorations.build(false,[],selectedWorld,true,selectedSceneStyle);if(request!==worldRequest||opened){URL.revokeObjectURL(url);return}const previous=worldUrl;worldUrl=url;scene.src=url;if(previous)URL.revokeObjectURL(previous)}catch(e){$('status').textContent='Your gift could not update. Please refresh and try again.'}
 }
 const snowfall=document.querySelector('.snow-weather');
 for(let i=0;i<30;i++){const flake=document.createElement('i');flake.style.cssText=`--x:${(i*37)%100}%;--size:${1+i%3}px;--time:${18+i%11}s;--delay:-${i*.91}s`;snowfall.append(flake)}
