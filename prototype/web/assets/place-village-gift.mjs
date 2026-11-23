@@ -11,7 +11,7 @@ export function giftURL(id){
       giftFiles.set(id,Promise.resolve(window.FuzzyDecorations.preset(id.slice(7))));
       return giftFiles.get(id);
     }
-    const request=fetch("/api/tripo?download=1&asset=object&taskId="+encodeURIComponent(id)).then(async response=>{
+    const request=(window.fetchGiftAPI || (query=>fetch("/api/tripo"+query)))("?download=1&asset=object&taskId="+encodeURIComponent(id)).then(async response=>{
       if(!response.ok)throw Error("Could not download the gift.");
       return URL.createObjectURL(await response.blob());
     }).catch(error=>{giftFiles.delete(id);throw error;});
