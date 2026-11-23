@@ -30,6 +30,73 @@ export function stationEffects(kind){
   return [...layout.boxes.map(([x,y,z],slot)=>({kind:"gift-station",slot,position:[x,y+.44,z]})),
     {kind:"mail",position:layout.mail},...(kind==="candy"?cookieEffects:[])];
 }
+// Bake each confection into one colored mesh so the small sweets share a draw call.
+function decorateCandyTrees(model,accessor){
+  const red=[.81,.028,.048],green=[.055,.48,.12],cream=[1,.91,.72],gold=[1,.59,.07];
+  const rainbow=[red,gold,[.98,.25,.06],green,[.52,.12,.68],[.99,.37,.54]];
+  const material=model.materials.push({name:"Sugar candy",doubleSided:true,
+    pbrMetallicRoughness:{metallicFactor:0,roughnessFactor:.48}})-1;
+  const trees=model.nodes.filter(n=>n.name==="Cotton candy tree");
+  const names=["Rainbow gumdrop fir","Spearmint pinwheel fir","Ribbon candy fir","Cherry bonbon fir"];
+  const tau=2*Math.PI;
+  trees.forEach((tree,style)=>{
+    const positions=[],normals=[],colors=[];
+    function triangle(a,b,c,color){
+      const u=b.map((v,i)=>v-a[i]),v=c.map((n,i)=>n-a[i]);
+      const normal=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+      const length=Math.hypot(...normal);
+      if(length<1e-8)return;
+      const unit=normal.map(n=>n/length);
+      positions.push(a,b,c);normals.push(unit,unit,unit);colors.push(color,color,color);
+    }
+    function sweet(x,y,z,size,angle,paint,mint){
+      const sides=mint?16:8,rings=6;
+      function point(i,j){
+        const lat=Math.PI*(j/rings-.5),lon=tau*i/sides+(mint?.34*Math.sin(lat):0);
+        const a=Math.cos(lat)*Math.cos(lon)*size,b=Math.sin(lat)*size,c=Math.cos(lat)*Math.sin(lon)*size;
+        if(!mint)return [x+a,y+b,z+c];
+        const depth=b*.42;
+        return [x+depth*Math.cos(angle)-a*Math.sin(angle),y+c,z+depth*Math.sin(angle)+a*Math.cos(angle)];
+      }
+      for(let i=0;i<sides;i++)for(let j=0;j<rings;j++){
+        const color=mint&&i%2?cream:paint;
+        const a=point(i,j),b=point(i,j+1),c=point(i+1,j+1),d=point(i+1,j);
+        triangle(a,b,c,color);triangle(a,c,d,color);
+      }
+    }
+    for(let row=0;row<7;row++){
+      const radius=.91*(1-row/7),y=.31+row*.48;
+      if(style===2){
+        const folds=48,paint=row%2?red:green;
+        function ribbon(i,top){
+          const angle=tau*i/folds+row*.26;
+          const r=top?radius*.65:(radius+.16)*(1+.1*Math.cos(angle*8));
+          return [r*Math.cos(angle),top?y+.52:y-.24+.075*Math.cos(angle*8),r*Math.sin(angle)];
+        }
+        for(let i=0;i<folds;i++){
+          triangle(ribbon(i,0),ribbon(i,1),ribbon(i+1,1),paint);
+          triangle(ribbon(i,0),ribbon(i+1,1),ribbon(i+1,0),paint);
+        }
+      }else{
+        const count=Math.max(3,Math.round(tau*radius/.53));
+        for(let i=0;i<count;i++){
+          const angle=tau*(i+row*.47)/count;
+          const paint=style===0?rainbow[(i+row*2)%rainbow.length]:style===1?green:red;
+          sweet(radius*Math.cos(angle),y,radius*Math.sin(angle),.32,angle,paint,style===1);
+        }
+      }
+    }
+    const top=style===2?green:gold;
+    for(let i=0;i<10;i++){
+      const tip=j=>{const a=Math.PI/2+tau*j/10,r=j%2?.135:.31;return [r*Math.cos(a),3.77+r*Math.sin(a),0];};
+      triangle([0,3.77,.12],tip(i),tip(i+1),top);
+      triangle([0,3.77,-.12],tip(i+1),tip(i),top);
+    }
+    tree.name=names[style];delete tree.children;
+    tree.mesh=model.meshes.push({name:tree.name,primitives:[{material,attributes:{
+      POSITION:accessor(positions,"VEC3"),NORMAL:accessor(normals,"VEC3"),COLOR_0:accessor(colors,"VEC3")}}]})-1;
+  });
+}
 const models=new Map();
 export function stationWorld(kind){
   if(!models.has(kind))models.set(kind,buildWorld(kind).catch(error=>{models.delete(kind);throw error;}));
@@ -81,8 +148,8 @@ async function buildWorld(kind){
         ["Foot",[side*.16,.14,.09],[.15,.15,.20]]);
     }
     function gummyMesh(name,color){
-      const material=model.materials.push({name,pbrMetallicRoughness:{
-        baseColorFactor:[...color,1],metallicFactor:0,roughnessFactor:.22}})-1;
+      const material=model.materials.push({name,alphaMode:"BLEND",pbrMetallicRoughness:{
+        baseColorFactor:[...color,.5],metallicFactor:0,roughnessFactor:.22}})-1;
       return model.meshes.push({primitives:sphere.primitives.map(p=>({...p,material}))})-1;
     }
     const eyes=gummyMesh("Dark berry eyes",[.12,.035,.045]);
@@ -93,6 +160,7 @@ async function buildWorld(kind){
     ]){
       const ground=-.36+1.06*Math.sqrt(1-(x/7.34)**2-(z/5.26)**2);
       const bear=group(name+" gummy bear",[x,ground,z]);
+      bear.scale=[.5,.5,.5];
       bear.rotation=[0,Math.sin(yaw/2),0,Math.cos(yaw/2)];
       const mesh=gummyMesh(name+" jelly",color);
       for(const [name,translation,scale] of parts){
@@ -182,6 +250,7 @@ async function buildWorld(kind){
       return model.accessors.push({bufferView,componentType:5126,count:rows.length,type,
         min:rows[0].map((_,i)=>Math.min(...rows.map(r=>r[i]))),max:rows[0].map((_,i)=>Math.max(...rows.map(r=>r[i])))})-1;
     }
+    decorateCandyTrees(model,accessor);
     const times=Array.from({length:97},(_,i)=>[i*walkDuration/96]);
     const clock=accessor(times,"SCALAR");
     function animate(node,path,rows){
@@ -223,3 +292,4 @@ async function buildWorld(kind){
   }
   return worldGLB(model,chunks,length);
 }
+
