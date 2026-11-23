@@ -198,10 +198,8 @@ body.choosing main>:is(#diorama,#world-gifts,.album-room,#pack-world,#pack-hint)
 body.choosing #mail-reminder,body.receiving #mail-reminder,#mail-reminder[hidden]{display:none}
 #mail-reminder{display:flex;align-items:center;gap:9px;margin:4px 0 14px;font:500 15px/1.45 system-ui;color:#fff2d8}
 #mail-reminder svg{width:19px;height:19px;flex:none;color:#efcb82}
-.sender-mail{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
-.sender-mail #mail-reminder{margin:0}
-.sender-mail #mail-reminder svg{display:none}
-body.choosing .sender-mail,body.receiving .sender-mail{display:none}
+.last-gift{display:inline-flex;gap:8px;align-items:center}
+body.receiving #quill{display:none}
 #quill{display:grid;place-items:center;width:44px;height:44px;padding:9px;border-radius:50%;color:#503318;background:#f2d799}
 #quill svg{width:23px;height:23px}
 #village-letter:has(#letter-form:not([hidden])) .letter-heart{display:none}
@@ -212,9 +210,9 @@ body.choosing .sender-mail,body.receiving .sender-mail{display:none}
 <main><h1>Christmas Special Edition</h1>
 <h2 id="world-heading">Choose your winter world</h2>
 <nav aria-labelledby="world-heading" id="worlds"><button aria-pressed="true" data-world="village">North Pole – Santa Village</button><button aria-pressed="false" data-world="academy">Wizardry Magic Christmas</button><button aria-pressed="false" data-world="candy">Funky Candy Land</button></nav>
-<div class="sender-mail"><button id="quill" type="button" aria-label="Write your letter" title="Write your letter"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21 16 8M7 16C5 11 10 3 21 2c0 4-1 7-4 10l-4 1 2 1c-2 2-5 3-8 2Z"/></svg></button><p id="mail-reminder" role="status" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m3 7 9 6 9-6"/></svg><span></span></p></div>
+<p id="mail-reminder" role="status" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m3 7 9 6 9-6"/></svg><span></span></p>
 <button id="enter-world" type="button" hidden>Open world</button>
-<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><section id="world-gifts" hidden aria-label="Gift preparation"><button data-slot="0"></button><button data-slot="1"></button><button data-slot="2"></button><button id="world-note" hidden>Read letter</button></section>
+<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><section id="world-gifts" hidden aria-label="Gift preparation"><button data-slot="0"></button><button data-slot="1"></button><span class="last-gift"><button data-slot="2"></button><button id="quill" type="button" aria-label="Write your letter" title="Write your letter"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21 16 8M7 16C5 11 10 3 21 2c0 4-1 7-4 10l-4 1 2 1c-2 2-5 3-8 2Z"/></svg></button></span><button id="world-note" hidden>Read letter</button></section>
 <section class="album-room" aria-labelledby="album-heading">
 <div class="turntable"><span class="vinyl" aria-hidden="true"><i></i></span><i class="tonearm" aria-hidden="true"></i><button id="disc" type="button" aria-label="Play record"><span class="disc-symbol" aria-hidden="true">▶</span></button></div>
 <div><h2 id="album-heading">Gift soundtrack</h2><select id="christmas-album" aria-label="Gift soundtrack"><option value="charlie" data-spotify="2XnNY3GEkbWHor5kyvXLu4">A Charlie Brown Christmas · Vince Guaraldi Trio</option><option value="buble" data-spotify="3CKVXhODttZebJAzjUs2un">Christmas · Michael Bublé</option><option value="mariah" data-spotify="0cS9prZ8u3fdbc7lmtCaMV">Merry Christmas · Mariah Carey</option><option value="festive-commotion" data-spotify="57inreLG2hAF7YYt1W9nnL">Festive Commotion · Howard Harper-Barnes</option><option value="toymakers-workshop" selected data-audio="assets/toymakers-workshop.mp3">Toymaker’s Workshop · David Celeste</option></select><p id="album-status" role="status">Tap the record to play.</p><a id="open-album" hidden target="_blank" rel="noopener">Open in Spotify</a></div><div id="album-player" hidden></div></section><button id="pack-world" hidden>Send Gift</button><span id="pack-hint" hidden> Available when all three gifts are ready.</span></main><dialog id="packing" aria-labelledby="packing-title"><form method="dialog"><button class="parcel-close" aria-label="Close wrapping options">×</button></form>
@@ -244,7 +242,7 @@ async function waitTask(taskId,label,onProgress){
 }
 </script><script type="module">
 import {presets,giftURL,composeGiftBoxes} from "./assets/place-village-gift.mjs?v=gift-icons";
-import {stationEffects,stationWorld,owlMailPosition,cookiePosition} from "./assets/world-gift-stations.mjs?v=candy-tree-grove";
+import {stationEffects,stationWorld,owlMailPosition,cookiePosition} from "./assets/world-gift-stations.mjs?v=star-cotton-candy";
 const world = document.querySelector("#world");
 const caption = document.querySelector("#caption");
 function matte(viewer) {
@@ -513,7 +511,7 @@ function syncGuide(){
   packWorld.hidden=!!parcel;
   packWorld.disabled=!boxes.every(b=>["ready","open"].includes(b.phase));
   document.querySelector("#pack-hint").hidden=packWorld.hidden||!packWorld.disabled;
-  if(!village){
+  if(!village||!parcel){
     document.querySelectorAll("#world-gifts [data-slot]").forEach((button,i)=>{
       const b=boxes[i];
       const action={ready:"Unwrap",open:"Rotate",retry:"Retry",starting:"Starting…",building:Math.round(b.progress||0)+"%",opening:"Opening…"}[b.phase]||"Make gift";
@@ -824,7 +822,7 @@ async function selectWorld(choice) {
   const allowTilt = village || academy || choice.dataset.world === "candy";
   document.querySelector("#diorama").toggleAttribute("data-village",village);
   document.querySelector("#diorama").toggleAttribute("data-snowy",village || academy || choice.dataset.world==="candy");
-  document.querySelector("#world-gifts").hidden=village;
+  document.querySelector("#world-gifts").hidden=village&&!!parcel;
   if(!parcel)window.dispatchEvent(new Event("gift-music-enter"));
   world.setAttribute("min-camera-orbit", allowTilt ? "auto 44deg auto" : "auto 65deg auto");
   world.setAttribute("max-camera-orbit", allowTilt ? "auto 85deg auto" : "auto 65deg auto");
