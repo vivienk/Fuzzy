@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/tripo-island.html",
+      "destination": "/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/tripo-island.html"
+    }
+  ]
+}
