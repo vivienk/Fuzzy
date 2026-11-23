@@ -77,7 +77,7 @@
  picker.value=explicit?saved:'toymakers-workshop';
  let retryOnGesture=false;
  function startDefault(){
-  if(!useDefault||gift.has('parcel')||!byId('diorama').hasAttribute('data-village'))return;
+  if(!useDefault||gift.has('parcel')||!byId('world').dataset.kind)return;
   if(!audio)select();
   const player=audio;
   player.play().catch(error=>{
