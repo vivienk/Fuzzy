@@ -217,16 +217,22 @@ body.receiving #quill{display:none}
 <dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><div id="gift-presets" role="group" aria-label="Instant 3D gifts"></div><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button id="box-generate">Generate gift</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your letter to the recipient</label><textarea id="letter-input" placeholder="What would you like to tell them?" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function giftResponse(response){
+ if(!response.headers.get("Content-Type")?.includes("application/json")){
+   throw new Error("The gift generator is unavailable. Please try again in a moment.");
+ }
+ return response.json();
+}
 async function beginTask(operation,body){
  const response=await fetch("/api/tripo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({operation,...body})});
- const data=await response.json();
+ const data=await giftResponse(response);
  if(!response.ok&&!data.taskId)throw new Error(data.error||"Could not start "+operation+".");
  if(!data.taskId)throw new Error("Tripo did not return a task ID.");
  return data.taskId;
 }
 async function waitTask(taskId,label,onProgress){
  for(let i=0;i<180;i++){
-  await sleep(i<3?1600:3000);const response=await fetch("/api/tripo?taskId="+encodeURIComponent(taskId),{cache:"no-store"});const data=await response.json();
+  await sleep(i<3?1600:3000);const response=await fetch("/api/tripo?taskId="+encodeURIComponent(taskId),{cache:"no-store"});const data=await giftResponse(response);
   if(!response.ok)throw new Error(data.error||"Could not check task status.");
   const progress=data.progress||4;if(onProgress(progress)===false)return;
   if(data.status==="success")return data;
