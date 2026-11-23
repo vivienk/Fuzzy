@@ -197,8 +197,9 @@ body.choosing main>:is(#diorama,#world-gifts,.album-room,#pack-world,#pack-hint)
 #world[data-kind="academy"] .mail-open{top:0;width:44px;height:44px;padding:0;border:0;background:transparent;box-shadow:none}
 #world[data-kind="academy"] .mail-open svg{display:none}
 
-body.choosing #compose-mail,body.receiving #compose-mail{display:none}
-#compose-mail{margin:0 0 12px;background:#fff2d8;color:#583a30;border:1px solid #d3ac7f}
+body.choosing #mail-reminder,body.receiving #mail-reminder,#mail-reminder[hidden]{display:none}
+#mail-reminder{display:flex;align-items:center;gap:9px;margin:4px 0 14px;font:500 15px/1.45 system-ui;color:#fff2d8}
+#mail-reminder svg{width:19px;height:19px;flex:none;color:#efcb82}
 #village-letter:has(#letter-form:not([hidden])) .letter-heart{display:none}
 </style>
 </head>
@@ -207,7 +208,7 @@ body.choosing #compose-mail,body.receiving #compose-mail{display:none}
 <main><h1>Christmas Special Edition</h1>
 <h2 id="world-heading">Choose your winter world</h2>
 <nav aria-labelledby="world-heading" id="worlds"><button aria-pressed="true" data-world="village">North Pole – Santa Village</button><button aria-pressed="false" data-world="academy">Wizardry Magic Christmas</button><button aria-pressed="false" data-world="candy">Funky Candy Land</button></nav>
-<button type="button" id="compose-mail" aria-haspopup="dialog">Write a note</button>
+<p id="mail-reminder" role="status" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m3 7 9 6 9-6"/></svg><span></span></p>
 <button id="enter-world" type="button" hidden>Open world</button>
 <figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><section id="world-gifts" hidden aria-label="Gift preparation"><button data-slot="0"></button><button data-slot="1"></button><button data-slot="2"></button><button id="world-note" hidden>Read letter</button></section>
 <section class="album-room" aria-labelledby="album-heading">
@@ -217,7 +218,7 @@ body.choosing #compose-mail,body.receiving #compose-mail{display:none}
 <fieldset><legend>Send to</legend><div id="receivers"></div><button type="button" id="add-receiver" aria-label="Add another receiver">+ Add receiver</button></fieldset>
 <button type="submit">Send by email</button> <div class="gift-link-row"><a id="gift-url" target="_blank" rel="noopener"></a><button type="button" id="copy-parcel" aria-label="Copy gift link" title="Copy gift link"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 5V4a1 1 0 0 0-1-1H5a2 2 0 0 0-2 2v10a1 1 0 0 0 1 1h1"/></svg></button></div><a id="preview-world" href="#" target="_blank" rel="noopener">Preview as receiver</a><p role="status" id="send-status"></p></form></dialog>
 <dialog id="arrival" aria-labelledby="arrival-title"><h2 id="arrival-title">A winter world for you</h2><div class="outer-box" aria-hidden="true"><i></i><b></b><em></em></div><button id="unfold">Open your world</button></dialog>
-<dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><div id="gift-presets" role="group" aria-label="Instant 3D gifts"></div><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button id="box-generate">Generate gift</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your Christmas note</label><textarea id="letter-input" placeholder="What would you like to tell them?" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
+<dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><div id="gift-presets" role="group" aria-label="Instant 3D gifts"></div><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button id="box-generate">Generate gift</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your letter to the recipient</label><textarea id="letter-input" placeholder="What would you like to tell them?" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function beginTask(operation,body){
@@ -377,6 +378,7 @@ function markMailRead(){
 }
 function displayLetter(){note.textContent=villageNote;note.hidden=false;edit.hidden=false;form.hidden=true;}
 function openLetter(){
+  if(!parcel&&!savedMailNote().trim()){composeMail();return;}
   if(parcel){villageNote=parcel.note||villageNote;}else try{const state=readEditor();if(state.note?.trim())villageNote=state.note;localStorage.setItem(editorKey,JSON.stringify({...state,read:true}));}catch{}
   markMailRead();
   world.querySelector(".mail-open")?.classList.add("read");statusLine.textContent="";displayLetter();edit.hidden=!!parcel;syncGuide();letter.showModal();
@@ -389,15 +391,21 @@ function composeMail(){
   input.focus();
 }
 edit.onclick=composeMail;
-document.querySelector("#compose-mail").onclick=composeMail;
+function updateMailReminder(){
+  const reminder=document.querySelector("#mail-reminder");
+  reminder.hidden=!!parcel||!!savedMailNote().trim();
+  if(reminder.hidden)return;
+  const mailbox={village:"village mailbox",academy:"snowy owl",candy:"gingerbread postman"}[world.dataset.kind];
+  reminder.querySelector("span").textContent="Tap the "+mailbox+" to tuck a personal letter into your gift.";
+}
 input.oninput=()=>input.setCustomValidity("");
 form.onsubmit=e=>{
   e.preventDefault();const value=input.value.trim();
   if(!value){input.setCustomValidity("Write a note for the mailbox.");input.reportValidity();return;}
   try{localStorage.removeItem(mailboxReadKey());}catch{}
   authoredNote=value;villageNote=value;world.querySelector(".mail-open")?.classList.remove("read");
-  try{localStorage.setItem(editorKey,JSON.stringify({...readEditor(),note:value,read:false}));statusLine.textContent="Saved to this browser’s mailbox.";}catch{statusLine.textContent="Saved for this visit only.";}
-  displayLetter();syncGuide();edit.focus();
+  try{localStorage.setItem(editorKey,JSON.stringify({...readEditor(),note:value,read:false}));statusLine.textContent="Your letter is tucked into your gift.";}catch{statusLine.textContent="Saved for this visit only.";}
+  updateMailReminder();displayLetter();syncGuide();edit.focus();
 };
 document.querySelector("#close-letter").onclick=()=>letter.close();
 const stationDialog=document.querySelector("#gift-station");
@@ -510,7 +518,7 @@ function syncGuide(){
     button.toggleAttribute("data-guide-hidden",!["empty","prepared","retry","building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
   });
   world.querySelectorAll(".elf-target:not(.wizard-target,.cookie-target)").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
-  world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel&&world.dataset.kind==="village");
+  world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel&&world.dataset.kind==="village"&&!!savedMailNote().trim());
   world.querySelector(".fishing-action")?.toggleAttribute("data-quiet",fishPhase==="idle"&&!gaming);
   
   world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming);});
@@ -794,6 +802,7 @@ async function selectWorld(choice) {
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
+  updateMailReminder();
   world.exposure = ({ candy: 0.82, academy: 0.72 })[choice.dataset.world] ?? 0.95;
   packWorld.hidden=true;document.querySelector("#pack-hint").hidden=true;
   world.alt = choice.textContent;
