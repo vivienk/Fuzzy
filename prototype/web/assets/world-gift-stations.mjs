@@ -9,6 +9,14 @@ const cookieActions={
   "Santa cookie":["Greet the Santa cookie","Santa cookie bow","A tip of my hat to you!"],
   "Wrapped gift courier":["Toss the courier’s present","Present toss","Special delivery!"]
 };
+const walkTracks=new Map();
+const walkDuration=8;
+export function cookiePosition(name,time){
+  const {positions,height}=walkTracks.get(name);
+  const sample=(time%walkDuration)/walkDuration*(positions.length-1);
+  const i=Math.floor(sample),mix=sample-i;
+  return positions[i].map((v,axis)=>v+(positions[i+1][axis]-v)*mix+(axis===1?height:0));
+}
 let cookieEffects=[];
 let mailFlight;
 export function owlMailPosition(time){
@@ -40,7 +48,7 @@ async function buildWorld(kind){
   if(kind==="candy"){
     cookieEffects=model.nodes.filter(node=>Object.hasOwn(cookieActions,node.name)).map(node=>{
       const [x,y,z]=node.translation;
-      return {kind:"cookie",position:[x,y+.78,z],action:cookieActions[node.name]};
+      return {kind:"cookie",position:[x,y+.78,z],name:node.name,action:cookieActions[node.name]};
     });
   }
   const bytes=new Uint8Array(await (await fetch(model.buffers[0].uri)).arrayBuffer());
@@ -112,5 +120,69 @@ async function buildWorld(kind){
       model.nodes.at(-1).rotation=[0,0,side*.18,Math.sqrt(1-.18**2)];
     }
   });
-  return worldGLB(model,[bytes],bytes.length);
+  const chunks=[bytes];
+  let length=bytes.length;
+  if(kind==="candy"){
+    const cottage=model.nodes.find(n=>n.name==="Buttercream cottage");
+    cottage.name="Chocolate cottage";
+    const chocolate=(name,rgb)=>model.materials.push({name,pbrMetallicRoughness:{baseColorFactor:[...rgb,1],roughnessFactor:.62,metallicFactor:0}})-1;
+    const milk=chocolate("Milk chocolate",[.27,.108,.047]),dark=chocolate("Dark chocolate",[.115,.044,.026]);
+    const variants=new Map();
+    for(const index of cottage.children){
+      const part=model.nodes[index];
+      const wall=part.name.startsWith("gable ");
+      const roof=part.name==="cube snow"&&part.scale[0]>.6&&part.scale[2]>.8;
+      if(!wall&&!roof)continue;
+      const key=part.mesh+":"+roof;
+      if(!variants.has(key))variants.set(key,model.meshes.push({primitives:model.meshes[part.mesh].primitives.map(p=>({...p,material:roof?dark:milk}))})-1);
+      part.mesh=variants.get(key);
+    }
+    const clip=model.animations.find(a=>a.name==="Candy village greetings");
+    function accessor(rows,type){
+      const data=new Float32Array(rows.flat());
+      const bufferView=model.bufferViews.push({buffer:0,byteOffset:length,byteLength:data.byteLength})-1;
+      chunks.push(data);length+=data.byteLength;
+      return model.accessors.push({bufferView,componentType:5126,count:rows.length,type,
+        min:rows[0].map((_,i)=>Math.min(...rows.map(r=>r[i]))),max:rows[0].map((_,i)=>Math.max(...rows.map(r=>r[i])))})-1;
+    }
+    const times=Array.from({length:97},(_,i)=>[i*walkDuration/96]);
+    const clock=accessor(times,"SCALAR");
+    function animate(node,path,rows){
+      const output=accessor(rows,path==="rotation"?"VEC4":"VEC3");
+      const sampler=clip.samplers.push({input:clock,output,interpolation:"LINEAR"})-1;
+      clip.channels.push({sampler,target:{node,path}});
+    }
+    const routes=[
+      ["Candy cane greeter",-.8,2.68,.73,.39,1],
+      ["Santa cookie",.06,.27,.8,1.06,-1],
+      ["Wrapped gift courier",2.36,3.42,.81,.43,1],
+      ["Gingerbread postman",-3.71,3.25,.53,.43,-1]
+    ];
+    for(const [name,cx,cz,rx,rz,direction] of routes){
+      const index=model.nodes.findIndex(n=>n.name===name),actor=model.nodes[index];
+      const positions=[],rotations=[];
+      for(const [t] of times){
+        const phase=t/walkDuration*Math.PI*2*direction;
+        const x=cx+rx*Math.cos(phase),z=cz+rz*Math.sin(phase);
+        const ground=-.36+1.06*Math.sqrt(Math.max(.02,1-(x/7.34)**2-(z/5.26)**2));
+        positions.push([x,ground+.022*Math.abs(Math.sin(t*Math.PI*2)),z]);
+        const yaw=Math.atan2(-direction*rx*Math.sin(phase),direction*rz*Math.cos(phase));
+        rotations.push([0,Math.sin(yaw/2),0,Math.cos(yaw/2)]);
+      }
+      actor.translation=positions[0];actor.rotation=rotations[0];
+      walkTracks.set(name,{positions,height:name==="Gingerbread postman"?.375:.78});
+      animate(index,"translation",positions);animate(index,"rotation",rotations);
+      for(const id of actor.children){
+        const boot=model.nodes[id];
+        if(boot.name!=="Rounded boot"&&boot.name!=="Boot icing")continue;
+        const [x,y,z]=boot.translation,side=Math.sign(x);
+        animate(id,"translation",times.map(([t])=>{
+          const stride=side*Math.sin(t*2*Math.PI);
+          return [x,y+.064*Math.max(0,stride),z+.105*stride];
+        }));
+      }
+    }
+    model.buffers[0].byteLength=length;
+  }
+  return worldGLB(model,chunks,length);
 }
