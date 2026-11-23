@@ -1,7 +1,16 @@
+export const presets=new Map([
+  ["preset:bicycle","Bicycle"],["preset:gift","Wrapped gift"],["preset:reindeer","Reindeer"],
+  ["preset:snowman","Snowman"],["preset:lantern","Lantern"],["preset:igloo","Igloo"],
+  ["preset:candy-cane","Candy cane"]
+]);
 const giftFiles=new Map();
 export function giftURL(id){
   if(id==="preset:bicycle")return Promise.resolve(new URL("./presets/bicycle.glb",import.meta.url).href);
   if(!giftFiles.has(id)){
+    if(presets.has(id)){
+      giftFiles.set(id,Promise.resolve(window.FuzzyDecorations.preset(id.slice(7))));
+      return giftFiles.get(id);
+    }
     const request=fetch("/api/tripo?download=1&asset=object&taskId="+encodeURIComponent(id)).then(async response=>{
       if(!response.ok)throw Error("Could not download the gift.");
       return URL.createObjectURL(await response.blob());
