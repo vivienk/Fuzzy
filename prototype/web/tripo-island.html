@@ -451,7 +451,7 @@ const editorKey="fuzzy-editor"+draftSuffix;
 if(draftSuffix)document.querySelector("a.back").href="./index.html"+location.hash;
 const friendWorld=document.querySelector("#friend-world");
 if(parcel){
-  const draftURL=new URL("./tripo-island.html",location.href);
+  const draftURL=new URL(location.pathname,location.origin);
   draftURL.hash=new URLSearchParams({draft:crypto.randomUUID()}).toString();
   friendWorld.href=draftURL.href;
 }
@@ -628,7 +628,7 @@ document.querySelector("#box-generate").onclick=async()=>{
   }catch(error){if(boxes[slot]!==b)return;boxes[slot]=previous;previous.error=error.message;previous.prompt=prompt;persistBoxes();paintBox(slot);caption.textContent=error.message;
     if(location.origin==="http://127.0.0.1:8463"){
       const link=document.createElement("a");
-      link.href=hostedEditor+"/tripo-island.html#world="+world.dataset.kind;
+      link.href=hostedEditor+"/#world="+world.dataset.kind;
       link.target="_blank";link.rel="noopener";link.textContent="Open the hosted gift editor";
       caption.append(" ",link);
     }}
