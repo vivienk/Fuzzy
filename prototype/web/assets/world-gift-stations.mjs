@@ -1,7 +1,7 @@
 import {worldGLB} from "./place-village-gift.mjs";
 
 const layouts={
-  academy:{file:"owl-post-academy.gltf?v=letter-owl",boxes:[[-2.15,.02,4.22],[-.82,.02,4.42],[.54,.02,4.35]],mail:[3.9,1.1,.9]},
+  academy:{file:"owl-post-academy.gltf?v=snowy-mail-owl",boxes:[[-2.15,.02,4.22],[-.82,.02,4.42],[.54,.02,4.35]],mail:[3.9,1.1,.9]},
   candy:{file:"funky-candy-land.gltf?v=leaning-candies",boxes:[[-2.55,.24,3.73],[-.88,.28,4.0],[.66,.30,3.92]],mail:[-3.72,1.54,3.27]}
 };
 const cookieActions={
@@ -10,6 +10,13 @@ const cookieActions={
   "Wrapped gift courier":["Toss the courier’s present","Present toss","Special delivery!"]
 };
 let cookieEffects=[];
+let mailFlight;
+export function owlMailPosition(time){
+  const end=mailFlight.at(-1)[0],t=time%end;
+  const i=mailFlight.findIndex(point=>point[0]>t);
+  const a=mailFlight[i-1],b=mailFlight[i],mix=(t-a[0])/(b[0]-a[0]);
+  return [1,2,3].map(axis=>a[axis]+(b[axis]-a[axis])*mix+(axis===2?.78:0));
+}
 export function stationEffects(kind){
   const layout=layouts[kind];
   return [...layout.boxes.map(([x,y,z],slot)=>({kind:"gift-station",slot,position:[x,y+.44,z]})),
@@ -25,6 +32,7 @@ async function buildWorld(kind){
   const response=await fetch(new URL("./worlds/"+layout.file,import.meta.url));
   if(!response.ok)throw Error("Could not load the island.");
   const model=await response.json();
+  if(kind==="academy")mailFlight=model.nodes.find(node=>node.name==="Letter delivery owl").extras.mailFlight;
   if(kind==="candy"){
     cookieEffects=model.nodes.filter(node=>Object.hasOwn(cookieActions,node.name)).map(node=>{
       const [x,y,z]=node.translation;
