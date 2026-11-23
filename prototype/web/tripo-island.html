@@ -10,7 +10,7 @@
 .aurora{display:none}
 @keyframes glow{to{transform:translateX(5%) rotate(5deg);opacity:.72}}
 header,main{position:relative}header{display:flex;align-items:center;justify-content:space-between;padding:20px clamp(20px,5vw,76px);border-bottom:1px solid #ffffff1a}
-a{color:var(--gold)}.back{color:var(--muted);text-decoration:none}main{max-width:1320px;padding:42px 24px 70px;margin:auto}
+a{color:var(--gold)}main{max-width:1320px;padding:42px 24px 70px;margin:auto}
 .kicker{text-transform:uppercase;letter-spacing:2.5px;color:var(--gold);font-size:12px}h1{font:clamp(38px,6vw,66px)/1.02 Georgia,serif;max-width:850px;margin:12px 0}.intro{max-width:740px;color:var(--muted)}
 .badge{display:inline-block;border:1px solid #ffffff26;border-radius:999px;padding:5px 9px;color:#d9d4e8;font-size:11px;margin:0 5px 5px 0}
 .card{margin-top:22px;border:1px solid #ffffff20;background:#101527d9;border-radius:24px;padding:22px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:22px}
@@ -162,7 +162,6 @@ header .brand-logo{display:block;width:144px;max-width:32vw;height:auto}
 .album-room h2,.receiving #album-heading{color:#f0dac7}
 .album-room select{background:#fff9f3;color:#943930;border-color:#b99b88}
 #album-status,.album-room a{color:#ffc0af}
-header .back{color:#fff0df}
 
 .card{color:#fff6eb;--panel-tint:#28483ea1}
 #worlds{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
@@ -179,7 +178,6 @@ header .back{color:#fff0df}
  box-shadow:inset 0 1px 2px #fff2c9,inset 0 -1px 3px #fff2c780,0 2px 5px #0003;
 }
 #worlds button:focus-visible{outline:2px solid #fff4d8;outline-offset:3px}
-body.receiving header .back{display:none}
 header #friend-world:not([hidden]){margin:0;--glass-fill:#dbc572f5;--glass-ink:#352917;--glass-rim:#fff1af}
 #pack-world{--glass-fill:#dbc572f5;--glass-ink:#352917;--glass-rim:#fff1af}
 .gift-link-row{display:flex;align-items:center;gap:8px;margin:14px 0;padding-left:12px;border:1px solid #a6aea4;border-radius:12px;background:#fffaf2}
@@ -202,7 +200,7 @@ body.receiving #quill{display:none}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
-<header><img class="brand-logo" src="assets/fuzzy-wordmark.png" width="320" height="106" alt="Fuzzy"><a class="back" href="./index.html">← Back to winter worlds</a><a id="friend-world" hidden target="_blank" rel="noopener">Create your own winter world</a></header>
+<header><img class="brand-logo" src="assets/fuzzy-wordmark.png" width="320" height="106" alt="Fuzzy"><a id="friend-world" hidden target="_blank" rel="noopener">Create your own winter world</a></header>
 <main><h1>Christmas Special Edition</h1>
 <h2 id="world-heading">Choose your winter world</h2>
 <nav aria-labelledby="world-heading" id="worlds"><button aria-pressed="true" data-world="village">North Pole – Santa Village</button><button aria-pressed="false" data-world="academy">Wizardry Magic Christmas</button><button aria-pressed="false" data-world="candy">Funky Candy Land</button></nav>
@@ -436,6 +434,9 @@ const freshBoxes=()=>Array.from({length:3},()=>({phase:"empty"}));
 let boxes=freshBoxes();
 const papers={pine:"Pine sprigs",berry:"Cranberry stripes",frost:"Frost stars"};
 const packWorld=document.querySelector("#pack-world");
+if(location.hostname==="fuzzy-preview.vercel.app" && location.pathname==="/" && !location.hash){
+  history.replaceState(null,"",location.pathname+location.search+"#draft=fd96792f-599a-43fc-af98-0f8c90a18866");
+}
 const parcelParams=new URLSearchParams(location.hash.slice(1));
 let parcel=null;
 if(parcelParams.has("parcel")){
@@ -448,7 +449,6 @@ if(parcelParams.has("parcel")){
 const draftId=parcelParams.get("draft")||"";
 const draftSuffix=!parcel&&/^[0-9a-f-]{36}$/i.test(draftId)?":"+draftId:"";
 const editorKey="fuzzy-editor"+draftSuffix;
-if(draftSuffix)document.querySelector("a.back").href="./index.html"+location.hash;
 const friendWorld=document.querySelector("#friend-world");
 if(parcel){
   const draftURL=new URL(location.pathname,location.origin);
