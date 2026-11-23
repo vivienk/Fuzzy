@@ -123,6 +123,10 @@ async function buildWorld(kind){
   const chunks=[bytes];
   let length=bytes.length;
   if(kind==="candy"){
+    const sweetShop=model.nodes.find(n=>n.name==="Gingerbread sweet shop");
+    const walls=sweetShop.children.map(i=>model.nodes[i]).find(n=>n.name.startsWith("gable "));
+    const yellow=model.materials.push({name:"Butter yellow",pbrMetallicRoughness:{baseColorFactor:[1,.67,.18,1],roughnessFactor:.82,metallicFactor:0}})-1;
+    walls.mesh=model.meshes.push({primitives:model.meshes[walls.mesh].primitives.map(p=>({...p,material:yellow}))})-1;
     const cottage=model.nodes.find(n=>n.name==="Buttercream cottage");
     cottage.name="Chocolate cottage";
     const chocolate=(name,rgb)=>model.materials.push({name,pbrMetallicRoughness:{baseColorFactor:[...rgb,1],roughnessFactor:.62,metallicFactor:0}})-1;
