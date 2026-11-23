@@ -51,11 +51,11 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 @keyframes chimney-drift{0%{opacity:0;transform:translate(0,0) scale(.95)}15%{opacity:.6}50%{opacity:.38;transform:translate(9px,-35px) scale(1.65)}100%{opacity:0;transform:translate(25px,-85px) scale(2.5)}}
 @media(prefers-reduced-motion:reduce){.smoke .puff,.steam .puff{animation:none;opacity:.12;transform:translateY(-10px)}.puff:nth-child(n+3){display:none}}
 .village-snow{display:none;position:absolute;inset:0 0 2.6em;overflow:hidden;border-radius:16px;pointer-events:none;z-index:2}
-#diorama[data-village] .village-snow{display:block}
+#diorama[data-snowy] .village-snow{display:block}
 .village-snow i{position:absolute;left:var(--x);top:-12px;width:var(--size);height:var(--size);border-radius:50%;background:#fff;opacity:.75;animation:village-snowfall var(--time) linear var(--delay) infinite}
 @keyframes village-snowfall{to{transform:translate(40px,75vh)}}
 #diorama[data-village] .smoke .puff{width:28px;height:32px;background:radial-gradient(ellipse,#e6edf4a8 0%,#c3cfdf67 38%,transparent 72%)}
-@media(prefers-reduced-motion:reduce){#diorama[data-village] .village-snow{display:none}}
+@media(prefers-reduced-motion:reduce){#diorama[data-snowy] .village-snow{display:none}}
 #world .elf-target{position:relative;width:32px;height:36px;padding:0;margin:0;border:0;border-radius:45%;background:transparent;cursor:pointer;pointer-events:auto;color:#30253c}
 #world .elf-target:focus-visible{outline:2px solid #ffda85}
 .elf-bubble:not(:empty){display:block;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding:5px 9px;border-radius:13px;background:#fff9ed;box-shadow:0 2px 8px #17203940;font:19px/1.2 system-ui;white-space:nowrap;pointer-events:none}
@@ -188,14 +188,12 @@ header #friend-world:not([hidden]){margin:0;--glass-fill:#dbc572f5;--glass-ink:#
 body.choosing main>:is(#diorama,#world-gifts,.album-room,#pack-world,#pack-hint){display:none}
 #world-gifts:not([hidden]){display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 #enter-world[hidden],#world-gifts[hidden]{display:none}
-#world:is([data-kind="academy"],[data-kind="candy"]) .mail-open{-webkit-backdrop-filter:none;backdrop-filter:none}
-#world[data-kind="candy"] .mail-open{top:0;width:44px;height:44px;padding:0;border:0;background:transparent;box-shadow:none}
-#world[data-kind="candy"] .mail-open svg{display:none}
+
+#world[data-kind] .mail-open{-webkit-backdrop-filter:none;backdrop-filter:none;top:0;width:44px;height:44px;padding:0;border:0;background:transparent;box-shadow:none}
+#world[data-kind] .mail-open svg{display:none}
 #world .mail-open .badge{box-sizing:border-box;padding:0;margin:0;text-align:center;font-weight:700}
-#world:is([data-kind="candy"],[data-kind="academy"]) .mail-open:not(.read) svg{display:block;position:absolute;left:50%;top:1px;transform:translate(-50%,-50%);box-sizing:border-box;width:24px;height:20px;padding:3px;color:#603e32;background:#fff7df;border:1px solid #ac8568;border-radius:6px;box-shadow:0 1px 4px #61362466}
-#world:is([data-kind="candy"],[data-kind="academy"]) .mail-open .badge{top:-13px;left:calc(50% + 6px);right:auto;width:14px;height:14px;font:700 10px/12px system-ui;background:#a63245;color:white;border:1px solid white}
-#world[data-kind="academy"] .mail-open{top:0;width:44px;height:44px;padding:0;border:0;background:transparent;box-shadow:none}
-#world[data-kind="academy"] .mail-open svg{display:none}
+#world[data-kind] .mail-open:not(.read) svg{display:block;position:absolute;left:50%;top:1px;transform:translate(-50%,-50%);box-sizing:border-box;width:24px;height:20px;padding:3px;color:#603e32;background:#fff7df;border:1px solid #ac8568;border-radius:6px;box-shadow:0 1px 4px #61362466}
+#world[data-kind] .mail-open .badge{top:-13px;left:calc(50% + 6px);right:auto;width:14px;height:14px;font:700 10px/12px system-ui;background:#a63245;color:white;border:1px solid white}
 
 body.choosing #mail-reminder,body.receiving #mail-reminder,#mail-reminder[hidden]{display:none}
 #mail-reminder{display:flex;align-items:center;gap:9px;margin:4px 0 14px;font:500 15px/1.45 system-ui;color:#fff2d8}
@@ -204,7 +202,7 @@ body.choosing #mail-reminder,body.receiving #mail-reminder,#mail-reminder[hidden
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
-<header><img class="brand-logo" src="assets/fuzzy-wordmark.png" width="320" height="106" alt="Fuzzy"><a class="back" href="./index.html">← Back to winter worlds</a><a id="friend-world" hidden target="_blank" rel="noopener">Create a gift</a></header>
+<header><img class="brand-logo" src="assets/fuzzy-wordmark.png" width="320" height="106" alt="Fuzzy"><a class="back" href="./index.html">← Back to winter worlds</a><a id="friend-world" hidden target="_blank" rel="noopener">Create your own winter world</a></header>
 <main><h1>Christmas Special Edition</h1>
 <h2 id="world-heading">Choose your winter world</h2>
 <nav aria-labelledby="world-heading" id="worlds"><button aria-pressed="true" data-world="village">North Pole – Santa Village</button><button aria-pressed="false" data-world="academy">Wizardry Magic Christmas</button><button aria-pressed="false" data-world="candy">Funky Candy Land</button></nav>
@@ -240,11 +238,12 @@ async function waitTask(taskId,label,onProgress){
 }
 </script><script type="module">
 import {presets,giftURL,composeGiftBoxes} from "./assets/place-village-gift.mjs?v=gift-icons";
-import {stationEffects,stationWorld,owlMailPosition,cookiePosition} from "./assets/world-gift-stations.mjs?v=walking-candy";
+import {stationEffects,stationWorld,owlMailPosition,cookiePosition} from "./assets/world-gift-stations.mjs?v=snowy-gummies";
 const world = document.querySelector("#world");
 const caption = document.querySelector("#caption");
 function matte(viewer) {
   for (const material of viewer.model.materials) {
+    if (viewer === world && world.dataset.kind === "candy" && material.name.endsWith(" jelly")) continue;
     const surface = material.pbrMetallicRoughness;
     surface.metallicRoughnessTexture?.setTexture(null);
     surface.setMetallicFactor(0);
@@ -431,7 +430,6 @@ if(parcel){
   const draftURL=new URL("./tripo-island.html",location.href);
   draftURL.hash=new URLSearchParams({draft:crypto.randomUUID()}).toString();
   friendWorld.href=draftURL.href;
-  friendWorld.hidden=false;
 }
 const key="fuzzy-received:"+location.hash;
 if(parcel&&!parcelParams.has("preview"))try{
@@ -483,6 +481,7 @@ document.querySelector("#delivery").onsubmit=e=>{
 document.querySelector("#copy-parcel").onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector("#gift-url").href);sendStatus.textContent="Gift link copied.";}catch{const field=document.createElement("textarea");field.readOnly=true;field.value=parcelURL();sendStatus.replaceChildren(field);field.select();}};
 if(parcel){
   document.body.classList.add("receiving");arrival.dataset.paper=parcel.paper;
+  arrival.addEventListener("close",()=>{friendWorld.hidden=false;},{once:true});
   arrival.addEventListener("cancel",e=>e.preventDefault());arrival.showModal();
   document.querySelector("#unfold").onclick=e=>{e.currentTarget.disabled=true;const sender=(parcelParams.get("sender")||"").trim().slice(0,60);document.querySelector("#album-heading").textContent=sender?"Music shared by "+sender:"Music shared with you";window.dispatchEvent(new Event("gift-soundtrack-start"));arrival.classList.add("unfolding");setTimeout(()=>arrival.close(),matchMedia("(prefers-reduced-motion: reduce)").matches?0:850);};
 }
@@ -518,7 +517,6 @@ function syncGuide(){
     button.toggleAttribute("data-guide-hidden",!["empty","prepared","retry","building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
   });
   world.querySelectorAll(".elf-target:not(.wizard-target,.cookie-target)").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
-  world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel&&world.dataset.kind==="village"&&!!savedMailNote().trim());
   world.querySelector(".fishing-action")?.toggleAttribute("data-quiet",fishPhase==="idle"&&!gaming);
   
   world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming);});
@@ -814,6 +812,7 @@ async function selectWorld(choice) {
   const academy = choice.dataset.world === "academy";
   const allowTilt = village || academy || choice.dataset.world === "candy";
   document.querySelector("#diorama").toggleAttribute("data-village",village);
+  document.querySelector("#diorama").toggleAttribute("data-snowy",village || choice.dataset.world==="candy");
   document.querySelector("#world-gifts").hidden=village;
   if(!parcel)window.dispatchEvent(new Event("gift-music-enter"));
   world.setAttribute("min-camera-orbit", allowTilt ? "auto 52deg auto" : "auto 65deg auto");
