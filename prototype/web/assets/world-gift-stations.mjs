@@ -2,7 +2,7 @@ import {worldGLB} from "./place-village-gift.mjs";
 
 const layouts={
   academy:{file:"owl-post-academy.gltf?v=snowy-mail-owl",boxes:[[-2.15,.02,4.22],[-.82,.02,4.42],[.54,.02,4.35]],mail:[3.9,1.1,.9]},
-  candy:{file:"funky-candy-land.gltf?v=leaning-candies",boxes:[[-2.55,.24,3.73],[-.88,.28,4.0],[.66,.30,3.92]],mail:[-3.72,1.54,3.27]}
+  candy:{file:"funky-candy-land.gltf?v=leaning-candies",boxes:[[-2.55,.24,3.73],[-.88,.28,4.0],[.66,.30,3.92]],mail:[-3.72,1.08,3.27]}
 };
 const cookieActions={
   "Candy cane greeter":["Twirl the candy cane","Peppermint twirl","One peppermint spin!"],
@@ -59,8 +59,8 @@ async function buildWorld(kind){
   }
   if(kind==="candy"){
     const [x,y,z]=layout.mail;
-    const carrier=group("Gingerbread postman",[x,y-1.21,z]);
-    carrier.scale=[1.48,1.48,1.48];
+    const carrier=group("Gingerbread postman",[x,y-.75,z]);
+    carrier.scale=[.92,.92,.92];
     carrier.rotation=[0,Math.sin(.22),0,Math.cos(.22)];
     const cookie=model.nodes.find(node=>node.name==="Wrapped gift courier");
     for(const index of cookie.children){
