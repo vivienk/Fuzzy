@@ -537,9 +537,24 @@ function fishTap(){
   }
   drawFishing();syncGuide();
 }
-function showVillageEffects(){
-  if(world.dataset.kind!=="village")return;
-  effects.forEach(({kind,position,normal,name},i)=>{
+// Window centers in the academy model's coordinate system, facing out from each facade.
+const academyLights = [
+  [-.925,.786,-1.48],[.925,.786,-1.48],
+  [-4.416,.52,.48],[-3.384,.52,.48],
+  [3.427,.558,.87],[4.373,.558,.87],
+  [-3.68,.463,3.31],[-2.82,.463,3.31],
+  [-1.75,2.01,-2.32],[1.75,2.35,-2.32],
+].map(position=>({kind:"window",position,normal:[0,0,1]}));
+for(let face=0;face<6;face++){
+  const angle=face*Math.PI/3, x=Math.sin(angle), z=Math.cos(angle);
+  academyLights.push({kind:"lantern",position:[.69*x,4.46,-3.85+.69*z],normal:[x,0,z]});
+}
+academyLights.push({kind:"star",position:[0,2.98,.9],normal:[0,1,0]});
+function showWorldEffects(){
+  const kind=world.dataset.kind;
+  if(kind!=="village" && kind!=="academy")return;
+  const worldEffects=kind==="academy"?academyLights:effects;
+  worldEffects.forEach(({kind,position,normal,name},i)=>{
     if(kind==="gift-station"){
       const slot=effects[i].slot,button=document.createElement("button");
       button.type="button";button.className="box-hit";button.slot="hotspot-gift-box-"+slot;button.dataset.box=slot;
@@ -590,7 +605,7 @@ function showVillageEffects(){
       world.append(feed);return;
     }
     const anchor=document.createElement("div");
-    anchor.slot="hotspot-village-"+i;
+    anchor.slot="hotspot-"+world.dataset.kind+"-"+i;
     anchor.className=kind==="smoke"?"atmosphere-anchor smoke":"light-anchor "+kind;
     anchor.dataset.position=position.map(v=>v+"m").join(" ");
     anchor.dataset.normal=(normal||[0,1,0]).join(" ");
@@ -605,7 +620,7 @@ function showVillageEffects(){
     world.append(anchor);
   });
 }
-world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showVillageEffects();showElfInteraction();syncGuide();if(fishPhase!=="idle")drawFishing();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
+world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showWorldEffects();showElfInteraction();syncGuide();if(fishPhase!=="idle")drawFishing();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
 const islandLoader=document.querySelector("#island-loader");
 function finishIslandLoad(){
   islandLoader.hidden=true;
@@ -632,6 +647,8 @@ async function selectWorld(choice) {
   if(!parcel)window.dispatchEvent(new Event("gift-music-enter"));
   world.setAttribute("min-camera-orbit", village ? "auto 52deg auto" : "auto 65deg auto");
   world.setAttribute("max-camera-orbit", village ? "auto 76deg auto" : "auto 65deg auto");
+  // Narrow the opening field of view for a 1.2× larger projected island.
+  world.setAttribute("field-of-view", village ? "30deg" : "25.17deg");
   world.setAttribute("camera-orbit", village ? "18deg 65deg 87%" : "30deg 65deg auto");
   const academy = choice.dataset.world === "academy";
   world.autoplay = (village || academy || choice.dataset.world === "north") && !matchMedia("(prefers-reduced-motion: reduce)").matches;
