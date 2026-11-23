@@ -97,11 +97,15 @@ export async function composeGiftBoxes(villageUrl,opened) {
     track(lidNode,"scale",[closedScale,closedScale,gone],"VEC3");
     track(display,"translation",[start,start,final],"VEC3");
     track(display,"scale",[[.001,.001,.001],[.01,.01,.01],[1,1,1]],"VEC3");
-    m.animations.push(clip);
+    (m.animations ||= []).push(clip);
   }
   const endPad=(4-bytes%4)%4;chunks.push(new Uint8Array(endPad));bytes+=endPad;
   for(const key of ["skins","textures","images","samplers"])if(!m[key]?.length)delete m[key];
   m.buffers[0].byteLength=bytes;
+  return worldGLB(m,chunks,bytes);
+}
+
+export function worldGLB(m,chunks,bytes){
   const json=new TextEncoder().encode(JSON.stringify(m)), padded=(json.length+3)&~3;
   return URL.createObjectURL(new Blob([new Uint32Array([0x46546c67,2,28+padded+bytes,padded,0x4e4f534a]),json,new Uint8Array(padded-json.length).fill(32),new Uint32Array([bytes,0x004e4942]),...chunks],{type:"model/gltf-binary"}));
 }

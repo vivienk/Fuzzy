@@ -221,6 +221,7 @@ async function waitTask(taskId,label,onProgress){
  throw new Error(label+" is taking longer than expected. Refresh and retry this step.");
 }
 </script><script type="module">
+import {stationEffects,stationWorld} from "./assets/world-gift-stations.mjs?v=leaning-candies";
 const world = document.querySelector("#world");
 const caption = document.querySelector("#caption");
 function matte(viewer) {
@@ -287,6 +288,46 @@ function showElfInteraction(){
       });
       previous=time;
     }
+    elfFrame=requestAnimationFrame(follow);
+  }
+  follow();
+}
+let wizardPaths;
+async function showWizardInteraction(turn){
+  if(world.dataset.kind!=="academy")return;
+  wizardPaths ||= fetch("assets/worlds/academy-wizard-paths.json").then(response=>{
+    if(!response.ok)throw new Error("Wizard paths unavailable");
+    return response.json();
+  }).catch(()=>{wizardPaths=null;return null;});
+  const paths=await wizardPaths;
+  if(!paths||turn!==request)return;
+  const spells=[
+    ["Sapphire mage","✨ Starlight!","🌟 Make a wish!"],
+    ["Bookbinder apprentice","📖 A page of magic!","🪄 Mischief managed!"],
+    ["Broom rider","🧹 Catch the breeze!","🌙 See you by moonrise!"]
+  ];
+  const targets=paths.map((path,i)=>{
+    const button=document.createElement("button"),bubble=document.createElement("span");
+    button.type="button";button.className="elf-target wizard-target";
+    button.slot="hotspot-wizard-"+i;button.setAttribute("aria-label","Greet the "+spells[i][0]);
+    bubble.className="elf-bubble";bubble.setAttribute("role","status");button.append(bubble);
+    let visits=0;
+    button.onclick=e=>{
+      e.stopPropagation();clearTimeout(bubbleTimer);
+      targets.forEach(target=>target.firstChild.textContent="");
+      bubble.textContent=spells[i][1+visits++%2];
+      bubbleTimer=setTimeout(()=>bubble.textContent="",2600);
+    };
+    world.append(button);return button;
+  });
+  function follow(){
+    const phase=(world.currentTime||0)%15/15;
+    paths.forEach((path,i)=>{
+      const sample=phase*(path.length-1),j=Math.floor(sample),mix=sample-j;
+      const pos=path[j].map((v,k)=>v+(path[j+1][k]-v)*mix);
+      pos[1]+=.5;
+      world.updateHotspot({name:targets[i].slot,position:pos.map(v=>v+"m").join(" ")});
+    });
     elfFrame=requestAnimationFrame(follow);
   }
   follow();
@@ -417,7 +458,6 @@ function syncGuide(){
       button.textContent=action+" · Box "+(i+1);
       button.disabled=["starting","building","opening"].includes(b.phase);
     });
-    return;
   }
   world.querySelectorAll(".box-hit").forEach(button=>{
     const slot=Number(button.dataset.box),b=boxes[slot];
@@ -425,7 +465,7 @@ function syncGuide(){
     button.toggleAttribute("data-muted",step.slot!==slot&&b.phase!=="building");
     button.toggleAttribute("data-guide-hidden",!["building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
   });
-  world.querySelectorAll(".elf-target").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
+  world.querySelectorAll(".elf-target:not(.wizard-target,.cookie-target)").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
   world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel);
   world.querySelector(".fishing-action")?.toggleAttribute("data-quiet",fishPhase==="idle"&&!gaming);
   
@@ -496,12 +536,12 @@ document.querySelector("#box-generate").onclick=async()=>{
   }catch(error){boxes[slot]=previous;previous.error=error.message;persistBoxes();paintBox(slot);caption.textContent=error.message;}
 };
 async function refreshBoxes(reveal=null){
-  if(world.dataset.kind!=="village"){if(reveal!==null)await inspectGift(reveal);return;}
+  const kind=world.dataset.kind;
   const version=++renderVersion;
   const gifts=boxes.flatMap((b,slot)=>["open","opening"].includes(b.phase)?[{slot,id:b.id}]:[]);
-  const base=await villageModel;
+  const base=await (kind==="village"?villageModel:stationWorld(kind));
   const url=gifts.length?await (await import("./assets/place-village-gift.mjs")).composeGiftBoxes(base,gifts):base;
-  if(version!==renderVersion||world.dataset.kind!=="village"){if(url!==base)URL.revokeObjectURL(url);return;}
+  if(version!==renderVersion||world.dataset.kind!==kind){if(url!==base)URL.revokeObjectURL(url);return;}
   const previous=currentModel;currentModel=url===base?null:url;
   pendingReveal=reveal;world.src=url;
   if(previous && previous!==url)URL.revokeObjectURL(previous);
@@ -563,11 +603,30 @@ for(let face=0;face<6;face++){
 academyLights.push({kind:"star",position:[0,2.98,.9],normal:[0,1,0]});
 function showWorldEffects(){
   const kind=world.dataset.kind;
-  if(kind!=="village" && kind!=="academy")return;
-  const worldEffects=kind==="academy"?academyLights:effects;
-  worldEffects.forEach(({kind,position,normal,name},i)=>{
+  const worldEffects=kind==="village"?effects:[...(kind==="academy"?academyLights:[]),...stationEffects(kind)];
+  worldEffects.forEach(({kind,position,normal,name,action},i)=>{
+    if(kind==="cookie"){
+      const [label,clip,message]=action;
+      const button=document.createElement("button"),bubble=document.createElement("span");
+      button.type="button";button.className="elf-target cookie-target";button.slot="hotspot-cookie-"+i;
+      button.dataset.position=position.map(v=>v+"m").join(" ");button.setAttribute("aria-label",label);button.title=label;
+      bubble.className="elf-bubble";bubble.setAttribute("role","status");button.append(bubble);
+      button.onclick=e=>{
+        e.stopPropagation();
+        if(bubble.textContent)return;
+        bubble.textContent=message;
+        const animate=!matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if(animate)world.appendAnimation(clip,{repetitions:1,time:0});
+        setTimeout(()=>{
+          if(!button.isConnected)return;
+          if(animate)world.detachAnimation(clip);
+          bubble.textContent="";
+        },1900);
+      };
+      world.append(button);return;
+    }
     if(kind==="gift-station"){
-      const slot=effects[i].slot,button=document.createElement("button");
+      const slot=worldEffects[i].slot,button=document.createElement("button");
       button.type="button";button.className="box-hit";button.slot="hotspot-gift-box-"+slot;button.dataset.box=slot;
       button.dataset.position=position.map(v=>v+"m").join(" ");
       button.innerHTML='<span hidden><b></b><progress max="100" aria-label="Gift generation progress"></progress></span>';
@@ -585,7 +644,7 @@ function showWorldEffects(){
     if(kind==="mail"){
       const button=document.createElement("button");
       button.type="button";button.className="mail-open";button.slot="hotspot-mailbox";
-      button.dataset.position=position.map(v=>v+"m").join(" ");button.setAttribute("aria-label","Open North Pole mailbox");
+      button.dataset.position=position.map(v=>v+"m").join(" ");button.setAttribute("aria-label","Open "+world.alt+" mailbox");
       button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg><span class="badge" aria-hidden="true">1</span>';
       try{button.classList.toggle("read",!!readEditor().read);}catch{}
       button.onclick=e=>{e.stopPropagation();openLetter();};world.append(button);return;
@@ -631,7 +690,10 @@ function showWorldEffects(){
     world.append(anchor);
   });
 }
-world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showWorldEffects();showElfInteraction();syncGuide();if(fishPhase!=="idle")drawFishing();if(pendingReveal!==null && world.dataset.kind==="village" && !matchMedia("(prefers-reduced-motion: reduce)").matches){world.appendAnimation("Unwrap box "+pendingReveal,{repetitions:1,time:0});}pendingReveal=null;});
+world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showWorldEffects();showElfInteraction();showWizardInteraction(request);syncGuide();if(fishPhase!=="idle")drawFishing();if(pendingReveal!==null && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    const clip="Unwrap box "+pendingReveal;
+    world.appendAnimation(clip,{repetitions:1,time:0});
+  }pendingReveal=null;});
 const islandLoader=document.querySelector("#island-loader");
 function finishIslandLoad(){
   islandLoader.hidden=true;
@@ -663,8 +725,9 @@ async function selectWorld(choice) {
   // Narrow the opening field of view for a 1.2× larger projected island.
   world.setAttribute("field-of-view", village ? "30deg" : "25.17deg");
   world.setAttribute("camera-orbit", village ? "18deg 65deg 87%" : "30deg 65deg auto");
-  world.autoplay = (village || academy || choice.dataset.world === "north") && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  world.autoplay = !matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (village) world.setAttribute("animation-name", "Santa flight");
+  else if(choice.dataset.world==="candy")world.setAttribute("animation-name","Candy village greetings");
   else world.removeAttribute("animation-name");
   if (village) {
     world.removeAttribute("src");
@@ -686,7 +749,12 @@ async function selectWorld(choice) {
     }
     return;
   }
-  world.src = academy ? "assets/worlds/owl-post-academy.gltf?v=nine-candles" : "assets/worlds/funky-candy-land.gltf?v=biscuit-base";
+  try{
+    const base=await stationWorld(choice.dataset.world);
+    if(turn!==request)return;
+    try{await refreshBoxes();}
+    catch(error){if(turn===request){world.src=base;caption.textContent="Could not restore the opened gifts.";}}
+  }catch(error){if(turn===request){finishIslandLoad();caption.textContent=world.alt+" couldn’t load. Select it again to retry.";}}
   syncGuide();
 }
 world.addEventListener("error", () => {finishIslandLoad();caption.textContent = world.alt + " couldn’t load. Select the world again to retry.";});
