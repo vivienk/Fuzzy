@@ -3,35 +3,42 @@ window.FuzzyDecorations=(()=>{
  const slots=[[-.68,.135,.55],[-.46,.135,.58],[-.08,.135,.40]];
  const maxHeight=.24; // Mailbox rises .2775 m above its .10 m base.
  const cache=new Map();
- function styleTextureUri(style){
-  const size=256,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
-  if(style==='needle-felt'){
-   let seed=271828;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
-   for(let n=0;n<900;n++){const x=random()*size,y=random()*size,len=2+random()*10,a=(random()-.5)*.9;ctx.strokeStyle=random()>.5?'rgba(255,247,226,.9)':'rgba(66,43,31,.65)';ctx.lineWidth=.55+random()*.65;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.stroke()}
-   for(let n=0;n<480;n++){const x=random()*size,y=random()*size,r=.35+random()*.8;ctx.fillStyle='rgba(72,49,36,.4)';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
-  }else if(style==='origami-paper'){
-   const cell=64;
-   for(let y=0;y<size;y+=cell)for(let x=0;x<size;x+=cell){
-    ctx.fillStyle=(x/cell+y/cell)%2?'rgba(211,187,151,.24)':'rgba(255,255,255,.32)';
-    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y);ctx.lineTo(x+cell,y+cell);ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(116,87,58,.16)';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.lineTo(x,y+cell);ctx.closePath();ctx.fill();
-    ctx.strokeStyle='rgba(83,60,41,.48)';ctx.lineWidth=1.25;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y+cell);ctx.moveTo(x+cell,y);ctx.lineTo(x,y+cell);ctx.stroke();
-   }
-  }else{
-   for(let x=-size;x<size*2;x+=7){ctx.strokeStyle=(x%14?'rgba(255,255,255,.8)':'rgba(122,83,78,.58)');ctx.lineWidth=1.15;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+size,size);ctx.stroke()}
-   for(let x=-size;x<size*2;x+=7){ctx.strokeStyle=(x%14?'rgba(255,255,255,.65)':'rgba(122,83,78,.48)');ctx.lineWidth=1.15;ctx.beginPath();ctx.moveTo(x,size);ctx.lineTo(x+size,0);ctx.stroke()}
-   for(let y=6;y<size;y+=14)for(let x=6;x<size;x+=14){ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(x,y,1.1,0,Math.PI*2);ctx.fill()}
+ const WORLD_MATERIAL_PALETTES={
+  forest:{
+   'Pearl snow':[.34,.35,.47],'Lavender slate':[.27,.21,.40],'Cedar':[.34,.25,.34],
+   'Deep pine':[.10,.18,.17],'Cranberry':[.39,.28,.37],'Champagne gold':[.65,.51,.34],
+   'Bronze':[.20,.17,.23],'Amber glow':[.94,.60,.30],'Sage':[.15,.23,.20],
+   'Glacier blue':[.31,.36,.53],'Rose sandstone':[.44,.35,.43],'Midnight roof':[.18,.15,.30],
+   'Luminous frost crystals':[.46,.35,.66],'Spring stone':[.31,.38,.40],
+   'forest architectural trim':[.24,.20,.34],'forest enchanted accent':[.80,.57,.34],
+   'Moonlit snow blanket':[.28,.29,.41]
+  },
+  aurora:{
+   'Pearl snow':[.78,.79,.84],'Lavender slate':[.45,.41,.54],'Cedar':[.42,.32,.28],
+   'Deep pine':[.24,.33,.29],'Cranberry':[.45,.31,.32],'Champagne gold':[.70,.56,.38],
+   'Bronze':[.26,.23,.24],'Amber glow':[.89,.59,.34],'Sage':[.38,.47,.39],
+   'Glacier blue':[.47,.57,.70],'Rose sandstone':[.60,.45,.45],'Midnight roof':[.30,.29,.38],
+   'Luminous frost crystals':[.68,.67,.76],'Spring stone':[.40,.47,.53],
+   'aurora architectural trim':[.44,.35,.31],'aurora enchanted accent':[.80,.60,.40],
+   'Moonlit snow blanket':[.78,.79,.84]
+  },
+  alpine:{
+   'Pearl snow':[.87,.86,.83],'Lavender slate':[.64,.59,.67],'Cedar':[.62,.47,.41],
+   'Deep pine':[.42,.50,.46],'Cranberry':[.61,.45,.47],'Champagne gold':[.80,.68,.49],
+   'Bronze':[.39,.35,.36],'Amber glow':[.90,.72,.49],'Sage':[.56,.63,.55],
+   'Glacier blue':[.64,.71,.78],'Rose sandstone':[.71,.57,.56],'Midnight roof':[.44,.41,.48],
+   'Luminous frost crystals':[.79,.77,.82],'Spring stone':[.58,.63,.63],
+   'alpine architectural trim':[.62,.48,.43],'alpine enchanted accent':[.86,.71,.50],
+   'Moonlit snow blanket':[.85,.84,.81]
   }
-  return canvas.toDataURL('image/png');
- }
+ };
  async function base(url){if(!cache.has(url))cache.set(url,fetch(url+'?v=gentle-walk-1').then(r=>{if(!r.ok)throw Error('World unavailable');return r.arrayBuffer()}));return cache.get(url)}
  function triangles(kind,world){
   const pieces=[];const add=(verts,color)=>pieces.push({verts,color});
   function box(x,y,z,w,h,d,color){const p=[[x-w/2,y,z-d/2],[x+w/2,y,z-d/2],[x+w/2,y+h,z-d/2],[x-w/2,y+h,z-d/2],[x-w/2,y,z+d/2],[x+w/2,y,z+d/2],[x+w/2,y+h,z+d/2],[x-w/2,y+h,z+d/2]];add([...[0,3,2,0,2,1,4,5,6,4,6,7,0,4,7,0,7,3,1,2,6,1,6,5,3,7,6,3,6,2,0,1,5,0,5,4].map(i=>p[i])],color)}
   function cone(x,y,z,r,h,color){let v=[];for(let i=0;i<10;i++){let a=i*Math.PI/5,b=(i+1)*Math.PI/5;v.push([x+r*Math.cos(a),y,z+r*Math.sin(a)],[x,y+h,z],[x+r*Math.cos(b),y,z+r*Math.sin(b)])}add(v,color)}
   function ball(x,y,z,r,color){let v=[];const p=(a,b)=>[x+r*Math.sin(a)*Math.cos(b),y+r*Math.cos(a),z+r*Math.sin(a)*Math.sin(b)];for(let i=0;i<6;i++)for(let j=0;j<10;j++){let a=i*Math.PI/6,b=j*Math.PI/5,c=(i+1)*Math.PI/6,d=(j+1)*Math.PI/5;v.push(p(a,b),p(c,b),p(c,d),p(a,b),p(c,d),p(a,d))}add(v,color)}
-  const palette={forest:{white:[.91,.88,1,1],red:[.48,.23,.65,1],gold:[.78,.65,1,1],fur:[.68,.60,.78,1],antler:[.86,.78,1,1]},aurora:{white:[.94,.93,.89,1],red:[.48,.07,.07,1],gold:[.72,.48,.19,1],fur:[.57,.41,.28,1],antler:[.77,.84,.72,1]},alpine:{white:[.98,.97,.92,1],red:[.72,.07,.12,1],gold:[1,.65,.2,1],fur:[.47,.25,.12,1],antler:[.72,.51,.28,1]}}[world||'alpine'];
+  const palette={forest:{white:[.88,.87,.92,1],red:[.43,.31,.44,1],gold:[.60,.51,.68,1],fur:[.51,.47,.58,1],antler:[.66,.59,.72,1]},aurora:{white:[.91,.90,.88,1],red:[.55,.34,.34,1],gold:[.70,.55,.37,1],fur:[.47,.38,.31,1],antler:[.63,.65,.59,1]},alpine:{white:[.93,.91,.86,1],red:[.57,.36,.37,1],gold:[.78,.62,.42,1],fur:[.46,.34,.27,1],antler:[.64,.52,.38,1]}}[world||'alpine'];
   const {white,red,gold}=palette;
   if(kind==='reindeer'){
    const {fur,antler}=palette,cream=white,hoof=[.17,.10,.08,1];
@@ -64,23 +71,42 @@ window.FuzzyDecorations=(()=>{
  }
  async function build(lit,items,world,wrapped=false,sceneStyle='needle-felt'){
   const source=await base(wrapped?'assets/gift.glb':['forest','aurora','alpine'].includes(world)?`assets/worlds/${world}${lit?'-lit':''}.glb`:(lit?'assets/world.glb':'assets/world-unlit.glb')),view=new DataView(source),jl=view.getUint32(12,true),g=JSON.parse(new TextDecoder().decode(new Uint8Array(source,20,jl))),binStart=20+jl+8,bl=view.getUint32(20+jl,true);
-  if(wrapped){
-   const colors={forest:[[.48,.23,.65,1],[.78,.65,1,1]],aurora:[[.48,.07,.07,1],[.72,.48,.19,1]],alpine:[[.72,.07,.12,1],[1,.65,.2,1]]}[world||'alpine'];
-   for(const material of g.materials){if(material.name==='Cranberry')material.pbrMetallicRoughness.baseColorFactor=colors[0];if(material.name==='Champagne gold')material.pbrMetallicRoughness.baseColorFactor=colors[1]}
+  const palette=WORLD_MATERIAL_PALETTES[world||'alpine']||{};
+  // Reduce chroma in the actual glTF material factors so the art direction is
+  // consistent even when a browser does not composite CSS filters on WebGL.
+  function softenColor(color,strength){
+   const [r,g,b]=color;
+   if(strength==null){
+    const red=r>g*1.18&&r>b*1.12,green=g>r*1.15&&g>b*1.05,gold=r>g*1.12&&g>b*1.12;
+    strength=(red||green)?0.88:gold?0.62:0.76;
+   }
+   const gray=r*.2126+g*.7152+b*.0722;
+   return [r,g,b].map(channel=>gray+(channel-gray)*strength).concat(color[3]??1);
+  }
+  for(const material of g.materials||[]){
+   const pbr=material.pbrMetallicRoughness||(material.pbrMetallicRoughness={});
+   const color=palette[material.name]||pbr.baseColorFactor;
+   const protectedAccent=/pine|sage|cranberry/i.test(material.name)? .9:undefined;
+   if(color)pbr.baseColorFactor=softenColor(color,protectedAccent);
+   if(material.emissiveFactor)material.emissiveFactor=softenColor(material.emissiveFactor).slice(0,3);
   }
   const chunks=[new Uint8Array(source,binStart,bl)];let length=bl;
   function accessor(values,type){const data=new Float32Array(values);const idx=g.bufferViews.length;g.bufferViews.push({buffer:0,byteOffset:length,byteLength:data.byteLength,target:34962});chunks.push(new Uint8Array(data.buffer));length+=data.byteLength;const dim=3,min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];for(let i=0;i<values.length;i++){min[i%dim]=Math.min(min[i%dim],values[i]);max[i%dim]=Math.max(max[i%dim],values[i])}g.accessors.push({bufferView:idx,componentType:5126,count:values.length/3,type,min,max});return g.accessors.length-1}
   items.slice(0,slots.length).forEach((kind,slot)=>triangles(kind,world).forEach(piece=>{
    const pos=[],norm=[],uv=[];for(let i=0;i<piece.verts.length;i+=3){const [a,b,c]=piece.verts.slice(i,i+3),u=b.map((v,j)=>v-a[j]),v=c.map((x,j)=>x-a[j]),n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],l=Math.hypot(...n)||1,axis=Math.abs(n[0])>Math.abs(n[1])&&Math.abs(n[0])>Math.abs(n[2])?[1,2]:Math.abs(n[1])>Math.abs(n[2])?[0,2]:[0,1];for(const p of [a,b,c]){pos.push(...p);norm.push(...n.map(x=>x/l));uv.push(p[axis[0]]*4,p[axis[1]]*4)}}
    function uvAccessor(values){const data=new Float32Array(values),idx=g.bufferViews.length;g.bufferViews.push({buffer:0,byteOffset:length,byteLength:data.byteLength,target:34962});chunks.push(new Uint8Array(data.buffer));length+=data.byteLength;const min=[Infinity,Infinity],max=[-Infinity,-Infinity];for(let i=0;i<values.length;i++){const axis=i%2;min[axis]=Math.min(min[axis],values[i]);max[axis]=Math.max(max[axis],values[i])}g.accessors.push({bufferView:idx,componentType:5126,count:values.length/2,type:'VEC2',min,max});return g.accessors.length-1}
-   const material=g.materials.length;g.materials.push({name:'Mini '+kind,pbrMetallicRoughness:{baseColorFactor:piece.color,metallicFactor:0,roughnessFactor:.8},doubleSided:true});
+   const material=g.materials.length;g.materials.push({name:'Mini '+kind,pbrMetallicRoughness:{baseColorFactor:softenColor(piece.color),metallicFactor:0,roughnessFactor:.8},doubleSided:true});
    const mesh=g.meshes.length;g.meshes.push({primitives:[{attributes:{POSITION:accessor(pos,'VEC3'),NORMAL:accessor(norm,'VEC3'),TEXCOORD_0:uvAccessor(uv)},material}]});const node=g.nodes.length;g.nodes.push({name:'Added '+kind,mesh,translation:slots[slot]});g.scenes[g.scene||0].nodes.push(node);
   }));
-  const styleTexture=styleTextureUri(sceneStyle),samplers=g.samplers||(g.samplers=[]),images=g.images||(g.images=[]),textures=g.textures||(g.textures=[]);
-  const samplerIndex=samplers.length;samplers.push({magFilter:9729,minFilter:9987,wrapS:10497,wrapT:10497});
-  const imageIndex=images.length;images.push({uri:styleTexture});
-  const textureIndex=textures.length;textures.push({sampler:samplerIndex,source:imageIndex});
-  for(const material of g.materials||[]){const pbr=material.pbrMetallicRoughness||(material.pbrMetallicRoughness={});if(!pbr.baseColorTexture)pbr.baseColorTexture={index:textureIndex,texCoord:0}}
+  // Keep the imported meshes and transforms, but use flat, solid materials.
+  // Strip every standard glTF texture binding from each material.
+  for(const material of g.materials||[]){
+   const pbr=material.pbrMetallicRoughness;
+   if(pbr){delete pbr.baseColorTexture;delete pbr.metallicRoughnessTexture}
+   delete material.normalTexture;
+   delete material.occlusionTexture;
+   delete material.emissiveTexture;
+  }
   g.buffers[0].byteLength=length;let json=new TextEncoder().encode(JSON.stringify(g));const padded=Math.ceil(json.length/4)*4,output=new ArrayBuffer(12+8+padded+8+length),out=new DataView(output),bytes=new Uint8Array(output);out.setUint32(0,0x46546c67,true);out.setUint32(4,2,true);out.setUint32(8,output.byteLength,true);out.setUint32(12,padded,true);out.setUint32(16,0x4e4f534a,true);bytes.fill(32,20,20+padded);bytes.set(json,20);out.setUint32(20+padded,length,true);out.setUint32(24+padded,0x004e4942,true);let cursor=28+padded;for(const chunk of chunks){bytes.set(chunk,cursor);cursor+=chunk.length}return URL.createObjectURL(new Blob([output],{type:'model/gltf-binary'}));
  }
  return {build,maxHeight,slots,triangles};
