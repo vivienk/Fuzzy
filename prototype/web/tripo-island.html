@@ -194,9 +194,6 @@ header #friend-world:not([hidden]){margin:0;--glass-fill:#dbc572f5;--glass-ink:#
 #world[data-kind] .mail-open:not(.read) svg{display:block;position:absolute;left:50%;top:1px;transform:translate(-50%,-50%);box-sizing:border-box;width:24px;height:20px;padding:3px;color:#603e32;background:#fff7df;border:1px solid #ac8568;border-radius:6px;box-shadow:0 1px 4px #61362466}
 #world[data-kind] .mail-open .badge{top:-13px;left:calc(50% + 6px);right:auto;width:14px;height:14px;font:700 10px/12px system-ui;background:#a63245;color:white;border:1px solid white}
 
-body.receiving #mail-reminder,#mail-reminder[hidden]{display:none}
-#mail-reminder{display:flex;align-items:center;gap:9px;margin:4px 0 14px;font:500 15px/1.45 system-ui;color:#fff2d8}
-#mail-reminder svg{width:19px;height:19px;flex:none;color:#efcb82}
 .last-gift{display:inline-flex;gap:8px;align-items:center}
 body.receiving #quill{display:none}
 #quill{display:grid;place-items:center;width:44px;height:44px;padding:9px;border-radius:50%;color:#503318;background:#f2d799}
@@ -209,7 +206,6 @@ body.receiving #quill{display:none}
 <main><h1>Christmas Special Edition</h1>
 <h2 id="world-heading">Choose your winter world</h2>
 <nav aria-labelledby="world-heading" id="worlds"><button aria-pressed="true" data-world="village">North Pole – Santa Village</button><button aria-pressed="false" data-world="academy">Wizardry Magic Christmas</button><button aria-pressed="false" data-world="candy">Funky Candy Land</button></nav>
-<p id="mail-reminder" role="status" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m3 7 9 6 9-6"/></svg><span></span></p>
 <figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><section id="world-gifts" hidden aria-label="Gift preparation"><button data-slot="0"></button><button data-slot="1"></button><span class="last-gift"><button data-slot="2"></button><button id="quill" type="button" aria-label="Write your letter" title="Write your letter"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21 16 8M7 16C5 11 10 3 21 2c0 4-1 7-4 10l-4 1 2 1c-2 2-5 3-8 2Z"/></svg></button></span><button id="world-note" hidden>Read letter</button></section>
 <section class="album-room" aria-labelledby="album-heading">
 <div class="turntable"><span class="vinyl" aria-hidden="true"><i></i></span><i class="tonearm" aria-hidden="true"></i><button id="disc" type="button" aria-label="Play record"><span class="disc-symbol" aria-hidden="true">▶</span></button></div>
@@ -261,7 +257,7 @@ function matte(viewer) {
 for (const viewer of document.querySelectorAll("model-viewer")) {
   viewer.addEventListener("load", () => {
     try { if (viewer !== world || world.dataset.kind !== "village") matte(viewer); } catch (error) { console.warn("Material adjustment skipped", error); }
-    if (viewer === world) caption.textContent = world.alt;
+    if (viewer === world) updateMailReminder();
   });
 }
 const choices = document.querySelectorAll("#worlds button");
@@ -395,14 +391,12 @@ edit.onclick=composeMail;
 const quill=document.querySelector("#quill");
 quill.onclick=composeMail;
 function updateMailReminder(){
-  const reminder=document.querySelector("#mail-reminder");
   const hasLetter=!!savedMailNote().trim();
   quill.title=hasLetter?"Edit your letter":"Write your letter";
   quill.setAttribute("aria-label",quill.title);
-  reminder.hidden=!!parcel||hasLetter;
-  if(reminder.hidden)return;
+  if(parcel||hasLetter){caption.textContent=world.alt;return;}
   const mailbox={village:"village mailbox",academy:"snowy owl",candy:"gingerbread postman"}[world.dataset.kind];
-  reminder.querySelector("span").textContent="Tap the "+mailbox+" to tuck a personal letter into your gift.";
+  caption.textContent="Tap the "+mailbox+" to tuck a personal letter into your gift.";
 }
 input.oninput=()=>input.setCustomValidity("");
 form.onsubmit=e=>{
@@ -807,11 +801,10 @@ async function selectWorld(choice) {
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
-  updateMailReminder();
   world.exposure = ({ candy: 0.82, academy: 0.72 })[choice.dataset.world] ?? 0.95;
   packWorld.hidden=true;document.querySelector("#pack-hint").hidden=true;
   world.alt = choice.textContent;
-  caption.textContent = "";
+  updateMailReminder();
   clearElfInteraction();world.replaceChildren();
   const turn = ++request;
   ++renderVersion;pendingReveal=null;
