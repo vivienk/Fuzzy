@@ -6,10 +6,10 @@
 <script type="module" src="assets/model-viewer.min.js"></script>
 <style>
 :root{color-scheme:light;--gold:#ffb25d;--ink:#fff7ed;--muted:#d9d8c8}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:#00221f;overflow-x:hidden}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:#00221f linear-gradient(90deg,#000f0d 0%,#00221f 100%);overflow-x:hidden}
 .aurora{display:none}
 @keyframes glow{to{transform:translateX(5%) rotate(5deg);opacity:.72}}
-header,main{position:relative}header{display:flex;align-items:center;justify-content:space-between;padding:20px clamp(20px,5vw,76px);border-bottom:1px solid #ffffff1a}header strong{font-size:25px;letter-spacing:-1px}
+header,main{position:relative}header{display:flex;align-items:center;justify-content:space-between;padding:20px clamp(20px,5vw,76px);border-bottom:1px solid #ffffff1a}
 a{color:var(--gold)}.back{color:var(--muted);text-decoration:none}main{max-width:1320px;padding:42px 24px 70px;margin:auto}
 .kicker{text-transform:uppercase;letter-spacing:2.5px;color:var(--gold);font-size:12px}h1{font:clamp(38px,6vw,66px)/1.02 Georgia,serif;max-width:850px;margin:12px 0}.intro{max-width:740px;color:var(--muted)}
 .badge{display:inline-block;border:1px solid #ffffff26;border-radius:999px;padding:5px 9px;color:#d9d4e8;font-size:11px;margin:0 5px 5px 0}
@@ -133,8 +133,8 @@ body :is(button,#friend-world):focus-visible{outline:2px solid #65cbe1;outline-o
 #album-status{color:#b2d8bf}
 #album-player{grid-column:1/-1}@keyframes record-spin{to{transform:rotate(360deg)}}@media(max-width:560px){.album-room{grid-template-columns:1fr}.turntable{width:min(220px,100%);margin:auto}}@media(prefers-reduced-motion:reduce){.vinyl{animation:none}.tonearm{transition:none}}
 header{background:linear-gradient(130deg,#28504770,#00221f80);border:0;border-bottom:1px solid #fff1da36;box-shadow:inset 0 1px 0 #fff1da22;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
-header strong{font:900 42px/1 ui-rounded,"Arial Rounded MT Bold",Georgia,serif;color:#ffa958;letter-spacing:-.045em;-webkit-text-stroke:1px #fff4e6;paint-order:stroke fill;text-shadow:0 2px #dd762e,0 3px #aa5528}
-header strong::after{content:"♡";display:inline-block;margin-left:.18em;color:#fff4e6;font:700 .42em/1 system-ui;vertical-align:top;text-shadow:none;-webkit-text-stroke:0}
+
+header .brand-logo{display:block;width:144px;max-width:32vw;height:auto}
 :root{--glass-fill:#d4e6db78;--glass-ink:#184d39;--glass-rim:#ffffffd1}
 #worlds button[aria-pressed="true"]{--glass-fill:#ffb159ed;--glass-ink:#512c1f;--glass-rim:#fff2dc}
 .card textarea{background:#fffcf9;color:#283f33;border-color:#b9cabb}
@@ -152,7 +152,7 @@ header .back{color:#fff0df}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
-<header><strong>fuzzy</strong><a class="back" href="./index.html">← Back to winter worlds</a></header>
+<header><img class="brand-logo" src="assets/fuzzy-wordmark.png" width="320" height="106" alt="Fuzzy"><a class="back" href="./index.html">← Back to winter worlds</a></header>
 <main><h1>Winter worlds</h1>
 <nav aria-label="Choose a world" id="worlds"><button aria-pressed="true" data-world="north">North Pole</button> <button aria-pressed="false" data-world="village">North Pole v2 · Santa Village</button> <button aria-pressed="false" data-world="academy">Wizarding Christmas</button></nav>
 <figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><a id="friend-world" hidden target="_blank" rel="noopener">Make a world for a friend</a>
