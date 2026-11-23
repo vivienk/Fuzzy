@@ -5,9 +5,9 @@
 <title>Fuzzy · Winter worlds</title>
 <script type="module" src="assets/model-viewer.min.js"></script>
 <style>
-:root{color-scheme:light;--gold:#a23d38;--ink:#104c38;--muted:#51675d}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:#faf7f2;overflow-x:hidden}
-.aurora{position:fixed;inset:0;pointer-events:none;background:linear-gradient(124deg,transparent 62%,#f5b8ac26 82%,transparent),linear-gradient(32deg,#a6c8b724,transparent 46%)}
+:root{color-scheme:light;--gold:#a23d38;--ink:#f5f0e8;--muted:#d3ccc4}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:#242424;overflow-x:hidden}
+.aurora{display:none}
 @keyframes glow{to{transform:translateX(5%) rotate(5deg);opacity:.72}}
 header,main{position:relative}header{display:flex;align-items:center;justify-content:space-between;padding:20px clamp(20px,5vw,76px);border-bottom:1px solid #ffffff1a}header strong{font-size:25px;letter-spacing:-1px}
 a{color:var(--gold)}.back{color:var(--muted);text-decoration:none}main{max-width:1320px;padding:42px 24px 70px;margin:auto}
@@ -136,16 +136,19 @@ header{background:linear-gradient(130deg,#fff9,#fff4);border:1px solid #d2ddd4;b
 header strong{font:700 34px/1 Georgia,serif;color:#094833;letter-spacing:-.05em}
 header strong::after{content:"";display:inline-block;width:.17em;height:.17em;margin-left:.06em;border-radius:50%;background:#ee756b}
 :root{--glass-fill:#d4e6db78;--glass-ink:#184d39;--glass-rim:#ffffffd1}
-#worlds button[aria-pressed="true"]{--glass-fill:#19553ee0;--glass-ink:white;--glass-rim:#94bcab}
+#worlds button[aria-pressed="true"]{--glass-fill:#e8c273ed;--glass-ink:#352917;--glass-rim:#ffdf99}
 .card textarea{background:#fffcf9;color:#283f33;border-color:#b9cabb}
 .card .badge{background:#fff9;color:#415e50;border-color:#c3d4c9}
 .card,.album-room{background:var(--glass-sheen),var(--panel-tint,#eff6f16b);border:1px solid #ffffffdb;box-shadow:inset 0 1px 1px #fffffff2,inset 0 -1px 2px #ffffff80,0 0 0 1px #77625524,0 8px 24px #56342012;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%)}
-.album-room{--panel-tint:#c5a48a61;color:#49362f}
+.album-room{--panel-tint:#dfc4afdc;color:#49362f}
 #gift-station .card{--panel-tint:#273648ab}
 #disc .disc-symbol{background:var(--glass-sheen),#9de4bacc;border:1px solid #d5ffe7b8;box-shadow:inset 0 1px 1px #fffc,0 2px 5px #0005;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .album-room h2,.receiving #album-heading{color:#49362f}
 .album-room select{background:#fff9f3;color:#943930;border-color:#b99b88}
 #album-status,.album-room a{color:#913930}
+header .back{color:#153d30}
+#worlds button[aria-pressed="false"]{--glass-ink:#f0f7f2;--glass-fill:#52655b85}
+.card{color:#fff6eb;--panel-tint:#3e4542a1}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
