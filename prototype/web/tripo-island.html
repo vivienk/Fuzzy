@@ -132,14 +132,17 @@ body :is(button,#friend-world):focus-visible{outline:2px solid #65cbe1;outline-o
 @media(prefers-reduced-motion:reduce){.disc-symbol::before,.disc-symbol::after{transition:none}}
 #album-status{color:#b2d8bf}
 #album-player{grid-column:1/-1}@keyframes record-spin{to{transform:rotate(360deg)}}@media(max-width:560px){.album-room{grid-template-columns:1fr}.turntable{width:min(220px,100%);margin:auto}}@media(prefers-reduced-motion:reduce){.vinyl{animation:none}.tonearm{transition:none}}
-header,.card{background:linear-gradient(130deg,#fff9,#fff4);border:1px solid #d2ddd4;box-shadow:inset 0 1px 0 #fff,0 5px 20px #153e2a0a;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+header{background:linear-gradient(130deg,#fff9,#fff4);border:1px solid #d2ddd4;box-shadow:inset 0 1px 0 #fff,0 5px 20px #153e2a0a;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 header strong{font:700 34px/1 Georgia,serif;color:#094833;letter-spacing:-.05em}
 header strong::after{content:"";display:inline-block;width:.17em;height:.17em;margin-left:.06em;border-radius:50%;background:#ee756b}
-:root{--glass-fill:#eff7f1bf;--glass-ink:#184d39;--glass-rim:#9bbcab}
-#worlds button[aria-pressed="true"]{--glass-fill:#12523f;--glass-ink:white;--glass-rim:#386751}
+:root{--glass-fill:#d4e6db78;--glass-ink:#184d39;--glass-rim:#ffffffd1}
+#worlds button[aria-pressed="true"]{--glass-fill:#19553ee0;--glass-ink:white;--glass-rim:#94bcab}
 .card textarea{background:#fffcf9;color:#283f33;border-color:#b9cabb}
 .card .badge{background:#fff9;color:#415e50;border-color:#c3d4c9}
-.album-room{background:linear-gradient(125deg,#fff8,#fffcf855),#e7d4c3;border:1px solid #c6af99;color:#49362f;box-shadow:inset 0 1px #fff,0 8px 24px #56342012;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.card,.album-room{background:var(--glass-sheen),var(--panel-tint,#eff6f16b);border:1px solid #ffffffdb;box-shadow:inset 0 1px 1px #fffffff2,inset 0 -1px 2px #ffffff80,0 0 0 1px #77625524,0 8px 24px #56342012;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%)}
+.album-room{--panel-tint:#c5a48a61;color:#49362f}
+#gift-station .card{--panel-tint:#273648ab}
+#disc .disc-symbol{background:var(--glass-sheen),#9de4bacc;border:1px solid #d5ffe7b8;box-shadow:inset 0 1px 1px #fffc,0 2px 5px #0005;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .album-room h2,.receiving #album-heading{color:#49362f}
 .album-room select{background:#fff9f3;color:#943930;border-color:#b99b88}
 #album-status,.album-room a{color:#913930}
