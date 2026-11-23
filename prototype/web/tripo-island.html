@@ -5,8 +5,8 @@
 <title>Fuzzy · Winter worlds</title>
 <script type="module" src="assets/model-viewer.min.js"></script>
 <style>
-:root{color-scheme:light;--gold:#a23d38;--ink:#f5f0e8;--muted:#d3ccc4}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:#242424;overflow-x:hidden}
+:root{color-scheme:light;--gold:#ffb25d;--ink:#fff7ed;--muted:#d9d8c8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:#00221f;overflow-x:hidden}
 .aurora{display:none}
 @keyframes glow{to{transform:translateX(5%) rotate(5deg);opacity:.72}}
 header,main{position:relative}header{display:flex;align-items:center;justify-content:space-between;padding:20px clamp(20px,5vw,76px);border-bottom:1px solid #ffffff1a}header strong{font-size:25px;letter-spacing:-1px}
@@ -132,11 +132,11 @@ body :is(button,#friend-world):focus-visible{outline:2px solid #65cbe1;outline-o
 @media(prefers-reduced-motion:reduce){.disc-symbol::before,.disc-symbol::after{transition:none}}
 #album-status{color:#b2d8bf}
 #album-player{grid-column:1/-1}@keyframes record-spin{to{transform:rotate(360deg)}}@media(max-width:560px){.album-room{grid-template-columns:1fr}.turntable{width:min(220px,100%);margin:auto}}@media(prefers-reduced-motion:reduce){.vinyl{animation:none}.tonearm{transition:none}}
-header{background:linear-gradient(130deg,#fff9,#fff4);border:1px solid #d2ddd4;box-shadow:inset 0 1px 0 #fff,0 5px 20px #153e2a0a;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
-header strong{font:700 34px/1 Georgia,serif;color:#094833;letter-spacing:-.05em}
-header strong::after{content:"";display:inline-block;width:.17em;height:.17em;margin-left:.06em;border-radius:50%;background:#ee756b}
+header{background:linear-gradient(130deg,#28504770,#00221f80);border:0;border-bottom:1px solid #fff1da36;box-shadow:inset 0 1px 0 #fff1da22;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+header strong{font:900 42px/1 ui-rounded,"Arial Rounded MT Bold",Georgia,serif;color:#ffa958;letter-spacing:-.045em;-webkit-text-stroke:1px #fff4e6;paint-order:stroke fill;text-shadow:0 2px #dd762e,0 3px #aa5528}
+header strong::after{content:"♡";display:inline-block;margin-left:.18em;color:#fff4e6;font:700 .42em/1 system-ui;vertical-align:top;text-shadow:none;-webkit-text-stroke:0}
 :root{--glass-fill:#d4e6db78;--glass-ink:#184d39;--glass-rim:#ffffffd1}
-#worlds button[aria-pressed="true"]{--glass-fill:#e8c273ed;--glass-ink:#352917;--glass-rim:#ffdf99}
+#worlds button[aria-pressed="true"]{--glass-fill:#ffb159ed;--glass-ink:#512c1f;--glass-rim:#fff2dc}
 .card textarea{background:#fffcf9;color:#283f33;border-color:#b9cabb}
 .card .badge{background:#fff9;color:#415e50;border-color:#c3d4c9}
 .card,.album-room{background:var(--glass-sheen),var(--panel-tint,#eff6f16b);border:1px solid #ffffffdb;box-shadow:inset 0 1px 1px #fffffff2,inset 0 -1px 2px #ffffff80,0 0 0 1px #77625524,0 8px 24px #56342012;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%)}
@@ -146,9 +146,9 @@ header strong::after{content:"";display:inline-block;width:.17em;height:.17em;ma
 .album-room h2,.receiving #album-heading{color:#49362f}
 .album-room select{background:#fff9f3;color:#943930;border-color:#b99b88}
 #album-status,.album-room a{color:#913930}
-header .back{color:#153d30}
+header .back{color:#fff0df}
 #worlds button[aria-pressed="false"]{--glass-ink:#f0f7f2;--glass-fill:#52655b85}
-.card{color:#fff6eb;--panel-tint:#3e4542a1}
+.card{color:#fff6eb;--panel-tint:#28483ea1}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
