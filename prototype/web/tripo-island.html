@@ -226,7 +226,7 @@ async function waitTask(taskId,label,onProgress){
 }
 </script><script type="module">
 import {presets,giftURL,composeGiftBoxes} from "./assets/place-village-gift.mjs?v=gift-icons";
-import {stationEffects,stationWorld} from "./assets/world-gift-stations.mjs?v=leaning-candies";
+import {stationEffects,stationWorld} from "./assets/world-gift-stations.mjs?v=letter-owl";
 const world = document.querySelector("#world");
 const caption = document.querySelector("#caption");
 function matte(viewer) {
@@ -753,6 +753,7 @@ async function selectWorld(choice) {
   world.setAttribute("camera-orbit", village ? "18deg 65deg 87%" : "30deg 65deg auto");
   world.autoplay = !matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (village) world.setAttribute("animation-name", "Santa flight");
+  else if(academy)world.setAttribute("animation-name","Winter post");
   else if(choice.dataset.world==="candy")world.setAttribute("animation-name","Candy village greetings");
   else world.removeAttribute("animation-name");
   if (village) {

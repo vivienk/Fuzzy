@@ -1,7 +1,7 @@
 import {worldGLB} from "./place-village-gift.mjs";
 
 const layouts={
-  academy:{file:"owl-post-academy.gltf?v=christmas-car",boxes:[[-2.15,.02,4.22],[-.82,.02,4.42],[.54,.02,4.35]],mail:[3.9,1.1,.9]},
+  academy:{file:"owl-post-academy.gltf?v=letter-owl",boxes:[[-2.15,.02,4.22],[-.82,.02,4.42],[.54,.02,4.35]],mail:[3.9,1.1,.9]},
   candy:{file:"funky-candy-land.gltf?v=leaning-candies",boxes:[[-2.55,.24,3.73],[-.88,.28,4.0],[.66,.30,3.92]],mail:[-.15,1.6,-1.82]}
 };
 const cookieActions={
