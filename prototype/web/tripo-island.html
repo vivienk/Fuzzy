@@ -5,9 +5,9 @@
 <title>Fuzzy · Winter worlds</title>
 <script type="module" src="assets/model-viewer.min.js"></script>
 <style>
-:root{color-scheme:dark;--gold:#f1ca78;--ink:#f5f0e8;--muted:#c3bfd1}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:radial-gradient(ellipse at 50% 0,#392d58 0,#17172b 48%,#090e1c 100%);overflow-x:hidden}
-.aurora{position:fixed;inset:-25% -10% auto;height:68vh;pointer-events:none;opacity:.5;filter:blur(42px);background:linear-gradient(112deg,transparent 12%,#35d5aa66 30%,#8b62c988 47%,#64e4c377 58%,transparent 76%);transform:rotate(-9deg);animation:glow 12s ease-in-out infinite alternate}
+:root{color-scheme:light;--gold:#a23d38;--ink:#104c38;--muted:#51675d}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:#faf7f2;overflow-x:hidden}
+.aurora{position:fixed;inset:0;pointer-events:none;background:linear-gradient(124deg,transparent 62%,#f5b8ac26 82%,transparent),linear-gradient(32deg,#a6c8b724,transparent 46%)}
 @keyframes glow{to{transform:translateX(5%) rotate(5deg);opacity:.72}}
 header,main{position:relative}header{display:flex;align-items:center;justify-content:space-between;padding:20px clamp(20px,5vw,76px);border-bottom:1px solid #ffffff1a}header strong{font-size:25px;letter-spacing:-1px}
 a{color:var(--gold)}.back{color:var(--muted);text-decoration:none}main{max-width:1320px;padding:42px 24px 70px;margin:auto}
@@ -132,6 +132,17 @@ body :is(button,#friend-world):focus-visible{outline:2px solid #65cbe1;outline-o
 @media(prefers-reduced-motion:reduce){.disc-symbol::before,.disc-symbol::after{transition:none}}
 #album-status{color:#b2d8bf}
 #album-player{grid-column:1/-1}@keyframes record-spin{to{transform:rotate(360deg)}}@media(max-width:560px){.album-room{grid-template-columns:1fr}.turntable{width:min(220px,100%);margin:auto}}@media(prefers-reduced-motion:reduce){.vinyl{animation:none}.tonearm{transition:none}}
+header,.card{background:linear-gradient(130deg,#fff9,#fff4);border:1px solid #d2ddd4;box-shadow:inset 0 1px 0 #fff,0 5px 20px #153e2a0a;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+header strong{font:700 34px/1 Georgia,serif;color:#094833;letter-spacing:-.05em}
+header strong::after{content:"";display:inline-block;width:.17em;height:.17em;margin-left:.06em;border-radius:50%;background:#ee756b}
+:root{--glass-fill:#eff7f1bf;--glass-ink:#184d39;--glass-rim:#9bbcab}
+#worlds button[aria-pressed="true"]{--glass-fill:#12523f;--glass-ink:white;--glass-rim:#386751}
+.card textarea{background:#fffcf9;color:#283f33;border-color:#b9cabb}
+.card .badge{background:#fff9;color:#415e50;border-color:#c3d4c9}
+.album-room{background:linear-gradient(125deg,#fff8,#fffcf855),#e7d4c3;border:1px solid #c6af99;color:#49362f;box-shadow:inset 0 1px #fff,0 8px 24px #56342012;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.album-room h2,.receiving #album-heading{color:#49362f}
+.album-room select{background:#fff9f3;color:#943930;border-color:#b99b88}
+#album-status,.album-room a{color:#913930}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
