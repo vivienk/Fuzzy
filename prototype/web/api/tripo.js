@@ -87,7 +87,16 @@ async function createTask(operation,body) {
   return tripo(path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
 }
 module.exports=async function handler(req,res) {
-  if(!originAllowed(req))return send(res,403,{error:"Request origin not allowed."});
+  const localPreview = process.env.VERCEL_ENV === "preview" && req.headers.origin === "http://127.0.0.1:8463";
+  if(localPreview){
+    res.setHeader("Access-Control-Allow-Origin",req.headers.origin);
+    res.setHeader("Vary","Origin");
+    if(req.method==="OPTIONS"){
+      res.setHeader("Access-Control-Allow-Methods","GET, POST");
+      res.setHeader("Access-Control-Allow-Headers","Content-Type");
+      return res.status(204).end();
+    }
+  }else if(!originAllowed(req))return send(res,403,{error:"Request origin not allowed."});
   if(!process.env.TRIPO_API_KEY)return send(res,503,{error:"TRIPO_API_KEY is missing from this Vercel preview."});
   try {
     if(req.method==="GET"&&req.query?.check==="1") {
