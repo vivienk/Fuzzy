@@ -188,6 +188,9 @@ header #friend-world:not([hidden]){margin:0;--glass-fill:#dbc572f5;--glass-ink:#
 body.choosing main>:is(#diorama,#world-gifts,.album-room,#pack-world,#pack-hint){display:none}
 #world-gifts:not([hidden]){display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 #enter-world[hidden],#world-gifts[hidden]{display:none}
+#world[data-kind="candy"] .mail-open{top:0;width:46px;height:56px;padding:0;border:0;background:transparent;box-shadow:none}
+#world[data-kind="candy"] .mail-open svg{display:none}
+#world[data-kind="candy"] .mail-open .badge{top:0;right:0}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -226,7 +229,7 @@ async function waitTask(taskId,label,onProgress){
 }
 </script><script type="module">
 import {presets,giftURL,composeGiftBoxes} from "./assets/place-village-gift.mjs?v=gift-icons";
-import {stationEffects,stationWorld} from "./assets/world-gift-stations.mjs?v=letter-owl";
+import {stationEffects,stationWorld} from "./assets/world-gift-stations.mjs?v=candy-postman";
 const world = document.querySelector("#world");
 const caption = document.querySelector("#caption");
 function matte(viewer) {
@@ -473,7 +476,7 @@ function syncGuide(){
     button.toggleAttribute("data-guide-hidden",!["empty","prepared","retry","building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
   });
   world.querySelectorAll(".elf-target:not(.wizard-target,.cookie-target)").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
-  world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel);
+  world.querySelector(".mail-open")?.toggleAttribute("data-guide-hidden",step.kind!=="note"&&!parcel&&world.dataset.kind!=="candy");
   world.querySelector(".fishing-action")?.toggleAttribute("data-quiet",fishPhase==="idle"&&!gaming);
   
   world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming);});
@@ -669,7 +672,7 @@ function showWorldEffects(){
     if(kind==="mail"){
       const button=document.createElement("button");
       button.type="button";button.className="mail-open";button.slot="hotspot-mailbox";
-      button.dataset.position=position.map(v=>v+"m").join(" ");button.setAttribute("aria-label","Open "+world.alt+" mailbox");
+      button.dataset.position=position.map(v=>v+"m").join(" ");button.setAttribute("aria-label",world.dataset.kind==="candy"?"Read the gingerbread postman’s letter":"Open "+world.alt+" mailbox");
       button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg><span class="badge" aria-hidden="true">1</span>';
       try{button.classList.toggle("read",!!readEditor().read);}catch{}
       button.onclick=e=>{e.stopPropagation();openLetter();};world.append(button);return;

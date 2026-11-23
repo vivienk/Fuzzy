@@ -2,7 +2,7 @@ import {worldGLB} from "./place-village-gift.mjs";
 
 const layouts={
   academy:{file:"owl-post-academy.gltf?v=letter-owl",boxes:[[-2.15,.02,4.22],[-.82,.02,4.42],[.54,.02,4.35]],mail:[3.9,1.1,.9]},
-  candy:{file:"funky-candy-land.gltf?v=leaning-candies",boxes:[[-2.55,.24,3.73],[-.88,.28,4.0],[.66,.30,3.92]],mail:[-.15,1.6,-1.82]}
+  candy:{file:"funky-candy-land.gltf?v=leaning-candies",boxes:[[-2.55,.24,3.73],[-.88,.28,4.0],[.66,.30,3.92]],mail:[-3.72,1.54,3.27]}
 };
 const cookieActions={
   "Candy cane greeter":["Twirl the candy cane","Peppermint twirl","One peppermint spin!"],
@@ -48,6 +48,44 @@ async function buildWorld(kind){
     const node={name,translation:position,children:[]};
     model.scenes[model.scene||0].nodes.push(model.nodes.push(node)-1);
     return node;
+  }
+  if(kind==="candy"){
+    const [x,y,z]=layout.mail;
+    const carrier=group("Gingerbread postman",[x,y-1.21,z]);
+    carrier.scale=[1.48,1.48,1.48];
+    carrier.rotation=[0,Math.sin(.22),0,Math.cos(.22)];
+    const cookie=model.nodes.find(node=>node.name==="Wrapped gift courier");
+    for(const index of cookie.children){
+      const part=model.nodes[index];
+      if(part.mesh===undefined||part.name.startsWith("Bow"))continue;
+      carrier.children.push(model.nodes.push({...part})-1);
+    }
+    const meshCache=new Map();
+    function detail(name,shape,color,position,scale,angle=0){
+      const key=shape+color;
+      if(!meshCache.has(key)){
+        const source=model.nodes.find(node=>node.name===shape);
+        const material=model.materials.findIndex(m=>m.name===color);
+        const primitives=model.meshes[source.mesh].primitives.map(p=>({...p,material}));
+        meshCache.set(key,model.meshes.push({name:key,primitives})-1);
+      }
+      carrier.children.push(model.nodes.push({name,mesh:meshCache.get(key),translation:position,
+        scale,rotation:[0,0,Math.sin(angle/2),Math.cos(angle/2)]})-1);
+    }
+    const round="Baked cookie body",flat="cube snow";
+    detail("Raised cookie arm",round,"Light biscuit brown",[.37,.91,0],[.145,.31,.14],-.8);
+    detail("Postal cap crown",round,"berry",[0,1.48,0],[.39,.18,.22]);
+    detail("Cap piping",round,"gold",[0,1.435,.024],[.38,.065,.22]);
+    detail("Postman's visor",round,"cocoa",[0,1.415,.12],[.355,.061,.19]);
+    detail("Postal badge",round,"gold",[0,1.53,.207],[.063,.065,.022]);
+    detail("Leather shoulder strap",flat,"cocoa",[0,.77,.18],[.032,.45,.024],-.61);
+    detail("Mint satchel",flat,"mint",[-.30,.46,.17],[.18,.135,.064],-.13);
+    detail("Satchel flap",flat,"pine",[-.30,.525,.231],[.18,.056,.024],-.13);
+    detail("Brass clasp",round,"gold",[-.30,.492,.258],[.033,.036,.015]);
+    detail("Raised letter",flat,"Vanilla icing",[.575,1.19,.10],[.215,.143,.033],-.12);
+    detail("Envelope fold",flat,"honey",[.487,1.213,.14],[.112,.013,.009],-.53);
+    detail("Envelope fold",flat,"honey",[.672,1.192,.14],[.112,.013,.009],.31);
+    detail("Wax seal",round,"berry",[.58,1.17,.15],[.039,.039,.012]);
   }
   layout.boxes.forEach(([x,y,z],slot)=>{
     const body=group("Gift box "+slot,[x,y,z]);
