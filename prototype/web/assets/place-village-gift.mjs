@@ -75,7 +75,8 @@ export async function composeGiftBoxes(villageUrl,opened) {
     if(!(extent>0 && Number.isFinite(extent)))throw Error("Gift has no visible geometry");
     const box=m.nodes.find(n=>n.name==="Gift box "+slot),lid=m.nodes.find(n=>n.name==="Gift lid "+slot);
     const [x,y,z]=box.translation;
-    const closedScale=[...(box.scale||[1,1,1])],scale=.844*closedScale[0]/extent;
+    const closedScale=[...(box.scale||[1,1,1])];
+    const scale=1.5*.844*closedScale[0]/extent;
     const base={};for(const k of ["nodes","meshes","accessors","bufferViews","skins","textures","images","samplers","materials"])base[k]=(m[k]||=[]).length;
     const offset=append(gb);
     for(const v of g.bufferViews){v.byteOffset=(v.byteOffset||0)+offset;const ext=v.extensions?.EXT_meshopt_compression;if(ext)ext.byteOffset=(ext.byteOffset||0)+offset;}
