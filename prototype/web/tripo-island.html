@@ -22,6 +22,8 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}model-viewer{animation:drift 7s ease-in-out infinite}
 @media(max-width:850px){.card{grid-template-columns:1fr}.controls{order:-1}model-viewer{height:360px}}@media(prefers-reduced-motion:reduce){.aurora,model-viewer{animation:none}}
 #diorama{margin:20px 0 32px}#world{height:clamp(340px,62vh,680px);animation:none;background:linear-gradient(150deg,#c9e2ea,#a8bed0 56%,#d8d1d9)}#world[data-kind="north"]{background:linear-gradient(115deg,#acd6ce88,#d6ccdfaa),url("assets/worlds/aurora-sky.svg") center/cover}figcaption{padding:8px 0}summary{cursor:pointer}details h1{font-size:2rem}
+#world[data-kind="academy"]{background:#777893 url("assets/worlds/academy-blue-hour.svg") center/cover no-repeat}
+#world[data-kind="candy"]{background:linear-gradient(170deg,#91b5ca,#c8bccd 67%,#ddd0cb)}
 #diorama{position:relative;--dawn-sky:#101a35 url("assets/worlds/santa-dawn.svg") center/100% 100% no-repeat}
 #diorama[data-village]{isolation:isolate}
 #diorama[data-village] #world{position:relative;z-index:1;background:transparent}
@@ -617,6 +619,7 @@ async function selectWorld(choice) {
   resetFishing();
   for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
   world.dataset.kind = choice.dataset.world;
+  world.exposure = ({ candy: 0.82, academy: 0.72 })[choice.dataset.world] ?? 0.95;
   packWorld.hidden=true;document.querySelector("#pack-hint").hidden=true;
   world.alt = choice.textContent;
   caption.textContent = "";
@@ -654,7 +657,7 @@ async function selectWorld(choice) {
     }
     return;
   }
-  world.src = academy ? "assets/worlds/owl-post-academy.gltf" : "assets/worlds/funky-candy-land.gltf";
+  world.src = academy ? "assets/worlds/owl-post-academy.gltf?v=blue-hour-light" : "assets/worlds/funky-candy-land.gltf?v=soft-icing";
   syncGuide();
 }
 world.addEventListener("error", () => {finishIslandLoad();caption.textContent = world.alt + " couldn’t load. Select the world again to retry.";});
