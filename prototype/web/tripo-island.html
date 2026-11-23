@@ -674,7 +674,7 @@ async function selectWorld(choice) {
     }
     return;
   }
-  world.src = academy ? "assets/worlds/owl-post-academy.gltf?v=blue-hour-light" : "assets/worlds/funky-candy-land.gltf?v=biscuit-base";
+  world.src = academy ? "assets/worlds/owl-post-academy.gltf?v=broom-and-saloon" : "assets/worlds/funky-candy-land.gltf?v=biscuit-base";
   syncGuide();
 }
 world.addEventListener("error", () => {finishIslandLoad();caption.textContent = world.alt + " couldn’t load. Select the world again to retry.";});
