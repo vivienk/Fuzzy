@@ -4,7 +4,28 @@
 
 Messages don't disappear into a chat history. They become playful, persistent parts of a world you build together.
 
-## Start here
+## Native PICO V3 · Christmas Worlds
+
+**APK 0.3.0 (build 5)** brings three 3D islands into the PICO volumetric window. Switch between **North Pole – Santa Village**, **Wizardry Magic Christmas**, and **Funky Candy Land**, pause or resume animations, and keep a separate keepsake on the device for each world.
+
+The V3 source is on [the native Christmas Worlds branch](https://github.com/vivienk/Fuzzy/tree/feat/native-christmas-worlds-v3). [Pull request #5](https://github.com/vivienk/Fuzzy/pull/5) tracks its integration into the Christmas island feature branch.
+
+### Try V3 on the Swan emulator
+
+1. With JDK 21 and Android SDK 35 installed, run the following from a clean clone to build the reviewed APK:
+
+   ```sh
+   git fetch origin feat/native-christmas-worlds-v3
+   git switch --detach 92bb40d375a4eaa1f4f12b22ec795f69891fdf3f
+   ./gradlew :app:assembleDebug :app:testDebugUnitTest
+   ```
+
+2. In Android Studio, open **Tools → Device Manager** and start a clean **Swan** emulator. V2.2 and V3 use different debug signing keys, so use a separate emulator to preserve existing V2.2 keepsakes.
+3. Drag `app/build/outputs/apk/debug/app-debug.apk` onto the running emulator and open **Fuzzy Christmas**. Switch through all three islands, pause and resume animation, then save a keepsake and reopen the app to check it persists.
+
+**Verification at this commit.** All 14 JVM tests passed. APK inspection confirmed ARM64, Android API 35, all three scene assets, and a valid signature. Native rendering, scale, input, and save/relaunch behavior still need a runtime check.
+
+## Earlier builds and project resources
 
 - [V2 APK and submission materials](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.2)
 - [V2 design and scope](docs/V2-DESIGN.md)
@@ -13,7 +34,7 @@ Messages don't disappear into a chat history. They become playful, persistent pa
 - [V1 concept and longer-term AI vision](docs/V1-CONCEPT.md)
 - [Google Drive submission folder](https://drive.google.com/drive/folders/1CRVMRI06iP5BajKrthzkdanl4s72C9_m)
 
-## Current status — V2 candidate
+## V2 candidate history
 
 Native Android/Kotlin with PICO Spatial SDK 6.1.9, ARM64, Android API 35, PICO OS 6. The APK compiled, 14 flow/editor/effect tests passed, and the debug signature was verified. **Headset/emulator runtime testing remains pending.** This is not a confirmed build for PICO 4 or older firmware.
 
@@ -33,9 +54,9 @@ The Christmas recipient flow includes unwrap, message reveal, tree lights, islan
 | `prototype/web/` | Interactive preview using the current village GLBs |
 | `tools/` | Model generator and archived concept scripts; see tools/README.md |
 
-## Downloadable artifacts
+## V2.2 downloadable artifacts
 
-The latest release contains the updated APK, source ZIP, model preview, and browser preview. Version 0.2.2 removes the capybara and expands the island into a Christmas village with three cottages, a pond and bridge, sleigh, mailbox, lanterns, and a decorated tree.
+The v0.2.2 release contains the updated APK, source ZIP, model preview, and browser preview. Version 0.2.2 removes the capybara and expands the island into a Christmas village with three cottages, a pond and bridge, sleigh, mailbox, lanterns, and a decorated tree.
 
 Version 0.2.2 brings the recent preview features into the native APK: a bounded starry night backdrop, 56 glowing/sparkling light sources, drifting chimney smoke, hot-spring mist, pause/resume, a right-side note editor using PICO text input, a mailbox alert opening a handwritten-style letter, and three miniature slots for gifts, reindeer, or snowmen. Notes and miniature selections save on the device. This is native Spatial SDK code, not a WebView wrapper.
 
@@ -55,7 +76,7 @@ Install JDK 21 and Android SDK platform 35 / build-tools 35.0.0. Configure your 
 
 The PICO OS 6 Emulator requires a supported Apple Silicon Mac or Windows PC; Intel Macs cannot run that emulator. Check [PICO's current requirements](https://developer.picoxr.com/document/spatial-toolkit/install-pico-emulator/) before setup. See TESTING.md for the actual-device recording script.
 
-## Milestones
+## Original milestone plan
 
 - V2: November 1, 2026 — APK, design document, short video.
 - V3: November 8, 2026 — updated APK and supporting materials.
@@ -65,9 +86,11 @@ The PICO OS 6 Emulator requires a supported Apple Silicon Mac or Windows PC; Int
 
 Capy Post is inspiration only; no ownership or affiliation is claimed. [Repository](https://github.com/chinesepowered/hack-tripothon) · [reference demo](https://github.com/chinesepowered/hack-tripothon/blob/main/submission/capy-post-demo-day.mp4). Native scaffolding follows PICO's official CLI/templates. No Capy Post application code was copied into this project.
 
-This repository is private. Reviewers need repository access to use GitHub links; the existing Drive materials are a separate sharing route. No signing keys, credentials, machine-specific SDK paths, or build caches are committed.
+This repository is public. The linked Drive folder holds additional submission materials. No signing keys, credentials, machine-specific SDK paths, or build caches are committed.
 
 The miniature generator offers a ribbon-wrapped gift, little reindeer, or snowman. Existing saved miniature pines migrate to reindeer. The village evergreen trees are unchanged.
+
+## Browser prototype development history
 
 ### Three winter worlds (website, November 2)
 
