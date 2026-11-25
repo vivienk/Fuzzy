@@ -172,13 +172,13 @@ async function writeEffects(name, emitters) {
   }
   const entries = [];
   model.nodes = [];
-  for (const {kind,position} of emitters) {
+  for (const [emitter, {kind,position}] of emitters.entries()) {
     const kinds = kind === "smoke" ? Array(6).fill("smoke") :
       ["window","star","lantern"].includes(kind) ? ["glow","spark"] : [];
     for (const [i,type] of kinds.entries()) {
       const index = model.nodes.length;
       model.nodes.push({name:"Atmosphere "+index,mesh:templates.get(type),translation:position});
-      entries.push({kind:type,position,phase:type==="smoke"?i/6:index*.7});
+      entries.push({kind:type,position,phase:type==="smoke"?(i/6 + emitter*.8/7)%1:index*.7});
     }
   }
   model.scenes = [{nodes:model.nodes.map((_,i)=>i)}]; model.scene=0;

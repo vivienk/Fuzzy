@@ -235,13 +235,24 @@ private class WorldScene(
             throw e
         }
     }
+    // Measure in island coordinates once. Rotation and resizing only change the corner transforms.
+    val footprint = world.getVisualBounds(world).let { bounds ->
+        val lo = bounds.min
+        val hi = Vector3(lo.x+bounds.size.x, lo.y+bounds.size.y, lo.z+bounds.size.z)
+        List(8) { i -> Vector3(if (i and 1 == 0) lo.x else hi.x,
+            if (i and 2 == 0) lo.y else hi.y, if (i and 4 == 0) lo.z else hi.z) }
+    }
     var actionPlayback: AnimationPlaybackController? = null
+    var skyPlayback: AnimationPlaybackController? = null
     var playback: AnimationPlaybackController? = null
 
     @MainThread
     fun attachTo(root: Entity) {
         root.addChild(sky)
         sky.transform()?.setPosition(Vector3(-.36f,.23f,-.64f))
+        sky.getAnimationResources().firstOrNull { it.getName() == "Starlight" }?.let {
+            skyPlayback = sky.playAnimation(it.repeat(Int.MAX_VALUE))
+        }
         root.addChild(world)
         root.addChild(gift)
         island.animation?.let { animationName ->
@@ -255,6 +266,7 @@ private class WorldScene(
     fun destroy() {
         generated.keys.toList().forEach(::removeGenerated)
         actionPlayback?.stop()
+        skyPlayback?.stop()
         playback?.stop()
         playback = null
         (retainedEntities.asReversed() + listOfNotNull(effectsRoot)).forEach { entity ->
@@ -351,7 +363,9 @@ private suspend fun loadWorldScene(context: Context, island: WinterWorld): World
             }
         }
         val sky = load(island.name.lowercase()+"-sky.glb")
-        val auroras = listOf("teal-aurora","violet-aurora").map { sky.findEntity(it) }
+        val auroras = listOf("teal-aurora","violet-aurora").map { name ->
+            sky.findEntity(name)?.apply { components.set(OpacityControllerComponent(.3f)) }
+        }
         val present = load("christmas-gift.glb")
 
         val retainedEntities = buildList {
@@ -408,7 +422,9 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     val context = LocalContext.current
     val prefs = remember(island) { context.getSharedPreferences(if (island == WinterWorld.Village) "fuzzy_keepsakes_v2" else "fuzzy_keepsakes_${island.name}", 0) }
     val scope = rememberCoroutineScope()
-    var greeting by remember(island) { mutableStateOf(GreetingState(opened = true, lightsOn = prefs.getBoolean("tree_lit", true), kept = prefs.getBoolean("christmas_kept", false))) }
+    var creating by androidx.compose.runtime.saveable.rememberSaveable(session) { mutableStateOf(false) }
+    var unwrapped by androidx.compose.runtime.saveable.rememberSaveable(session) { mutableStateOf(false) }
+    var greeting by remember(island, session) { mutableStateOf(GreetingState(opened = unwrapped, lightsOn = prefs.getBoolean("tree_lit", true), kept = prefs.getBoolean("christmas_kept", false))) }
     var editor by remember(island) { mutableStateOf(EditorState.restore(prefs.getString("message", null), prefs.getString("decorations", null), prefs.getBoolean("mail_read", false))) }
     var draft by remember(island) { mutableStateOf(prefs.getString("note_draft", editor.note) ?: editor.note) }
     val actions = remember(island) { island.actions() }
@@ -464,6 +480,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     }
     var currentScene by remember { mutableStateOf<WorldScene?>(null) }
     fun activateSlot(slot: Int) {
+        if (!creating) return
         if (startingTask || editingSlot >= 0) return
         entryError = ""
         if (slot in failures) {
@@ -571,10 +588,11 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
         }
     }
     var playing by remember { mutableStateOf(false) }
-    LaunchedEffect(soundtrack, musicEnabled, active, album) {
+    val playWorkshop = opened && (!creating || album == "toymakers-workshop")
+    LaunchedEffect(soundtrack, musicEnabled, active, playWorkshop) {
         soundtrack ?: return@LaunchedEffect
         runCatching {
-            if (musicEnabled && active && album == "toymakers-workshop") {
+            if (musicEnabled && active && playWorkshop) {
                 soundtrack.start()
                 android.util.Log.i(SOUNDTRACK_TAG, "Playing Toymaker's Workshop")
             } else if (soundtrack.isPlaying) {
@@ -583,8 +601,8 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             playing = soundtrack.isPlaying
         }.onFailure { playing = false; android.util.Log.e(SOUNDTRACK_TAG, "Could not update soundtrack playback", it) }
     }
-    LaunchedEffect(soundtrack, active, musicEnabled, album) {
-        if (soundtrack != null && active && musicEnabled && album == "toymakers-workshop") {
+    LaunchedEffect(soundtrack, active, musicEnabled, playWorkshop) {
+        if (soundtrack != null && active && musicEnabled && playWorkshop) {
             while (isActive) {
                 playing = runCatching { soundtrack.isPlaying }.getOrDefault(false)
                 delay(200)
@@ -619,7 +637,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
         }
     }
     LaunchedEffect(currentScene, island, opened, paused, active) {
-        currentScene?.playback?.let {
+        listOfNotNull(currentScene?.playback, currentScene?.skyPlayback).forEach {
             if (currentScene?.island == island && opened && !paused && active) it.resume()
             else it.pause()
         }
@@ -695,11 +713,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 it.transform()?.setPosition(Vector3(.68f, .18f, -.04f))
                 sceneRoot.addChild(it)
             }
-            attachments.entity("title")?.let {
-                attachmentEntities["title"] = it
-                it.transform()?.setPosition(Vector3(-.45f, .82f, island.position.z))
-                sceneRoot.addChild(it)
-            }
             fun addCue(id: String, target: Entity) {
                 val light = PointLightComponent(Color4(1f, .88f, .66f, 1f), 0f, .075f)
                 target.components.set(light)
@@ -711,9 +724,9 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 it.enabled = false
                 sceneRoot.addChild(it)
             }
-            for (id in (0..2).map { "box$it" } + (0..6).map { "actor$it" }) {
+            for (id in (0..2).map { "hint$it" } + (0..2).map { "box$it" } + (0..6).map { "actor$it" }) {
                 attachments.entity(id)?.let { entity ->
-                    addCue(id, entity)
+                    if (!id.startsWith("hint")) addCue(id, entity)
                     attachmentEntities[id] = entity
                     entity.enabled = false
                     sceneRoot.addChild(entity)
@@ -726,12 +739,12 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     sceneRoot.addChild(entity)
                 }
             }
-            attachmentEntities["giftEntry"]?.transform()?.setPosition(Vector3(-.28f, .22f, .29f))
-            attachmentEntities["packing"]?.transform()?.setPosition(Vector3(-.28f, .22f, .29f))
+            attachmentEntities["giftEntry"]?.transform()?.setPosition(Vector3(.72f, .10f, -.04f))
+            attachmentEntities["packing"]?.transform()?.setPosition(Vector3(.72f, .10f, -.04f))
             attachments.entity("letter")?.let {
                 attachmentEntities["letter"] = it
                 it.enabled = false
-                it.transform()?.setPosition(Vector3(-.40f, .22f, island.position.z + .06f))
+                it.transform()?.setPosition(Vector3(.72f, .10f, -.04f))
                 sceneRoot.addChild(it)
             }
         },
@@ -781,8 +794,18 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     setEulerAngles(EulerAngles(0f, reveal * 120f, 0f))
                 }
                 activeWorld.auroras.forEachIndexed { index, layer ->
-                    val phase = clock * (2f * PI.toFloat() / if (index == 0) 9f else 13f) + index
-                    layer?.transform()?.setPosition(Vector3(.045f * sin(phase), .012f * cos(phase), .001f * (index + 1)))
+                    val teal = index == 0
+                    val t = .5f - .5f * cos(2f * PI.toFloat() *
+                        (clock + (if (teal) 2f else 5f)) / (if (teal) 9f else 13f))
+                    val x = if (teal) -32f + 90f*t else 28f - 76f*t
+                    val y = if (teal) -10f + 38f*t else 12f - 34f*t
+                    val stretch = if (teal) .88f + .28f*t else 1.12f - .22f*t
+                    layer?.transform()?.apply {
+                        setPosition(Vector3(x * .002f, -y * .00124f + .34f*(1f-stretch), .001f*(index+1)))
+                        setScaleVector(Vector3(1f, stretch, 1f))
+                    }
+                    layer?.components?.get(OpacityControllerComponent::class.java)?.opacity =
+                        if (teal) .27f + .16f*t else .23f + .12f*t
                 }
                 activeWorld.carrots.forEachIndexed { index, carrot ->
                     val start = feedStarts[index]
@@ -818,6 +841,9 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 }
             }
 
+            val hull = activeScene?.let { visible -> visible.footprint.map { visible.world.convertPositionTo(it, sceneRoot) } }.orEmpty()
+            val worldTop = hull.maxOfOrNull { it.y } ?: .4f
+            val airGap = if (fit.isFinite() && fit > 0f) .0762f / fit else .0762f
             for (slot in 0..6) {
                 fun place(id: String, node: Entity?, lift: Float, cue: Float) {
                     attachmentEntities[id]?.let { target ->
@@ -831,6 +857,18 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 }
                 val boxPulse = if ((openedMask and (1 shl slot)) == 0) cueStrength(slot, clock, paused) else 0f
                 place("box$slot", activeScene?.parcelParts?.getOrNull(slot)?.firstOrNull(), .012f, boxPulse)
+                if (slot in slots.indices) {
+                    attachmentEntities["box$slot"]?.let { if (!creating) it.enabled = false }
+                    attachmentEntities["hint$slot"]?.let { hint ->
+                        hint.enabled = creating && opened && !loading && !showLetter && editingSlot < 0 && !packing &&
+                            activeScene != null && !prepared(slot) && pendingIds[slot].isEmpty() && slot !in failures
+                        if (hint.enabled && activeScene != null) {
+                            val (lo, hi) = activeScene.boxBounds[slot]
+                            val top = activeScene.world.convertPositionTo(Vector3((lo.x+hi.x)/2, hi.y, (lo.z+hi.z)/2), sceneRoot)
+                            hint.transform()?.setPosition(Vector3(top.x, maxOf(top.y, worldTop) + airGap - hint.getVisualBounds(hint).min.y, top.z))
+                        }
+                    }
+                }
                 place("actor$slot", activeScene?.actionNodes?.getOrNull(slot), .007f, if (reaction == slot) .8f else cueStrength(slot+3, clock, paused))
             }
             attachmentEntities["mailbox"]?.let { target ->
@@ -843,20 +881,46 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 }
             }
             attachmentEntities["giftEntry"]?.enabled = activeScene != null && editingSlot >= 0 && opened
-            attachmentEntities["controls"]?.enabled = editingSlot < 0 && !packing
+            attachmentEntities["controls"]?.enabled = editingSlot < 0 && !packing && !showLetter
             attachmentEntities["packing"]?.enabled = activeScene != null && packing
             attachmentEntities["speech"]?.let { target ->
                 val actor = activeScene?.actionNodes?.getOrNull(reaction)
                 target.enabled = actor != null && bubble.isNotEmpty() && opened && !showLetter && editingSlot < 0 && !packing
                 if (actor != null && target.enabled) {
                     val anchor = actor.convertPositionTo(Vector3(0f), sceneRoot)
-                    target.transform()?.setPosition(Vector3(anchor.x, anchor.y + .085f, anchor.z + .038f))
+                    target.transform()?.setPosition(Vector3(anchor.x, maxOf(worldTop, anchor.y) + airGap - target.getVisualBounds(target).min.y, anchor.z))
                 }
             }
             attachmentEntities["letter"]?.enabled = activeScene != null && showLetter && opened
+            if (fit > 0f && fit.isFinite()) {
+                val halfWidth = physical.x / (2f * fit)
+                val halfHeight = physical.y / (2f * fit)
+                val rightEdge = hull.maxOfOrNull { it.x } ?: .28f
+                val left = maxOf(.30f, rightEdge + .025f)
+                for (id in listOf("controls", "giftEntry", "packing", "letter")) {
+                    val panel = attachmentEntities[id] ?: continue
+                    if (!panel.enabled) continue
+                    val box = panel.getVisualBounds(panel)
+                    val width = box.size.x.takeIf { it > 0f } ?: .65f
+                    val height = box.size.y.takeIf { it > 0f } ?: 1.2f
+                    val availableWidth = halfWidth - left - .015f
+                    val beside = availableWidth >= .35f
+                    val scale = if (beside) minOf(1f, availableWidth / width, 1.9f * halfHeight / height)
+                        else minOf(1f, 1.9f * halfWidth / width, (halfHeight - worldTop - airGap) / height)
+                    if (scale > 0f) panel.transform()?.apply {
+                        setScaleVector(Vector3(scale))
+                        val x = if (beside) (left + halfWidth) / 2f else 0f
+                        val y = if (beside) 0f else worldTop + airGap + height * scale / 2f
+                        setPosition(Vector3(x - box.center.x * scale, y - box.center.y * scale, -.04f))
+                    }
+                }
+            }
         },
         attachments = {
                 for (slot in 0..6) {
+                    if (slot < 3) AttachmentPanel(id = "hint$slot") {
+                        Action("Create gift") { activateSlot(slot) }
+                    }
                     if (slot < 3) AttachmentPanel(id = "box$slot") {
                         ObjectTarget("Box ${slot + 1}", slot, clock, paused, revealing < 0, cue = (openedMask and (1 shl slot)) == 0) { activateSlot(slot) }
                     }
@@ -893,13 +957,18 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 }
                 AttachmentPanel(id = "packing") {
                     if (packing) Column(Modifier.width(660.dp).heightIn(max = 1000.dp)
-                        .background(Cream, RoundedCornerShape(28.dp)).verticalScroll(rememberScrollState())
+                        .glassPanel(28).verticalScroll(rememberScrollState())
                         .padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text("Wrap their world", color = Cocoa, fontSize = 26.sp)
                         TextField(value = sender, onValueChange = { sender = it.take(60); prefs.edit().putString("sender", sender).apply() })
                         Text("From · ${sender.ifBlank { "Your name (optional)" }}", color = Cocoa)
+                        Text("Choose wrapping paper", color = Cocoa, fontSize = 22.sp)
+                        PaperPreview(paper)
                         for ((id,label) in listOf("pine" to "Pine sprigs", "berry" to "Cranberry stripes", "frost" to "Frost stars")) {
-                            Action((if (paper == id) "✓ " else "") + label) { paper = id; prefs.edit().putString("paper", id).apply() }
+                            Action((if (paper == id) "✓ " else "") + label) {
+                                paper = id
+                                prefs.edit().putString("paper", id).apply()
+                            }
                         }
                         soundtrackPicker()
                         Action("Preview as recipient") { openLink(parcelUrl(true)) }
@@ -933,12 +1002,15 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 }
                 AttachmentPanel(id = "speech") {
                     if (bubble.isNotEmpty()) Text(bubble, color = Cocoa, fontSize = 20.sp,
-                        modifier = Modifier.background(Cream, RoundedCornerShape(16.dp)).padding(horizontal = 14.dp, vertical = 8.dp))
+                        modifier = Modifier.glassPanel(16).padding(horizontal = 14.dp, vertical = 8.dp))
                 }
                 AttachmentPanel(id = "giftEntry") {
                     if (editingSlot in slots.indices) {
-                        Column(Modifier.width(660.dp).heightIn(max = 900.dp).background(Cream, RoundedCornerShape(28.dp)).verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("Choose a gift for box ${editingSlot + 1}", color = Cocoa)
+                        Column(Modifier.width(660.dp).heightIn(max = 900.dp).glassPanel(28).verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text("Create gift · Box ${editingSlot + 1}", color = Cocoa, fontSize = 25.sp)
+                                Action("×", !startingTask, actionName = "Close gift window") { editingSlot = -1 }
+                            }
                             TextField(value = giftPrompt, onValueChange = { giftPrompt = it.take(500) }, modifier = Modifier.fillMaxWidth())
                             if (pendingIds[editingSlot].isEmpty()) {
                                 if (slots[editingSlot].isNotEmpty()) Action("Use the saved gift", !startingTask) {
@@ -985,21 +1057,14 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                                 }
                             }
                             if (entryError.isNotEmpty()) Text(entryError, color = Cranberry)
-                            Action("Close gift choices", !startingTask) { editingSlot = -1 }
                         }
-                    }
-                }
-                AttachmentPanel(id = "title") {
-                    Column(Modifier.width(850.dp).clip(RoundedCornerShape(28.dp)).background(Cream).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("fuzzy", color = Cocoa, fontWeight = FontWeight.Bold, fontSize = 38.sp)
-                        Text(island.title, color = Cocoa, fontSize = 23.sp)
                     }
                 }
                 AttachmentPanel(id = "mailbox") {
                     ObjectTarget(if (island == WinterWorld.Academy) "Read the owl’s letter" else "Read mailbox", 11, clock, paused, !saving) { readMail() }
                 }
                 AttachmentPanel(id = "letter") {
-                    Column(Modifier.width(700.dp).heightIn(max = 900.dp).clip(RoundedCornerShape(32.dp)).background(Color(0xFFFFF8E8)).padding(32.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                    Column(Modifier.width(700.dp).heightIn(max = 900.dp).glassPanel(32).padding(32.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                         Text("A LITTLE LETTER, JUST FOR YOU", color = Cranberry, fontSize = 16.sp)
                         Text("From my world to yours", color = Cocoa, fontSize = 28.sp, fontWeight = FontWeight.Bold)
                         Text(editor.note, color = Cocoa, fontFamily = FontFamily.Cursive, fontSize = 32.sp, lineHeight = 46.sp)
@@ -1008,12 +1073,16 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     }
                 }
                 AttachmentPanel(id = "controls") {
-                    Column(Modifier.width(700.dp).heightIn(max = 1180.dp).clip(RoundedCornerShape(32.dp)).background(Cream).padding(24.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(if (opened) "Where would you like to take them?" else "Someone is thinking of you.", color = Cocoa, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-                        for (choice in WinterWorld.values()) {
+                    Column(Modifier.width(700.dp).heightIn(max = 1180.dp).glassPanel(32).padding(24.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(island.title, color = Cocoa, fontSize = 19.sp)
+                        Text(if (!opened) "Someone is thinking of you." else if (!creating) "A Christmas world for you" else "Where would you like to take them?", color = Cocoa, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                        if (creating && opened) for (choice in WinterWorld.values()) {
                             Action((if (choice == island) "✓ " else "") + choice.title, enabled = choice != island && !saving && !loading && !startingTask) { select(choice) }
                         }
-                        if (opened && error == null) {
+                        if (opened && !creating && error == null) {
+                            Text("Explore this island, then make one for someone you love.", color = Cocoa)
+                            Action("Create your own world", !loading) { creating = true }
+                        } else if (opened && error == null) {
                             val readySlot = slots.indices.firstOrNull { prepared(it) && slots[it].isNotEmpty() && pendingIds[it].isEmpty() && (openedMask and (1 shl it)) == 0 && currentScene?.variants?.containsKey(it to slots[it]) == true }
                             Text(when {
                                 pendingIds.any { it.isNotEmpty() } -> "Your gift is taking shape."
@@ -1061,14 +1130,14 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Action(if (saving) "Saving…" else if (greeting.kept) "Kept ♥" else "Keep ♥", !saving) { save(editor, "Kept on this device.", keep = true) }
-                                Action("Wrap again", !saving) { greeting = greeting.wrapAgain(); showLetter = false }
+                                Action("Wrap again", !saving) { unwrapped = false; greeting = greeting.wrapAgain(); showLetter = false }
                             }
                         } else if (error == null) {
                             Text("Unwrap your snowy village, write a note, and add a little Christmas magic.", color = Cocoa, fontSize = 22.sp)
-                            Action("Unwrap gift", !loading) { greeting = greeting.unwrap() }
-                            if (greeting.kept) Action("Open keepsake", !loading) { greeting = greeting.openKept(prefs.getBoolean("tree_lit", true)) }
+                            Action("Unwrap your gifted world", !loading) { unwrapped = true; greeting = greeting.unwrap() }
+                            if (greeting.kept) Action("Open keepsake", !loading) { unwrapped = true; greeting = greeting.openKept(prefs.getBoolean("tree_lit", true)) }
                         }
-                        if (error != null) Action("Retry") { error = null; loading = true; greeting = greeting.wrapAgain(); showLetter = false; attempt++ }
+                        if (error != null) Action("Retry") { error = null; loading = true; unwrapped = false; greeting = greeting.wrapAgain(); showLetter = false; attempt++ }
                         Text(error ?: if (loading) "Preparing your Christmas village…" else if (saving) "Saving on this device…" else status, color = Cranberry, fontSize = 18.sp)
                         Text("Your world saves on this device. Shared parcels open in a browser.", color = Cocoa.copy(alpha = .7f), fontSize = 14.sp)
                     }
@@ -1098,6 +1167,36 @@ private fun ObjectTarget(label: String, index: Int, clock: Float, paused: Boolea
             drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = alpha),
                 Color(0xFFFFDCA4).copy(alpha = alpha * .58f), Color.Transparent), radius = size.minDimension / 2))
         }
+    }
+}
+
+@Composable
+private fun PaperPreview(paper: String) {
+    Canvas(Modifier.fillMaxWidth().height(80.dp).clip(RoundedCornerShape(14.dp)).semantics {
+        contentDescription = "Wrapped parcel preview"
+    }) {
+        val frost = paper == "frost"
+        val berry = paper == "berry"
+        drawRect(if (frost) Color(0xFF849CAC) else if (berry) Color(0xFFA74655) else Color(0xFF486853))
+        val step = 15.dp.toPx()
+        var x = -size.height
+        while (x < size.width + size.height) {
+            if (frost) {
+                var y = step / 2
+                while (y < size.height) {
+                    drawCircle(Color(0xFFF8EFD5), 1.8.dp.toPx(), Offset(x,y))
+                    y += step
+                }
+            } else {
+                val dx = if (berry) -size.height else size.height
+                drawLine(if (berry) Color(0xFFEFC7B9) else Color(0xFF628471),
+                    Offset(x,0f), Offset(x+dx,size.height), 4.dp.toPx())
+            }
+            x += step
+        }
+        val ribbon = Color(0xFFEBD398)
+        drawLine(ribbon, Offset(center.x,0f), Offset(center.x,size.height), 9.dp.toPx())
+        drawLine(ribbon, Offset(0f,center.y), Offset(size.width,center.y), 6.dp.toPx())
     }
 }
 
@@ -1133,15 +1232,23 @@ private fun Record(playing: Boolean) {
     }
 }
 
+private fun Modifier.glassPanel(radius: Int): Modifier {
+    val shape = RoundedCornerShape(radius.dp)
+    return clip(shape).background(Brush.linearGradient(listOf(
+        Color(0xECFFFFFF), Color(0xBCEBF3FF), Color(0xBCCEE6EE), Color(0xE6FFF4E8))))
+        .border(2.dp, Brush.linearGradient(listOf(Color.White, Color(0x558BA9C1), Color(0xDDFFFFFF))), shape)
+}
+
 @Composable
-private fun Action(label: String, enabled: Boolean = true, onClick: () -> Unit) {
+private fun Action(label: String, enabled: Boolean = true, actionName: String = label, onClick: () -> Unit) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
     val shape = RoundedCornerShape(18.dp)
-    val tint = if (pressed) Color(0xEF543B43) else Color(0xCE563D49)
+    val tint = if (pressed) Color(0xE82B3A50) else Color(0xC2384A5D)
     Box(Modifier.heightIn(min = 56.dp).clip(shape)
-        .background(Brush.verticalGradient(listOf(if (enabled) Color(0xD978606B) else Color(0xD4767276), tint)))
+        .background(Brush.verticalGradient(if (enabled) listOf(Color(0xD0889EB3), tint, Color(0xCF304457), Color(0xC5768C9F)) else listOf(Color(0xBB747D84), Color(0xBC57606A))))
+        .semantics { contentDescription = actionName }
         .border(if (focused) 3.dp else 1.dp, Color.White.copy(alpha = if (focused) 1f else .60f), shape)
         .clickable(interactionSource = interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
         .padding(horizontal = 18.dp, vertical = 10.dp), contentAlignment = Alignment.Center) {

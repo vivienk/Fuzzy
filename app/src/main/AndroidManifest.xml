@@ -70,7 +70,7 @@
              -->
             <meta-data
                 android:name="pico.spatial.windowcontainer.resizerestriction"
-                android:value="1" />
+                android:value="0" />
 
             <!-- Scale type of the WindowContainer
                  "0": WorldScale.Automatic, a system default setting, set to WorldScale.Dynamic currently (default)
