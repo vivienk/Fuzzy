@@ -242,6 +242,52 @@ async function orientOwl(data) {
   finally { URL.revokeObjectURL(url); }
 }
 
+// Run the aurora on the renderer's animation clock alongside the stars.
+async function bakeVillageSky() {
+  const data = await readFile(new URL("../art/skies/village-sky.glb", import.meta.url));
+  const end = 20 + data.readUInt32LE(12);
+  const model = JSON.parse(data.toString("utf8", 20, end));
+  const chunks = [data.subarray(end + 8)];
+  let bytes = chunks[0].length;
+  const clip = model.animations.find(animation => animation.name === "Starlight");
+  const input = clip.samplers[0].input;
+  const times = model.accessors[input];
+  const view = model.bufferViews[times.bufferView];
+  for (const [name, cycles, offset, opacity] of [
+    ["teal-aurora", 6, 2, .35], ["violet-aurora", 5, 5, .29]
+  ]) {
+    const node = model.nodes.findIndex(layer => layer.name === name);
+    const layer = model.nodes[node];
+    const teal = name === "teal-aurora";
+    const material = model.meshes[layer.mesh].primitives[0].material;
+    model.materials[material].pbrMetallicRoughness.baseColorFactor = [1, 1, 1, opacity];
+    for (const path of ["translation", "scale"]) {
+      const values = new Float32Array(times.count * 3);
+      for (let i = 0; i < times.count; i++) {
+        const seconds = chunks[0].readFloatLE(view.byteOffset + (times.byteOffset || 0) + 4*i);
+        const t = .5 - .5*Math.cos(2*Math.PI*(seconds + offset)*cycles/times.max[0]);
+        const stretch = teal ? .88 + .28*t : 1.12 - .22*t;
+        const x = teal ? -32 + 90*t : 28 - 76*t;
+        const y = teal ? -10 + 38*t : 12 - 34*t;
+        values.set(path === "scale" ? [1, stretch, 1] :
+          [x*.002, -y*.00124 + .34*(1-stretch), layer.translation[2]], 3*i);
+      }
+      const bufferView = model.bufferViews.push({buffer:0, byteOffset:bytes, byteLength:values.byteLength}) - 1;
+      const output = model.accessors.push({bufferView, componentType:5126, type:"VEC3", count:times.count}) - 1;
+      const sampler = clip.samplers.push({input, output, interpolation:"LINEAR"}) - 1;
+      clip.channels.push({sampler, target:{node, path}});
+      layer[path] = Array.from(values.subarray(0,3));
+      chunks.push(values);
+      bytes += values.byteLength;
+    }
+  }
+  model.buffers[0].byteLength = bytes;
+  const url = worldGLB(model, chunks, bytes);
+  try { await writeFile(join(output, "village-sky.glb"), Buffer.from(await (await fetch(url)).arrayBuffer())); }
+  finally { URL.revokeObjectURL(url); }
+}
+await bakeVillageSky();
+
 // Keep the bow and ribbon geometry while applying the chosen paper to the box UVs.
 const parcel = await readFile(new URL("../app/src/main/assets/christmas-gift.glb", import.meta.url));
 const parcelHeaderEnd = 20 + parcel.readUInt32LE(12);

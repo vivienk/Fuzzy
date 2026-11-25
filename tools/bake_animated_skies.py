@@ -115,7 +115,8 @@ def bake(world, source):
     doc["buffers"][0]["byteLength"] = len(binary)
     header = json.dumps(doc,separators=(",",":")).encode()
     header += b" "*(-len(header)%4)
-    (ASSETS/f"{world}-sky.glb").write_bytes(struct.pack("<4sIIII",b"glTF",2,28+len(header)+len(binary),len(header),0x4e4f534a)
+    output = ROOT / "art/skies" if world == "village" else ASSETS
+    (output/f"{world}-sky.glb").write_bytes(struct.pack("<4sIIII",b"glTF",2,28+len(header)+len(binary),len(header),0x4e4f534a)
         +header+struct.pack("<II",len(binary),0x004e4942)+binary)
 
 

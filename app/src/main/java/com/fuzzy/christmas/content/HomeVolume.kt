@@ -178,7 +178,6 @@ private class WorldScene(
     val island: WinterWorld,
     val world: Entity,
     val sky: Entity,
-    val auroras: List<Entity?>,
     val parcels: Map<String, Entity>,
     val effectsRoot: Entity?,
     val actionNodes: List<Entity?>,
@@ -368,15 +367,11 @@ private suspend fun loadWorldScene(context: Context, island: WinterWorld): World
             }
         }
         val sky = load(island.name.lowercase()+"-sky.glb")
-        val auroras = listOf("teal-aurora","violet-aurora").map { name ->
-            sky.findEntity(name)?.apply { components.set(OpacityControllerComponent(.3f)) }
-        }
         val parcels = listOf("pine", "berry", "frost").associateWith { load("parcel-$it.glb").also { box -> box.enabled = false } }
 
         val retainedEntities = buildList {
             treeLights?.let(::add)
             addAll(effects.map { it.entity })
-            addAll(auroras.filterNotNull())
             addAll(carrots.filterNotNull())
             addAll(variants.values)
             addAll(parcelParts.flatten())
@@ -388,7 +383,7 @@ private suspend fun loadWorldScene(context: Context, island: WinterWorld): World
         return WorldScene(
             island = island,
             world = scene,
-            sky = sky, auroras = auroras,
+            sky = sky,
             parcels = parcels,
             effectsRoot = effectsRoot,
             actionNodes = actionNodes,
@@ -828,20 +823,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     setPosition(Vector3(-.60f, .15f, 0f))
                     setScaleVector(Vector3(maxOf(.01f, parcelScale)))
                     setEulerAngles(EulerAngles(0f, ribbon * 35f, 0f))
-                }
-                activeWorld.auroras.forEachIndexed { index, layer ->
-                    val teal = index == 0
-                    val t = .5f - .5f * cos(2f * PI.toFloat() *
-                        (clock + (if (teal) 2f else 5f)) / (if (teal) 9f else 13f))
-                    val x = if (teal) -32f + 90f*t else 28f - 76f*t
-                    val y = if (teal) -10f + 38f*t else 12f - 34f*t
-                    val stretch = if (teal) .88f + .28f*t else 1.12f - .22f*t
-                    layer?.transform()?.apply {
-                        setPosition(Vector3(x * .002f, -y * .00124f + .34f*(1f-stretch), .001f*(index+1)))
-                        setScaleVector(Vector3(1f, stretch, 1f))
-                    }
-                    layer?.components?.get(OpacityControllerComponent::class.java)?.opacity =
-                        if (teal) .27f + .16f*t else .23f + .12f*t
                 }
                 activeWorld.carrots.forEachIndexed { index, carrot ->
                     val start = feedStarts[index]

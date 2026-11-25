@@ -12,8 +12,8 @@ android {
         applicationId = "com.fuzzy.christmas"
         minSdk = 35
         targetSdk = 35
-        versionCode = 14
-        versionName = "0.3.9"
+        versionCode = 15
+        versionName = "0.3.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters.add("arm64-v8a") }
@@ -76,6 +76,7 @@ val bakeNativeScenes by tasks.registering(Exec::class) {
         webAssets.resolve("worlds/owl-post-academy.gltf"), webAssets.resolve("gingerbread-village.mjs"),
         webAssets.resolve("north-pole-props.mjs"), webAssets.resolve("santa-flight.mjs"),
         webAssets.resolve("toymakers-workshop.mp3"), webAssets.resolve("worlds/aurora-lit.glb"))
+    inputs.file(rootProject.file("art/skies/village-sky.glb"))
     inputs.dir(rootProject.file("art/wrapping"))
     inputs.file(rootProject.file("app/src/main/assets/christmas-gift.glb"))
     outputs.dir(nativeSceneAssets)
