@@ -6,6 +6,8 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -501,8 +503,20 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
                     }
                 }
                 AttachmentPanel(id = "mailbox") {
-                    Button(onClick = { readMail() }, enabled = !saving, modifier = Modifier.size(100.dp), colors = ButtonDefaults.buttonColors(containerColor = if (editor.read) Cream else Cranberry, contentColor = if (editor.read) Cocoa else Color.White)) {
-                        Text(if (editor.read) "✉" else "✉ 1", fontSize = 30.sp)
+                    val foreground = if (editor.read) Cocoa else Color.White
+                    val background = if (editor.read) Cream else Cranberry
+                    Box(
+                        modifier = Modifier.size(100.dp)
+                            .clickable(enabled = !saving, role = Role.Button, onClickLabel = "Read mailbox") { readMail() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = if (editor.read) "✉" else "✉ 1",
+                            color = foreground,
+                            fontSize = 24.sp,
+                            modifier = Modifier.background(background, RoundedCornerShape(24.dp))
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
                     }
                 }
                 AttachmentPanel(id = "letter") {
