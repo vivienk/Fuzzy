@@ -1017,12 +1017,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 TextField(value = giftPrompt, onValueChange = { giftPrompt = it.take(500) }, modifier = Modifier.fillMaxWidth())
                                 if (pendingIds[editingSlot].isEmpty()) {
-                                    if (slots[editingSlot].isNotEmpty()) Action("Use the saved gift", !startingTask) {
-                                        preparedMask = preparedMask or (1 shl editingSlot)
-                                        openedMask = openedMask and (1 shl editingSlot).inv()
-                                        persistGifts()
-                                        editingSlot = -1
-                                    }
                                     Action("Generate custom gift", !startingTask && giftPrompt.trim().length >= 3) {
                                         if (startingTask) return@Action
                                         val slot = editingSlot
