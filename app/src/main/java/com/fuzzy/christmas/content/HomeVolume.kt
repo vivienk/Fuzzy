@@ -191,6 +191,10 @@ private class WorldScene(
     val carrots: List<Entity?>,
     @Suppress("unused") val retainedEntities: List<Entity>,
 ) {
+    val boxCorners = boxBounds.map { (lo, hi) ->
+        List(8) { i -> Vector3(if (i and 1 == 0) lo.x else hi.x,
+            if (i and 2 == 0) lo.y else hi.y, if (i and 4 == 0) lo.z else hi.z) }
+    }
     private data class MountedGift(val id: String, val anchor: Entity, val fit: Entity, val model: Entity)
     private val generated = mutableMapOf<Int, MountedGift>()
 
@@ -876,6 +880,17 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             val hull = activeScene?.let { visible -> visible.footprint.map { visible.world.convertPositionTo(it, sceneRoot) } }.orEmpty()
             val worldTop = hull.maxOfOrNull { it.y } ?: .4f
             val airGap = if (fit.isFinite() && fit > 0f) .0762f / fit else .0762f
+            fun coverBox(target: Entity, left: Float, right: Float, bottom: Float, top: Float, front: Float) {
+                val face = target.getVisualBounds(target)
+                if (face.size.x <= 0f || face.size.y <= 0f) return
+                val sx = (right - left + .006f) / face.size.x
+                val sy = (top - bottom + .006f) / face.size.y
+                target.transform()?.apply {
+                    setScaleVector(Vector3(sx, sy, 1f))
+                    setPosition(Vector3((left + right) / 2f - sx * face.center.x,
+                        (bottom + top) / 2f - sy * face.center.y, front + .003f - face.min.z))
+                }
+            }
             for (slot in 0..6) {
                 fun place(id: String, node: Entity?, lift: Float, cue: Float) {
                     attachmentEntities[id]?.let { target ->
@@ -888,9 +903,16 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     }
                 }
                 val boxPulse = if ((displayedMask and (1 shl slot)) == 0) cueStrength(slot, clock, paused) else 0f
-                place("box$slot", activeScene?.parcelParts?.getOrNull(slot)?.firstOrNull(), .012f, boxPulse)
                 if (slot in slots.indices) {
-
+                    attachmentEntities["box$slot"]?.let { target ->
+                        target.enabled = activeScene != null && opened && !loading && !showLetter && editingSlot < 0 && !packing
+                        if (target.enabled && activeScene != null) {
+                            val corners = activeScene.boxCorners[slot].map { activeScene.world.convertPositionTo(it, sceneRoot) }
+                            coverBox(target, corners.minOf { it.x }, corners.maxOf { it.x }, corners.minOf { it.y },
+                                corners.maxOf { it.y }, corners.maxOf { it.z })
+                            cueLights["box$slot"]?.intensity = boxPulse * 3f
+                        }
+                    }
                     attachmentEntities["hint$slot"]?.let { hint ->
                         hint.enabled = composingGift && opened && !loading && !showLetter && editingSlot < 0 && !packing &&
                             activeScene != null && !prepared(slot) && pendingIds[slot].isEmpty() && slot !in failures
@@ -925,7 +947,9 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 island == WinterWorld.Village && reaction != slot)
             attachmentEntities["outerBox"]?.let {
                 it.enabled = activeScene != null && intro == "wrapped" && !loading && !packing
-                it.transform()?.setPosition(Vector3(-.60f,.15f,.18f))
+                if (it.enabled) activeScene?.parcels?.get(paper)?.getVisualBounds(sceneRoot)?.let { box ->
+                    coverBox(it, box.min.x, box.min.x + box.size.x, box.min.y, box.min.y + box.size.y, box.min.z + box.size.z)
+                }
             }
             attachmentEntities["giftEntry"]?.enabled = activeScene != null && editingSlot >= 0 && opened
             attachmentEntities["controls"]?.enabled = editingSlot < 0 && !packing && !showLetter && intro != "opening" && intro != "letter"
@@ -953,8 +977,30 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                         val limitY = halfHeight - bounds.size.y * scale / 2f
                         val x = ((hull.minOf { it.x } + rightEdge) / 2f).coerceIn(-limitX, limitX)
                         val y = ((hull.minOf { it.y } + worldTop) / 2f).coerceIn(-limitY, limitY)
-                        val front = hull.maxOf { it.z } + .02f / fit - bounds.min.z * scale
-                        val z = if (physical.z > 0f) minOf(front, physical.z / (2f * fit) - (bounds.min.z + bounds.size.z) * scale - .001f) else front
+                        val islandEntity = activeScene?.world ?: return@let
+                        val liveBounds = islandEntity.getVisualBounds(sceneRoot)
+                        val nearIsland = maxOf(hull.maxOf { it.z }, liveBounds.min.z + liveBounds.size.z)
+                        val farIsland = minOf(hull.minOf { it.z }, liveBounds.min.z)
+                        var paperBack = nearIsland + airGap
+                        if (physical.z > 0f) {
+                            val halfDepth = physical.z / (2f * fit)
+                            val inset = halfDepth * .025f
+                            val paperLimit = halfDepth - inset - bounds.size.z * scale
+                            val gap = minOf(airGap, halfDepth * .35f)
+                            paperBack = minOf(nearIsland + gap, paperLimit)
+                            val nearLimit = paperBack - gap
+                            if (opened && nearIsland > nearLimit) {
+                                val farLimit = -halfDepth + inset
+                                val available = (nearLimit - farLimit).coerceAtLeast(.001f)
+                                val shrink = minOf(1f, available / (nearIsland - farIsland).coerceAtLeast(.001f))
+                                val pivot = island.position
+                                islandEntity.transform()?.apply {
+                                    setScaleVector(Vector3(maxOf(.01f, reveal * island.scale) * shrink))
+                                    setPosition(Vector3(pivot.x, pivot.y, nearLimit - (nearIsland - pivot.z) * shrink))
+                                }
+                            }
+                        }
+                        val z = paperBack - bounds.min.z * scale
                         panel.transform()?.apply {
                             setScaleVector(Vector3(scale))
                             setPosition(Vector3(x - bounds.center.x * scale, y - bounds.center.y * scale, z))
@@ -1138,7 +1184,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     ObjectTarget(if (island == WinterWorld.Academy) "Read the owl’s letter" else "Read mailbox", 11, clock, paused, !saving) { readMail() }
                 }
                 AttachmentPanel(id = "letter") {
-                    Column(Modifier.width(700.dp).heightIn(max = 900.dp).glassPanel(32).padding(32.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                    Column(Modifier.width(700.dp).heightIn(max = 900.dp).background(Color(0xFFFFF6E6), RoundedCornerShape(32.dp)).padding(32.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                         Text("A LITTLE LETTER, JUST FOR YOU", color = Cranberry, fontSize = 16.sp)
                         Text("From my world to yours", color = Cocoa, fontSize = 28.sp, fontWeight = FontWeight.Bold)
                         Text(if (!creating) SANTA_NOTE else if (preview) draft.trim().ifEmpty { DEFAULT_NOTE } + "\n\n" + sender.ifBlank { "Someone who loves you" } else editor.note, color = Cocoa, fontFamily = FontFamily.Cursive, fontSize = 32.sp, lineHeight = 46.sp)
