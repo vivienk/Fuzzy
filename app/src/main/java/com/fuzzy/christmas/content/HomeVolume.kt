@@ -401,14 +401,12 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             }
             attachments.entity("controls")?.let {
                 attachmentEntities["controls"] = it
-                // Keep the complete editor inside the default PICO emulator/headset view.
-                // At x=1.0m the attachment's interactive half was outside the right edge.
-                it.transform()?.setPosition(Vector3(.68f, .18f, .42f))
+                it.transform()?.setPosition(Vector3(.68f, .18f, island.position.z))
                 content.addEntity(it)
             }
             attachments.entity("title")?.let {
                 attachmentEntities["title"] = it
-                it.transform()?.setPosition(Vector3(-.45f, .82f, .10f))
+                it.transform()?.setPosition(Vector3(-.45f, .82f, island.position.z))
                 content.addEntity(it)
             }
             attachments.entity("mailbox")?.let {
@@ -419,7 +417,7 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             attachments.entity("letter")?.let {
                 attachmentEntities["letter"] = it
                 it.enabled = false
-                it.transform()?.setPosition(Vector3(-.40f, .22f, 1.0f))
+                it.transform()?.setPosition(Vector3(-.40f, .22f, island.position.z + .06f))
                 content.addEntity(it)
             }
         },
