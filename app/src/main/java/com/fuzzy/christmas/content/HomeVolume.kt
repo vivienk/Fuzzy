@@ -419,6 +419,10 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     var openedMask by remember(island, session) { mutableIntStateOf(
         if (prefs.getString("reveal_session", null) == session) prefs.getInt("unwrapped_slots", 0) else 0
     ) }
+    var preparedMask by remember(island, session) { mutableIntStateOf(
+        if (prefs.getString("reveal_session", null) == session) prefs.getInt("prepared_slots", 0) else 0
+    ) }
+    fun prepared(slot: Int) = (preparedMask and (1 shl slot)) != 0
     var giftPrompt by remember(island) { mutableStateOf("") }
     var pendingIds by remember(island) { mutableStateOf(List(3) { prefs.getString("task_$it", "").orEmpty() }) }
 
@@ -456,7 +460,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     val retries = remember(island) { mutableStateMapOf<Int,Int>() }
     fun persistGifts() {
         prefs.edit().putString("gift_slots", slots.joinToString("|"))
-            .putString("reveal_session", session).putInt("unwrapped_slots", openedMask).apply()
+            .putInt("prepared_slots", preparedMask).putString("reveal_session", session).putInt("unwrapped_slots", openedMask).apply()
     }
     var currentScene by remember { mutableStateOf<WorldScene?>(null) }
     fun activateSlot(slot: Int) {
@@ -465,7 +469,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
         if (slot in failures) {
             failures.remove(slot)
             retries[slot] = (retries[slot] ?: 0) + 1
-        } else if (pendingIds[slot].isNotEmpty() || slots[slot].isEmpty()) editingSlot = slot
+        } else if (pendingIds[slot].isNotEmpty() || !prepared(slot) || slots[slot].isEmpty()) editingSlot = slot
         else if (currentScene?.takeIf { it.island == island }?.variants?.containsKey(slot to slots[slot]) != true) return
         else if ((openedMask and (1 shl slot)) == 0) {
             revealing = slot
@@ -523,6 +527,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 awaitGift(taskId) { value -> if (value != null) progress[slot] = value }
                 giftFile(context,taskId)
                 if (pendingIds[slot] != taskId) return@LaunchedEffect
+                preparedMask = preparedMask or (1 shl slot)
                 slots = slots.toMutableList().also { it[slot] = taskId }
                 openedMask = openedMask and (1 shl slot).inv()
                 persistGifts()
@@ -936,13 +941,26 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             Text("Choose a gift for box ${editingSlot + 1}", color = Cocoa)
                             TextField(value = giftPrompt, onValueChange = { giftPrompt = it.take(500) }, modifier = Modifier.fillMaxWidth())
                             if (pendingIds[editingSlot].isEmpty()) {
+                                if (slots[editingSlot].isNotEmpty()) Action("Use the saved gift", !startingTask) {
+                                    preparedMask = preparedMask or (1 shl editingSlot)
+                                    openedMask = openedMask and (1 shl editingSlot).inv()
+                                    persistGifts()
+                                    editingSlot = -1
+                                }
                                 Action("Generate custom gift", !startingTask && giftPrompt.trim().length >= 3) {
                                     if (startingTask) return@Action
                                     val slot = editingSlot
                                     val prompt = giftPrompt
                                     startingTask = true
                                     islandScope.launch {
-                                        try { pending(slot,startGift(prompt)); editingSlot = -1; giftPrompt = "" }
+                                        try {
+                                            val task = startGift(prompt)
+                                            pending(slot, task)
+                                            openedMask = openedMask and (1 shl slot).inv()
+                                            persistGifts()
+                                            editingSlot = -1
+                                            giftPrompt = ""
+                                        }
                                         catch(e: CancellationException) { throw e }
                                         catch(e: Exception) { entryError = e.message ?: "Could not start generation." }
                                         finally { startingTask = false }
@@ -957,6 +975,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                                     for (kind in row) Action(kind.replace('-', ' ').replaceFirstChar { it.uppercase() }, !startingTask) {
                                         failures.remove(editingSlot)
                                         pending(editingSlot,"")
+                                        preparedMask = preparedMask or (1 shl editingSlot)
                                         slots = slots.toMutableList().also { it[editingSlot] = kind }
                                         openedMask = openedMask and (1 shl editingSlot).inv()
                                         persistGifts()
@@ -995,7 +1014,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             Action((if (choice == island) "✓ " else "") + choice.title, enabled = choice != island && !saving && !loading && !startingTask) { select(choice) }
                         }
                         if (opened && error == null) {
-                            val readySlot = slots.indices.firstOrNull { slots[it].isNotEmpty() && pendingIds[it].isEmpty() && (openedMask and (1 shl it)) == 0 && currentScene?.variants?.containsKey(it to slots[it]) == true }
+                            val readySlot = slots.indices.firstOrNull { prepared(it) && slots[it].isNotEmpty() && pendingIds[it].isEmpty() && (openedMask and (1 shl it)) == 0 && currentScene?.variants?.containsKey(it to slots[it]) == true }
                             Text(when {
                                 pendingIds.any { it.isNotEmpty() } -> "Your gift is taking shape."
                                 readySlot != null -> "Your gift is ready to unwrap."
@@ -1007,7 +1026,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                                 val name = when {
                                     slot in failures -> "Retry · ${failures[slot]}"
                                     pendingIds[slot].isNotEmpty() -> progress[slot]?.let { "Generating $it%" } ?: "Generating…"
-                                    slots[slot].isEmpty() -> "Choose gift"
+                                    !prepared(slot) || slots[slot].isEmpty() -> "Choose gift"
                                     (openedMask and (1 shl slot)) == 0 -> "Unwrap"
                                     else -> "Inspect"
                                 }
@@ -1029,7 +1048,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             Action("Add note to mailbox", !saving && draft.isNotBlank()) {
                                 editor.withNote(draft)?.let { save(it, "Your note is in the mailbox. Tap the letter carrier.") }
                             }
-                            if (slots.all { it.isNotEmpty() } && pendingIds.all { it.isEmpty() } && !startingTask && failures.isEmpty() && slots.indices.all { currentScene?.variants?.containsKey(it to slots[it]) == true }) Action("Wrap their world") { packing = !packing }
+                            if (slots.indices.all(::prepared) && slots.all { it.isNotEmpty() } && pendingIds.all { it.isEmpty() } && !startingTask && failures.isEmpty() && slots.indices.all { currentScene?.variants?.containsKey(it to slots[it]) == true }) Action("Wrap their world") { packing = !packing }
                             soundtrackPicker()
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 if (island == WinterWorld.Village) Action(if (lit) "Lights off" else "Light the tree", !saving) { greeting = greeting.toggleLights() }
