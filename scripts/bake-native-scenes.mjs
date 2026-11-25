@@ -242,6 +242,26 @@ async function orientOwl(data) {
   finally { URL.revokeObjectURL(url); }
 }
 
+// Keep the bow and ribbon geometry while applying the chosen paper to the box UVs.
+const parcel = await readFile(new URL("../app/src/main/assets/christmas-gift.glb", import.meta.url));
+const parcelHeaderEnd = 20 + parcel.readUInt32LE(12);
+const parcelBinary = parcel.subarray(parcelHeaderEnd + 8);
+for (const paper of ["pine", "berry", "frost"]) {
+  const model = JSON.parse(parcel.toString("utf8", 20, parcelHeaderEnd));
+  const png = await readFile(new URL("../art/wrapping/" + paper + ".png", import.meta.url));
+  const view = model.bufferViews.push({buffer:0, byteOffset:parcelBinary.length, byteLength:png.length}) - 1;
+  model.images = [{bufferView:view,mimeType:"image/png"}];
+  model.textures = [{source:0}];
+  const surface = model.materials.find(material => material.name === "Cranberry").pbrMetallicRoughness;
+  surface.baseColorFactor = [1,1,1,1];
+  surface.baseColorTexture = {index:0};
+  const bin = Buffer.concat([parcelBinary,png,Buffer.alloc((4-png.length%4)%4)]);
+  model.buffers[0].byteLength = bin.length;
+  const url = worldGLB(model, [bin], bin.length);
+  try { await writeFile(join(output,"parcel-" + paper + ".glb"),Buffer.from(await (await fetch(url)).arrayBuffer())); }
+  finally { URL.revokeObjectURL(url); }
+}
+
 const metadata = [];
 const villageSource = URL.createObjectURL(new Blob([await villageGeometry(true)], { type: "model/gltf-binary" }));
 let animatedVillage;

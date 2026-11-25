@@ -177,7 +177,7 @@ private class WorldScene(
     val world: Entity,
     val sky: Entity,
     val auroras: List<Entity?>,
-    val gift: Entity,
+    val parcels: Map<String, Entity>,
     val effectsRoot: Entity?,
     val actionNodes: List<Entity?>,
     val treeLights: Entity?,
@@ -247,14 +247,13 @@ private class WorldScene(
     var playback: AnimationPlaybackController? = null
 
     @MainThread
-    fun attachTo(root: Entity) {
-        root.addChild(sky)
-        sky.transform()?.setPosition(Vector3(-.36f,.23f,-.64f))
+    fun attachTo(root: Entity, backdrop: Entity) {
+        backdrop.addChild(sky)
         sky.getAnimationResources().firstOrNull { it.getName() == "Starlight" }?.let {
             skyPlayback = sky.playAnimation(it.repeat(Int.MAX_VALUE))
         }
         root.addChild(world)
-        root.addChild(gift)
+        parcels.values.forEach { root.addChild(it) }
         island.animation?.let { animationName ->
             world.getAnimationResources().firstOrNull { it.getName() == animationName }?.let {
                 playback = world.playAnimation(it.repeat(Int.MAX_VALUE))
@@ -275,7 +274,7 @@ private class WorldScene(
                 entity.destroy()
             }
         }
-        listOf(world, gift, sky).forEach { entity ->
+        (parcels.values + listOf(world, sky)).forEach { entity ->
             if (entity.valid) {
                 entity.removeFromParent()
                 entity.destroy()
@@ -366,7 +365,7 @@ private suspend fun loadWorldScene(context: Context, island: WinterWorld): World
         val auroras = listOf("teal-aurora","violet-aurora").map { name ->
             sky.findEntity(name)?.apply { components.set(OpacityControllerComponent(.3f)) }
         }
-        val present = load("christmas-gift.glb")
+        val parcels = listOf("pine", "berry", "frost").associateWith { load("parcel-$it.glb").also { box -> box.enabled = false } }
 
         val retainedEntities = buildList {
             treeLights?.let(::add)
@@ -384,7 +383,7 @@ private suspend fun loadWorldScene(context: Context, island: WinterWorld): World
             island = island,
             world = scene,
             sky = sky, auroras = auroras,
-            gift = present,
+            parcels = parcels,
             effectsRoot = effectsRoot,
             actionNodes = actionNodes,
             treeLights = treeLights,
@@ -530,6 +529,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     var attempt by remember(island) { mutableIntStateOf(0) }
     var clock by remember(island) { mutableFloatStateOf(0f) }
     val sceneRoot = remember { Entity() }
+    val backdrop = remember { Entity() }
     val attachmentEntities = remember { mutableMapOf<String, Entity>() }
 
     var pendingScene by remember { mutableStateOf<WorldScene?>(null) }
@@ -621,6 +621,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             }
             attachmentEntities.clear()
             if (sceneRoot.valid) sceneRoot.destroy()
+            if (backdrop.valid) backdrop.destroy()
         }
     }
     LaunchedEffect(island, attempt) {
@@ -707,6 +708,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             volumePixels = it.findRootCoordinates().sizeIn3D
         },
         initial = { content, attachments ->
+            content.addEntity(backdrop)
             content.addEntity(sceneRoot)
             attachments.entity("controls")?.let {
                 attachmentEntities["controls"] = it
@@ -760,7 +762,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             pendingScene?.let { incoming ->
                 if (incoming.island == island) {
                     scene?.destroy()
-                    incoming.attachTo(sceneRoot)
+                    incoming.attachTo(sceneRoot, backdrop)
                     currentScene = incoming
                     scene = incoming
 
@@ -773,24 +775,25 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             }
 
             val activeScene = scene?.takeIf { it.island == island }
-            scene?.world?.enabled = activeScene != null && reveal > .15f
+            val parcelScale = if (packing) 1f else 1f - reveal
+            scene?.world?.enabled = activeScene != null && !packing && reveal > .15f
             scene?.sky?.enabled = activeScene != null
             if (activeScene != null && fit > 0f && fit.isFinite()) {
                 activeScene.sky.transform()?.apply {
-                    setPosition(Vector3(0f, 0f, -.64f))
-                    setScaleVector(Vector3(physical.x / (2.4f * fit), physical.y / (1.24f * fit), 1f))
+                    setPosition(Vector3(0f, 0f, -.64f * fit))
+                    setScaleVector(Vector3(physical.x / 2.4f, physical.y / 1.24f, fit))
                 }
             }
-            scene?.gift?.enabled = activeScene != null && reveal < .95f
+            scene?.parcels?.forEach { (id, box) -> box.enabled = activeScene != null && id == paper && parcelScale > .05f }
             activeScene?.let { activeWorld ->
                 activeWorld.world.transform()?.apply {
                     setPosition(island.position)
                     setScaleVector(Vector3(maxOf(.01f, reveal * island.scale)))
                     setEulerAngles(EulerAngles(0f, island.viewYaw + angle, 0f))
                 }
-                activeWorld.gift.transform()?.apply {
+                activeWorld.parcels[paper]?.transform()?.apply {
                     setPosition(Vector3(-.60f, .15f, 0f))
-                    setScaleVector(Vector3(maxOf(.01f, 1f - reveal)))
+                    setScaleVector(Vector3(maxOf(.01f, parcelScale)))
                     setEulerAngles(EulerAngles(0f, reveal * 120f, 0f))
                 }
                 activeWorld.auroras.forEachIndexed { index, layer ->
@@ -1006,57 +1009,59 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 }
                 AttachmentPanel(id = "giftEntry") {
                     if (editingSlot in slots.indices) {
-                        Column(Modifier.width(660.dp).heightIn(max = 900.dp).glassPanel(28).verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(Modifier.width(660.dp).heightIn(max = 900.dp).glassPanel(28).padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text("Create gift · Box ${editingSlot + 1}", color = Cocoa, fontSize = 25.sp)
-                                Action("×", !startingTask, actionName = "Close gift window") { editingSlot = -1 }
+                                Action("×", actionName = "Close gift window") { editingSlot = -1 }
                             }
-                            TextField(value = giftPrompt, onValueChange = { giftPrompt = it.take(500) }, modifier = Modifier.fillMaxWidth())
-                            if (pendingIds[editingSlot].isEmpty()) {
-                                if (slots[editingSlot].isNotEmpty()) Action("Use the saved gift", !startingTask) {
-                                    preparedMask = preparedMask or (1 shl editingSlot)
-                                    openedMask = openedMask and (1 shl editingSlot).inv()
-                                    persistGifts()
-                                    editingSlot = -1
-                                }
-                                Action("Generate custom gift", !startingTask && giftPrompt.trim().length >= 3) {
-                                    if (startingTask) return@Action
-                                    val slot = editingSlot
-                                    val prompt = giftPrompt
-                                    startingTask = true
-                                    islandScope.launch {
-                                        try {
-                                            val task = startGift(prompt)
-                                            pending(slot, task)
-                                            openedMask = openedMask and (1 shl slot).inv()
-                                            persistGifts()
-                                            editingSlot = -1
-                                            giftPrompt = ""
-                                        }
-                                        catch(e: CancellationException) { throw e }
-                                        catch(e: Exception) { entryError = e.message ?: "Could not start generation." }
-                                        finally { startingTask = false }
-                                    }
-                                }
-                            } else {
-                                Action("Check this gift again") { retries[editingSlot] = (retries[editingSlot] ?: 0) + 1 }
-                                Action("Discard pending gift") { pending(editingSlot,"") }
-                            }
-                            giftKinds.chunked(2).forEach { row ->
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    for (kind in row) Action(kind.replace('-', ' ').replaceFirstChar { it.uppercase() }, !startingTask) {
-                                        failures.remove(editingSlot)
-                                        pending(editingSlot,"")
+                            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                TextField(value = giftPrompt, onValueChange = { giftPrompt = it.take(500) }, modifier = Modifier.fillMaxWidth())
+                                if (pendingIds[editingSlot].isEmpty()) {
+                                    if (slots[editingSlot].isNotEmpty()) Action("Use the saved gift", !startingTask) {
                                         preparedMask = preparedMask or (1 shl editingSlot)
-                                        slots = slots.toMutableList().also { it[editingSlot] = kind }
                                         openedMask = openedMask and (1 shl editingSlot).inv()
                                         persistGifts()
                                         editingSlot = -1
-                                        inspecting = -1
+                                    }
+                                    Action("Generate custom gift", !startingTask && giftPrompt.trim().length >= 3) {
+                                        if (startingTask) return@Action
+                                        val slot = editingSlot
+                                        val prompt = giftPrompt
+                                        startingTask = true
+                                        islandScope.launch {
+                                            try {
+                                                val task = startGift(prompt)
+                                                pending(slot, task)
+                                                openedMask = openedMask and (1 shl slot).inv()
+                                                persistGifts()
+                                                editingSlot = -1
+                                                giftPrompt = ""
+                                            }
+                                            catch(e: CancellationException) { throw e }
+                                            catch(e: Exception) { entryError = e.message ?: "Could not start generation." }
+                                            finally { startingTask = false }
+                                        }
+                                    }
+                                } else {
+                                    Action("Check this gift again") { retries[editingSlot] = (retries[editingSlot] ?: 0) + 1 }
+                                    Action("Discard pending gift") { pending(editingSlot,"") }
+                                }
+                                giftKinds.chunked(2).forEach { row ->
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        for (kind in row) Action(kind.replace('-', ' ').replaceFirstChar { it.uppercase() }, !startingTask) {
+                                            failures.remove(editingSlot)
+                                            pending(editingSlot,"")
+                                            preparedMask = preparedMask or (1 shl editingSlot)
+                                            slots = slots.toMutableList().also { it[editingSlot] = kind }
+                                            openedMask = openedMask and (1 shl editingSlot).inv()
+                                            persistGifts()
+                                            editingSlot = -1
+                                            inspecting = -1
+                                        }
                                     }
                                 }
+                                if (entryError.isNotEmpty()) Text(entryError, color = Cranberry)
                             }
-                            if (entryError.isNotEmpty()) Text(entryError, color = Cranberry)
                         }
                     }
                 }
@@ -1082,6 +1087,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                         if (opened && !creating && error == null) {
                             Text("Explore this island, then make one for someone you love.", color = Cocoa)
                             Action("Create your own world", !loading) { creating = true }
+                            Action(if (playing) "Pause music" else "Play Toymaker’s Workshop", soundtrack != null) { musicEnabled = !playing }
                         } else if (opened && error == null) {
                             val readySlot = slots.indices.firstOrNull { prepared(it) && slots[it].isNotEmpty() && pendingIds[it].isEmpty() && (openedMask and (1 shl it)) == 0 && currentScene?.variants?.containsKey(it to slots[it]) == true }
                             Text(when {
