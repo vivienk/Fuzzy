@@ -12,8 +12,8 @@ android {
         applicationId = "com.fuzzy.christmas"
         minSdk = 35
         targetSdk = 35
-        versionCode = 9
-        versionName = "0.3.4"
+        versionCode = 11
+        versionName = "0.3.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters.add("arm64-v8a") }
