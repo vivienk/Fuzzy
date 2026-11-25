@@ -72,7 +72,8 @@ globalThis.window = globalThis;
 await import("../prototype/web/assets/decorations.js");
 
 const output = resolve(process.argv[2]);
-await mkdir(output, { recursive: true });
+const effectsOutput = join(output, "world-effects");
+await mkdir(effectsOutput, { recursive: true });
 const originalFetch = globalThis.fetch;
 globalThis.fetch = async (input, options) => {
   if ((input instanceof URL && input.protocol === "file:") || (typeof input === "string" && input.startsWith("file:"))) {
@@ -176,9 +177,9 @@ async function writeEffects(name, emitters) {
   model.scenes = [{nodes:model.nodes.map((_,i)=>i)}]; model.scene=0;
   const bin=template.subarray(jsonEnd+8);
   const url=worldGLB(model,[bin],bin.length);
-  try { await writeFile(join(output,name+"-effects.glb"),Buffer.from(await (await fetch(url)).arrayBuffer())); }
+  try { await writeFile(join(effectsOutput,name+"-effects.glb"),Buffer.from(await (await fetch(url)).arrayBuffer())); }
   finally { URL.revokeObjectURL(url); }
-  await writeFile(join(output,name+"-effects.json"),JSON.stringify(entries));
+  await writeFile(join(effectsOutput,name+"-effects.json"),JSON.stringify(entries));
 }
 
 const metadata = [];

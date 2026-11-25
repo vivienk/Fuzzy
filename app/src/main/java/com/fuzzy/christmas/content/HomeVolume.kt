@@ -255,7 +255,7 @@ private suspend fun loadWorldScene(context: Context, island: WinterWorld): World
         val scene = load(island.asset)
         val treeLights = scene.findEntity("TreeLights")?.also { it.enabled = false }
 
-        val effectName = island.name.lowercase() + "-effects"
+        val effectName = "world-effects/" + island.name.lowercase() + "-effects"
         val effectsRoot = if (island == WinterWorld.Candy) null else load("$effectName.glb").also { scene.addChild(it) }
         val effects = if (effectsRoot == null) emptyList() else {
             val entries = context.assets.open("$effectName.json").bufferedReader().use { org.json.JSONArray(it.readText()) }

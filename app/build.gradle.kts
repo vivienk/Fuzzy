@@ -67,7 +67,7 @@ configurations.all {
     }
 }
 
-val nativeSceneAssets = layout.buildDirectory.dir("generated/fuzzySceneAssets")
+val nativeSceneAssets = layout.buildDirectory.dir("generated/fuzzyWorldAssets")
 val bakeNativeScenes by tasks.registering(Exec::class) {
     val exporter = rootProject.file("scripts/bake-native-scenes.mjs")
     val webAssets = rootProject.file("prototype/web/assets")
