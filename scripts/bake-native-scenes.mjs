@@ -163,6 +163,13 @@ async function writeEffects(name, emitters) {
   const jsonEnd = 20 + template.readUInt32LE(12);
   const model = JSON.parse(template.toString("utf8",20,jsonEnd));
   const templates = new Map(model.nodes.map(node => [node.name.split("_")[0],node.mesh]));
+  const tint = {village:[1,.70,.27], academy:[.77,.78,1], candy:[1,.77,.50]}[name];
+  for (const [i, material] of model.materials.entries()) {
+    if (i > 1) continue;
+    const palette = i === 0 ? tint : tint.map(value => (1 + value) / 2);
+    material.emissiveFactor = palette.map(value => value * .35);
+    material.pbrMetallicRoughness.baseColorFactor = [...palette, i === 0 ? .70 : .9];
+  }
   const entries = [];
   model.nodes = [];
   for (const {kind,position} of emitters) {
@@ -180,6 +187,59 @@ async function writeEffects(name, emitters) {
   try { await writeFile(join(effectsOutput,name+"-effects.glb"),Buffer.from(await (await fetch(url)).arrayBuffer())); }
   finally { URL.revokeObjectURL(url); }
   await writeFile(join(effectsOutput,name+"-effects.json"),JSON.stringify(entries));
+}
+
+function candyWindows(model) {
+  const windows = [];
+  function visit(index, parent) {
+    const node = model.nodes[index];
+    const transform = parent.multiply(nodeMatrix(node));
+    if (node.name === "cube gold" && node.scale?.[2] < .03) {
+      const point = transform.transformPoint(new DOMPoint(0, 0, 2));
+      windows.push({kind: "window", position: [point.x, point.y, point.z]});
+    }
+    for (const child of node.children || []) visit(child, transform);
+  }
+  model.scenes[model.scene || 0].nodes.forEach(index => visit(index, new DOMMatrix()));
+  return windows;
+}
+
+// The web clip supplies the position and wings. Add only the missing facing track,
+// using the same timestamps and a cyclic tangent so the last key matches the first.
+async function orientOwl(data) {
+  const end = 20 + data.readUInt32LE(12);
+  const model = JSON.parse(data.toString("utf8", 20, end));
+  const clip = model.animations.find(clip => clip.name === "Winter post");
+  const index = model.nodes.findIndex(node => node.name === "Letter delivery owl");
+  const path = model.nodes[index].extras.mailFlight;
+  const translation = clip.channels.find(c => c.target.node === index && c.target.path === "translation");
+  const bin = data.subarray(end + 8);
+  const rotations = [];
+  let previous;
+  for (let i = 0; i < path.length; i++) {
+    const before = path[(i + path.length - 2) % (path.length - 1)];
+    const after = path[(i + 1) % (path.length - 1)];
+    const yaw = Math.atan2(after[1] - before[1], after[3] - before[3]);
+    const q = [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)];
+    if (previous && q[1] * previous[1] + q[3] * previous[3] < 0) q.forEach((v,j) => q[j] = -v);
+    rotations.push(...q);
+    previous = q;
+  }
+  const values = new Float32Array(rotations);
+  const view = model.bufferViews.push({buffer:0,byteOffset:bin.length,byteLength:values.byteLength}) - 1;
+  const output = model.accessors.push({bufferView:view,componentType:5126,type:"VEC4",count:path.length}) - 1;
+  const sampler = clip.samplers.push({input:clip.samplers[translation.sampler].input,output,interpolation:"LINEAR"}) - 1;
+  clip.channels.push({sampler,target:{node:index,path:"rotation"}});
+  // PICO resolves animated joints by name; four different wings otherwise share "Wing".
+  const seen = new Set();
+  for (const [i,node] of model.nodes.entries()) {
+    if (seen.has(node.name)) node.name += " " + i;
+    seen.add(node.name);
+  }
+  model.buffers[0].byteLength = bin.length + values.byteLength;
+  const url = worldGLB(model,[bin,values],model.buffers[0].byteLength);
+  try { return Buffer.from(await (await fetch(url)).arrayBuffer()); }
+  finally { URL.revokeObjectURL(url); }
 }
 
 const metadata = [];
@@ -200,7 +260,11 @@ for (const kind of ["academy", "candy"]) {
   const url = await stationWorld(kind);
   const data = Buffer.from(await (await fetch(url)).arrayBuffer());
   URL.revokeObjectURL(url);
-  const normalized = await normalizedScene(data, kind);
+  if (kind === "candy") {
+    const model = JSON.parse(data.toString("utf8", 20, 20 + data.readUInt32LE(12)));
+    await writeEffects(kind, candyWindows(model));
+  }
+  const normalized = await normalizedScene(kind === "academy" ? await orientOwl(data) : data, kind);
   metadata.push(normalized.metadata);
   await writeFile(join(output, kind + ".glb"), normalized.data);
 }
