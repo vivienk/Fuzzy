@@ -197,6 +197,10 @@ body.receiving #quill{display:none}
 #quill{display:grid;place-items:center;width:44px;height:44px;padding:9px;border-radius:50%;color:#503318;background:#f2d799}
 #quill svg{width:23px;height:23px}
 #village-letter:has(#letter-form:not([hidden])) .letter-heart{display:none}
+#village-letter[open]{position:fixed;inset:auto;margin:0;max-height:90vh;overflow:auto}
+body.receiving #world{transition:opacity 1.2s ease}
+body.receiving:not(.world-revealed) #world{opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){body.receiving #world{transition:none}}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -397,17 +401,32 @@ function markMailRead(){
   try{localStorage.setItem(mailboxReadKey(),JSON.stringify({...readMailWorlds(),[world.dataset.kind]:true}));}catch{}
 }
 function displayLetter(){note.textContent=villageNote;note.hidden=false;edit.hidden=false;form.hidden=true;}
+function positionLetter(){
+  if(!letter.open)return;
+  const island=world.getBoundingClientRect(),card=letter.getBoundingClientRect();
+  const inset=(center,size,viewport)=>Math.max(0,Math.min(viewport-size,center-size/2));
+  letter.style.left=inset(island.left+island.width/2,card.width,innerWidth)+"px";
+  letter.style.top=inset(island.top+island.height/2,card.height,innerHeight)+"px";
+}
+new ResizeObserver(positionLetter).observe(letter);
+window.addEventListener("resize",positionLetter);
+window.addEventListener("scroll",positionLetter,{passive:true});
+function parcelLetter(){
+  const sender=(parcelParams.get("sender")||"").trim().slice(0,60);
+  displayLetter();note.textContent=(parcel.note||villageNote)+(sender?"\n\n"+sender:"");edit.hidden=true;
+}
+function showMailCard(){if(!letter.open)letter.showModal();positionLetter();}
 function openLetter(){
   if(!parcel&&!savedMailNote().trim()){composeMail();return;}
   if(parcel){villageNote=parcel.note||villageNote;}else try{const state=readEditor();if(state.note?.trim())villageNote=state.note;localStorage.setItem(editorKey,JSON.stringify({...state,read:true}));}catch{}
   markMailRead();
-  world.querySelector(".mail-open")?.classList.add("read");statusLine.textContent="";displayLetter();edit.hidden=!!parcel;syncGuide();letter.showModal();
+  world.querySelector(".mail-open")?.classList.add("read");statusLine.textContent="";displayLetter();if(parcel)parcelLetter();syncGuide();showMailCard();
 }
 function composeMail(){
   if(parcel)return;
   form.hidden=false;edit.hidden=true;note.hidden=true;
   input.value=savedMailNote();input.setCustomValidity("");statusLine.textContent="";
-  if(!letter.open)letter.showModal();
+  showMailCard();
   input.focus();
 }
 edit.onclick=composeMail;
@@ -505,7 +524,10 @@ document.querySelector("#delivery").onsubmit=e=>{
 document.querySelector("#copy-parcel").onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector("#gift-url").href);sendStatus.textContent="Gift link copied.";}catch{const field=document.createElement("textarea");field.readOnly=true;field.value=parcelURL();sendStatus.replaceChildren(field);field.select();}};
 if(parcel){
   document.body.classList.add("receiving");arrival.dataset.paper=parcel.paper;
-  arrival.addEventListener("close",()=>{friendWorld.hidden=false;},{once:true});
+  arrival.addEventListener("close",()=>{
+    parcelLetter();showMailCard();
+    letter.addEventListener("close",()=>{document.body.classList.add("world-revealed");friendWorld.hidden=false;},{once:true});
+  },{once:true});
   arrival.addEventListener("cancel",e=>e.preventDefault());arrival.showModal();
   document.querySelector("#unfold").onclick=e=>{e.currentTarget.disabled=true;const sender=(parcelParams.get("sender")||"").trim().slice(0,60);document.querySelector("#album-heading").textContent=sender?"Music shared by "+sender:"Music shared with you";window.dispatchEvent(new Event("gift-soundtrack-start"));arrival.classList.add("unfolding");setTimeout(()=>arrival.close(),matchMedia("(prefers-reduced-motion: reduce)").matches?0:850);};
 }

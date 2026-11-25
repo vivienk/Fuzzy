@@ -96,7 +96,7 @@ private enum class WinterWorld(
         "North Pole – Santa Village",
         "north-pole.glb",
         Vector3(0f, .28f, 0f),
-        Vector3(-.372f, -.008f, .008f),
+        Vector3(-.312f, -.008f, .008f),
         .05173221f,
         -18f,
         "Santa flight",
@@ -105,7 +105,7 @@ private enum class WinterWorld(
         "Wizardry Magic Christmas",
         "academy.glb",
         Vector3(0f, .28f, 0f),
-        Vector3(-.354f, -.131f, 0f),
+        Vector3(-.294f, -.131f, 0f),
         .06728761f,
         -30f,
         "Winter post",
@@ -114,7 +114,7 @@ private enum class WinterWorld(
         "Funky Candy Land",
         "candy.glb",
         Vector3(0f, .28f, 0f),
-        Vector3(-.363f, -.115f, -.004f),
+        Vector3(-.303f, -.115f, -.004f),
         .06753891f,
         -30f,
         "Candy village greetings",
@@ -148,8 +148,10 @@ private fun WinterWorld.actions() = when (this) {
         SceneAction("Owl post broom rider", "Broom ride"),
     )
 }
-private const val EDITOR_URL = "https://fuzzy-preview-git-fix-native-c-6233bc-viviens-projects-842ec178.vercel.app/receive"
-private val giftKinds = listOf("bicycle", "gift", "reindeer", "snowman", "lantern", "igloo", "candy-cane")
+private const val EDITOR_URL = "https://fuzzy-preview-git-fix-native-a-2eccb7-viviens-projects-842ec178.vercel.app/receive"
+private val welcomeGifts = listOf("hot-cocoa", "snowman", "bicycle")
+private const val SANTA_NOTE = "Dear friend,\n\nI saved a little corner of Christmas for you. There’s cocoa to warm your hands and three surprises tucked into the snow. Open them whenever you’re ready.\n\nWith love,\nSanta"
+private val giftKinds = listOf("hot-cocoa", "bicycle", "gift", "reindeer", "snowman", "lantern", "igloo", "candy-cane")
 private val spotifyAlbums = mapOf("charlie" to "2XnNY3GEkbWHor5kyvXLu4", "buble" to "3CKVXhODttZebJAzjUs2un", "mariah" to "0cS9prZ8u3fdbc7lmtCaMV", "festive-commotion" to "57inreLG2hAF7YYt1W9nnL")
 private val albumNames = linkedMapOf(
     "charlie" to "A Charlie Brown Christmas · Vince Guaraldi Trio",
@@ -422,6 +424,11 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     val prefs = remember(island) { context.getSharedPreferences(if (island == WinterWorld.Village) "fuzzy_keepsakes_v2" else "fuzzy_keepsakes_${island.name}", 0) }
     val scope = rememberCoroutineScope()
     var creating by androidx.compose.runtime.saveable.rememberSaveable(session) { mutableStateOf(false) }
+    var preview by androidx.compose.runtime.saveable.rememberSaveable(session) { mutableStateOf(false) }
+    val composingGift = creating && !preview
+    var intro by androidx.compose.runtime.saveable.rememberSaveable(session) { mutableStateOf("wrapped") }
+    var receivedMask by androidx.compose.runtime.saveable.rememberSaveable(session, island.name, preview) { mutableIntStateOf(0) }
+    var deliveryRead by androidx.compose.runtime.saveable.rememberSaveable(session, island.name, preview) { mutableStateOf(false) }
     var unwrapped by androidx.compose.runtime.saveable.rememberSaveable(session) { mutableStateOf(false) }
     var greeting by remember(island, session) { mutableStateOf(GreetingState(opened = unwrapped, lightsOn = prefs.getBoolean("tree_lit", true), kept = prefs.getBoolean("christmas_kept", false))) }
     var editor by remember(island) { mutableStateOf(EditorState.restore(prefs.getString("message", null), prefs.getString("decorations", null), prefs.getBoolean("mail_read", false))) }
@@ -438,6 +445,8 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
         if (prefs.getString("reveal_session", null) == session) prefs.getInt("prepared_slots", 0) else 0
     ) }
     fun prepared(slot: Int) = (preparedMask and (1 shl slot)) != 0
+    val displayedGifts = if (creating) slots else welcomeGifts
+    val displayedMask = if (composingGift) openedMask else receivedMask
     var giftPrompt by remember(island) { mutableStateOf("") }
     var pendingIds by remember(island) { mutableStateOf(List(3) { prefs.getString("task_$it", "").orEmpty() }) }
 
@@ -479,7 +488,20 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     }
     var currentScene by remember { mutableStateOf<WorldScene?>(null) }
     fun activateSlot(slot: Int) {
-        if (!creating) return
+        if (!composingGift) {
+            if (currentScene?.variants?.containsKey(slot to displayedGifts[slot]) != true) {
+                if (preview && slot in failures) retries[slot] = (retries[slot] ?: 0) + 1
+                return
+            }
+            if ((receivedMask and (1 shl slot)) == 0) {
+                revealing = slot
+                receivedMask = receivedMask or (1 shl slot)
+            } else {
+                inspecting = slot
+                inspectionAngle += 45f
+            }
+            return
+        }
         if (startingTask || editingSlot >= 0) return
         entryError = ""
         if (slot in failures) {
@@ -536,8 +558,8 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     val islandScope = key(island) { rememberCoroutineScope() }
     for (slot in 0..2) {
         val taskId = pendingIds[slot]
-        LaunchedEffect(island,slot,taskId,retries[slot]) {
-            if (taskId.isEmpty()) return@LaunchedEffect
+        LaunchedEffect(island,slot,taskId,retries[slot],creating) {
+            if (taskId.isEmpty() || !creating) return@LaunchedEffect
             try {
                 failures.remove(slot)
                 progress.remove(slot)
@@ -553,7 +575,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) { failures[slot] = e.message ?: "Check your connection and retry." }
         }
-        val id = slots[slot]
+        val id = displayedGifts[slot]
         val scene = currentScene
         LaunchedEffect(island,slot,id,scene,retries[slot]) {
             if (scene == null || scene.island != island) return@LaunchedEffect
@@ -570,9 +592,16 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             catch (e: Exception) { failures[slot] = e.message ?: "Could not load gift. Retry download." }
         }
     }
-    val opened = greeting.opened
+    val opened = greeting.opened && intro == "world"
+    val ribbon by animateFloatAsState(if (intro == "wrapped") 0f else 1f, tween(if (paused) 0 else 850), label = "parcel opening")
+    LaunchedEffect(intro) {
+        if (intro == "opening") {
+            if (!paused) delay(850)
+            intro = "letter"
+        }
+    }
     val lit = greeting.lightsOn
-    val reveal by animateFloatAsState(if (opened) 1f else 0f, tween(if (paused) 0 else 900), label = "unwrap")
+    val reveal by animateFloatAsState(if (opened) 1f else 0f, tween(if (paused) 0 else 1250), label = "unwrap")
     val angle by animateFloatAsState(if (greeting.turned) 180f else 0f, tween(if (paused) 0 else 1000), label = "turn")
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var active by remember { mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) }
@@ -699,7 +728,8 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     }
     fun readMail() {
         showLetter = true
-        if (!editor.read) save(editor.copy(read = true), "Your note is open.")
+        deliveryRead = true
+        if (composingGift && !editor.read) save(editor.copy(read = true), "Your note is open.")
     }
     var volumePixels by remember { mutableStateOf(IntSize3D.Zero) }
     val cueLights = remember { mutableMapOf<String, PointLightComponent>() }
@@ -726,9 +756,9 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 it.enabled = false
                 sceneRoot.addChild(it)
             }
-            for (id in (0..2).map { "hint$it" } + (0..2).map { "box$it" } + (0..6).map { "actor$it" }) {
+            for (id in listOf("mailAlert","thought0","thought1","thought6","outerBox") + (0..2).map { "hint$it" } + (0..2).map { "box$it" } + (0..6).map { "actor$it" }) {
                 attachments.entity(id)?.let { entity ->
-                    if (!id.startsWith("hint")) addCue(id, entity)
+                    if (id.startsWith("actor") || id.startsWith("box")) addCue(id, entity)
                     attachmentEntities[id] = entity
                     entity.enabled = false
                     sceneRoot.addChild(entity)
@@ -746,7 +776,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             attachments.entity("letter")?.let {
                 attachmentEntities["letter"] = it
                 it.enabled = false
-                it.transform()?.setPosition(Vector3(.72f, .10f, -.04f))
                 sceneRoot.addChild(it)
             }
         },
@@ -775,9 +804,9 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             }
 
             val activeScene = scene?.takeIf { it.island == island }
-            val parcelScale = if (packing) 1f else 1f - reveal
-            scene?.world?.enabled = activeScene != null && !packing && reveal > .15f
-            scene?.sky?.enabled = activeScene != null
+            val parcelScale = if (packing) 1f else 1f - ribbon
+            scene?.world?.enabled = activeScene != null && !packing && reveal > .001f
+            scene?.sky?.enabled = activeScene != null && opened
             if (activeScene != null && fit > 0f && fit.isFinite()) {
                 activeScene.sky.transform()?.apply {
                     setPosition(Vector3(0f, 0f, -.64f * fit))
@@ -794,7 +823,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 activeWorld.parcels[paper]?.transform()?.apply {
                     setPosition(Vector3(-.60f, .15f, 0f))
                     setScaleVector(Vector3(maxOf(.01f, parcelScale)))
-                    setEulerAngles(EulerAngles(0f, reveal * 120f, 0f))
+                    setEulerAngles(EulerAngles(0f, ribbon * 35f, 0f))
                 }
                 activeWorld.auroras.forEachIndexed { index, layer ->
                     val teal = index == 0
@@ -822,10 +851,10 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 }
                 activeWorld.treeLights?.enabled = lit
                 activeWorld.parcelParts.forEachIndexed { slot, parts ->
-                    parts.forEach { it.enabled = (openedMask and (1 shl slot)) == 0 || (slot to slots[slot]) !in activeWorld.variants }
+                    parts.forEach { it.enabled = (displayedMask and (1 shl slot)) == 0 || (slot to displayedGifts[slot]) !in activeWorld.variants }
                 }
                 for ((key, node) in activeWorld.variants) {
-                    node.enabled = slots[key.first] == key.second && (openedMask and (1 shl key.first)) != 0
+                    node.enabled = displayedGifts[key.first] == key.second && (displayedMask and (1 shl key.first)) != 0
                     if (node.enabled) {
                         val progress = if (revealing == key.first && !paused) revealProgress.value.coerceAtLeast(.01f) else 1f
                         node.transform()?.setScaleVector(Vector3(progress))
@@ -858,17 +887,17 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                         }
                     }
                 }
-                val boxPulse = if ((openedMask and (1 shl slot)) == 0) cueStrength(slot, clock, paused) else 0f
+                val boxPulse = if ((displayedMask and (1 shl slot)) == 0) cueStrength(slot, clock, paused) else 0f
                 place("box$slot", activeScene?.parcelParts?.getOrNull(slot)?.firstOrNull(), .012f, boxPulse)
                 if (slot in slots.indices) {
-                    attachmentEntities["box$slot"]?.let { if (!creating) it.enabled = false }
+
                     attachmentEntities["hint$slot"]?.let { hint ->
-                        hint.enabled = creating && opened && !loading && !showLetter && editingSlot < 0 && !packing &&
+                        hint.enabled = composingGift && opened && !loading && !showLetter && editingSlot < 0 && !packing &&
                             activeScene != null && !prepared(slot) && pendingIds[slot].isEmpty() && slot !in failures
                         if (hint.enabled && activeScene != null) {
                             val (lo, hi) = activeScene.boxBounds[slot]
                             val top = activeScene.world.convertPositionTo(Vector3((lo.x+hi.x)/2, hi.y, (lo.z+hi.z)/2), sceneRoot)
-                            hint.transform()?.setPosition(Vector3(top.x, maxOf(top.y, worldTop) + airGap - hint.getVisualBounds(hint).min.y, top.z))
+                            hint.transform()?.setPosition(Vector3(top.x, top.y + .012f - hint.getVisualBounds(hint).min.y, top.z))
                         }
                     }
                 }
@@ -883,24 +912,56 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     cueLights["mailbox"]?.intensity = 3f * cueStrength(11, clock, paused)
                 }
             }
+            fun above(id: String, node: Entity?, visible: Boolean) {
+                val panel = attachmentEntities[id] ?: return
+                panel.enabled = visible && node != null && opened && !loading && !showLetter && editingSlot < 0 && !packing
+                if (node != null && panel.enabled) {
+                    val bounds = node.getVisualBounds(sceneRoot)
+                    panel.transform()?.setPosition(Vector3(bounds.center.x, bounds.min.y + bounds.size.y + .009f - panel.getVisualBounds(panel).min.y, bounds.center.z))
+                }
+            }
+            above("mailAlert", activeScene?.carrier, if (composingGift) !editor.read else !deliveryRead)
+            for (slot in listOf(0,1,6)) above("thought$slot", activeScene?.actionNodes?.getOrNull(slot),
+                island == WinterWorld.Village && reaction != slot)
+            attachmentEntities["outerBox"]?.let {
+                it.enabled = activeScene != null && intro == "wrapped" && !loading && !packing
+                it.transform()?.setPosition(Vector3(-.60f,.15f,.18f))
+            }
             attachmentEntities["giftEntry"]?.enabled = activeScene != null && editingSlot >= 0 && opened
-            attachmentEntities["controls"]?.enabled = editingSlot < 0 && !packing && !showLetter
+            attachmentEntities["controls"]?.enabled = editingSlot < 0 && !packing && !showLetter && intro != "opening" && intro != "letter"
             attachmentEntities["packing"]?.enabled = activeScene != null && packing
             attachmentEntities["speech"]?.let { target ->
                 val actor = activeScene?.actionNodes?.getOrNull(reaction)
                 target.enabled = actor != null && bubble.isNotEmpty() && opened && !showLetter && editingSlot < 0 && !packing
                 if (actor != null && target.enabled) {
-                    val anchor = actor.convertPositionTo(Vector3(0f), sceneRoot)
-                    target.transform()?.setPosition(Vector3(anchor.x, maxOf(worldTop, anchor.y) + airGap - target.getVisualBounds(target).min.y, anchor.z))
+                    val anchor = actor.getVisualBounds(sceneRoot).let { Vector3(it.center.x,it.min.y+it.size.y,it.center.z) }
+                    target.transform()?.setPosition(Vector3(anchor.x, anchor.y + .012f - target.getVisualBounds(target).min.y, anchor.z))
                 }
             }
-            attachmentEntities["letter"]?.enabled = activeScene != null && showLetter && opened
+            attachmentEntities["letter"]?.enabled = activeScene != null && ((showLetter && opened) || intro == "letter")
             if (fit > 0f && fit.isFinite()) {
                 val halfWidth = physical.x / (2f * fit)
                 val halfHeight = physical.y / (2f * fit)
                 val rightEdge = hull.maxOfOrNull { it.x } ?: .28f
                 val left = maxOf(.30f, rightEdge + .025f)
-                for (id in listOf("controls", "giftEntry", "packing", "letter")) {
+                // The letter faces the reader and tracks the island, including after a turn or resize.
+                attachmentEntities["letter"]?.takeIf { it.enabled }?.let { panel ->
+                    val bounds = panel.getVisualBounds(panel)
+                    if (bounds.size.x > 0f && bounds.size.y > 0f && hull.isNotEmpty()) {
+                        val scale = minOf(1f, 1.9f * halfWidth / bounds.size.x, 1.9f * halfHeight / bounds.size.y)
+                        val limitX = halfWidth - bounds.size.x * scale / 2f
+                        val limitY = halfHeight - bounds.size.y * scale / 2f
+                        val x = ((hull.minOf { it.x } + rightEdge) / 2f).coerceIn(-limitX, limitX)
+                        val y = ((hull.minOf { it.y } + worldTop) / 2f).coerceIn(-limitY, limitY)
+                        val front = hull.maxOf { it.z } + .02f / fit - bounds.min.z * scale
+                        val z = if (physical.z > 0f) minOf(front, physical.z / (2f * fit) - (bounds.min.z + bounds.size.z) * scale - .001f) else front
+                        panel.transform()?.apply {
+                            setScaleVector(Vector3(scale))
+                            setPosition(Vector3(x - bounds.center.x * scale, y - bounds.center.y * scale, z))
+                        }
+                    }
+                }
+                for (id in listOf("controls", "giftEntry", "packing")) {
                     val panel = attachmentEntities[id] ?: continue
                     if (!panel.enabled) continue
                     val box = panel.getVisualBounds(panel)
@@ -920,12 +981,20 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             }
         },
         attachments = {
+                AttachmentPanel(id = "outerBox") {
+                    ObjectTarget("Unwrap your gifted world", 0, clock, paused, true) { intro = "opening" }
+                }
+                AttachmentPanel(id = "mailAlert") { Action("Unread letter") { readMail() } }
+                for (slot in listOf(0,1,6)) AttachmentPanel(id = "thought$slot") {
+                    Text(if (slot == 6) fishing else "A carrot? 🥕", color = Cocoa, fontSize = 16.sp,
+                        modifier = Modifier.glassPanel(14).padding(horizontal = 8.dp, vertical = 3.dp))
+                }
                 for (slot in 0..6) {
                     if (slot < 3) AttachmentPanel(id = "hint$slot") {
                         Action("Create gift") { activateSlot(slot) }
                     }
                     if (slot < 3) AttachmentPanel(id = "box$slot") {
-                        ObjectTarget("Box ${slot + 1}", slot, clock, paused, revealing < 0, cue = (openedMask and (1 shl slot)) == 0) { activateSlot(slot) }
+                        ObjectTarget("Box ${slot + 1}", slot, clock, paused, revealing < 0, cue = (displayedMask and (1 shl slot)) == 0) { activateSlot(slot) }
                     }
                     AttachmentPanel(id = "actor$slot") {
                         val action = actions.getOrNull(slot)
@@ -974,7 +1043,13 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             }
                         }
                         soundtrackPicker()
-                        Action("Preview as recipient") { openLink(parcelUrl(true)) }
+                        Action("Preview as recipient") {
+                            preview = true
+                            receivedMask = 0
+                            packing = false
+                            inspecting = -1
+                            intro = "wrapped"
+                        }
                         Action("Copy gift link") {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                             clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Fuzzy winter world", parcelUrl(false)))
@@ -1066,21 +1141,35 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     Column(Modifier.width(700.dp).heightIn(max = 900.dp).glassPanel(32).padding(32.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                         Text("A LITTLE LETTER, JUST FOR YOU", color = Cranberry, fontSize = 16.sp)
                         Text("From my world to yours", color = Cocoa, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                        Text(editor.note, color = Cocoa, fontFamily = FontFamily.Cursive, fontSize = 32.sp, lineHeight = 46.sp)
+                        Text(if (!creating) SANTA_NOTE else if (preview) draft.trim().ifEmpty { DEFAULT_NOTE } + "\n\n" + sender.ifBlank { "Someone who loves you" } else editor.note, color = Cocoa, fontFamily = FontFamily.Cursive, fontSize = 32.sp, lineHeight = 46.sp)
                         Text("♡", color = Cranberry, fontSize = 36.sp)
-                        Action("Close note") { showLetter = false }
+                        Action("Close note") {
+                            showLetter = false
+                            if (intro == "letter") {
+                                intro = "world"
+                                unwrapped = true
+                                greeting = greeting.unwrap()
+                            }
+                        }
                     }
                 }
                 AttachmentPanel(id = "controls") {
                     Column(Modifier.width(700.dp).heightIn(max = 1180.dp).glassPanel(32).padding(24.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(island.title, color = Cocoa, fontSize = 19.sp)
-                        Text(if (!opened) "Someone is thinking of you." else if (!creating) "A Christmas world for you" else "Where would you like to take them?", color = Cocoa, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-                        if (creating && opened) for (choice in WinterWorld.values()) {
+                        Text(if (!opened) "Someone is thinking of you." else if (!composingGift) "A Christmas world for you" else "Where would you like to take them?", color = Cocoa, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                        if (composingGift && opened) for (choice in WinterWorld.values()) {
                             Action((if (choice == island) "✓ " else "") + choice.title, enabled = choice != island && !saving && !loading && !startingTask) { select(choice) }
                         }
-                        if (opened && !creating && error == null) {
+                        if (opened && !composingGift && error == null) {
                             Text("Explore this island, then make one for someone you love.", color = Cocoa)
-                            Action("Create your own world", !loading) { creating = true }
+                            if (preview) Action("Return to wrapping") {
+                                preview = false
+                                packing = true
+                                inspecting = -1
+                            } else Action("Create a world for someone you love", !loading) {
+                                creating = true
+                                inspecting = -1
+                            }
                             Action(if (playing) "Pause music" else "Play Toymaker’s Workshop", soundtrack != null) { musicEnabled = !playing }
                         } else if (opened && error == null) {
                             val readySlot = slots.indices.firstOrNull { prepared(it) && slots[it].isNotEmpty() && pendingIds[it].isEmpty() && (openedMask and (1 shl it)) == 0 && currentScene?.variants?.containsKey(it to slots[it]) == true }
@@ -1130,14 +1219,14 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Action(if (saving) "Saving…" else if (greeting.kept) "Kept ♥" else "Keep ♥", !saving) { save(editor, "Kept on this device.", keep = true) }
-                                Action("Wrap again", !saving) { unwrapped = false; greeting = greeting.wrapAgain(); showLetter = false }
+                                Action("Wrap again", !saving) { intro = "wrapped"; unwrapped = false; greeting = greeting.wrapAgain(); showLetter = false }
                             }
                         } else if (error == null) {
                             Text("Unwrap your snowy village, write a note, and add a little Christmas magic.", color = Cocoa, fontSize = 22.sp)
-                            Action("Unwrap your gifted world", !loading) { unwrapped = true; greeting = greeting.unwrap() }
-                            if (greeting.kept) Action("Open keepsake", !loading) { unwrapped = true; greeting = greeting.openKept(prefs.getBoolean("tree_lit", true)) }
+                            Action("Unwrap your gifted world", !loading) { intro = "opening" }
+
                         }
-                        if (error != null) Action("Retry") { error = null; loading = true; unwrapped = false; greeting = greeting.wrapAgain(); showLetter = false; attempt++ }
+                        if (error != null) Action("Retry") { error = null; loading = true; intro = "wrapped"; unwrapped = false; greeting = greeting.wrapAgain(); showLetter = false; attempt++ }
                         Text(error ?: if (loading) "Preparing your Christmas village…" else if (saving) "Saving on this device…" else status, color = Cranberry, fontSize = 18.sp)
                         Text("Your world saves on this device. Shared parcels open in a browser.", color = Cocoa.copy(alpha = .7f), fontSize = 14.sp)
                     }
