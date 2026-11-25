@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fuzzy · Christmas Special Edition</title>
+<script type="module" src="assets/model-viewer.min.js"></script>
+<style>
+:root{color-scheme:light;--gold:#e2cb77;--ink:#fff7ed;--muted:#d9d8c8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:#00221f linear-gradient(90deg,#000f0d 0%,#00221f 100%);overflow-x:hidden}
+.aurora{display:none}
+@keyframes glow{to{transform:translateX(5%) rotate(5deg);opacity:.72}}
+header,main{position:relative}header{display:flex;align-items:center;justify-content:space-between;padding:20px clamp(20px,5vw,76px);border-bottom:1px solid #ffffff1a}
+a{color:var(--gold)}main{max-width:1320px;padding:42px 24px 70px;margin:auto}
+.kicker{text-transform:uppercase;letter-spacing:2.5px;color:var(--gold);font-size:12px}h1{font:clamp(38px,6vw,66px)/1.02 Georgia,serif;max-width:850px;margin:12px 0}.intro{max-width:740px;color:var(--muted)}
+.badge{display:inline-block;border:1px solid #ffffff26;border-radius:999px;padding:5px 9px;color:#d9d4e8;font-size:11px;margin:0 5px 5px 0}
+.card{margin-top:22px;border:1px solid #ffffff20;background:#101527d9;border-radius:24px;padding:22px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:22px}
+model-viewer{width:100%;height:440px;background:radial-gradient(ellipse at 50% 60%,#354c6b,#101426 65%);--poster-color:transparent;border-radius:16px}
+.controls{align-self:center}label{display:block;font-weight:650;margin:10px 0 8px}textarea{width:100%;min-height:240px;resize:vertical;background:#0c1020;color:var(--ink);border:1px solid #ffffff29;border-radius:14px;padding:14px;font:14px/1.55 system-ui,sans-serif}textarea:focus{outline:2px solid var(--gold)}
+button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);color:#20182b;font-weight:750;font-size:14px;cursor:pointer;margin-top:14px}button:disabled{opacity:.55;cursor:wait}
+.status{min-height:42px;margin:16px 0 4px;color:var(--muted);font-size:14px}.progress{height:6px;background:#ffffff18;border-radius:9px;overflow:hidden}.progress i{display:block;width:0;height:100%;background:linear-gradient(90deg,#69d5bd,var(--gold));transition:width .3s}
+.note{font-size:12px;color:#aaa8b9;margin-top:16px}.downloads a{display:none;margin:12px 14px 0 0}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}model-viewer{animation:drift 7s ease-in-out infinite}
+@media(max-width:850px){.card{grid-template-columns:1fr}.controls{order:-1}model-viewer{height:360px}}@media(prefers-reduced-motion:reduce){.aurora,model-viewer{animation:none}}
+#diorama{margin:20px 0 32px}#world{height:clamp(340px,62vh,680px);animation:none;background:linear-gradient(150deg,#c9e2ea,#a8bed0 56%,#d8d1d9)}#world[data-kind="north"]{background:linear-gradient(115deg,#acd6ce88,#d6ccdfaa),url("assets/worlds/aurora-sky.svg") center/cover}figcaption{padding:8px 0;text-align:left}summary{cursor:pointer}details h1{font-size:2rem}
+#world[data-kind="academy"]{background:#777893 url("assets/worlds/academy-blue-hour.svg?v=twinkling") center/cover no-repeat}
+#world[data-kind="candy"]{
+  background:
+    radial-gradient(ellipse 16% 6% at 13% 23%,#f6f5fa94,transparent 100%),
+    radial-gradient(ellipse 24% 8% at 4% 26%,#f4eff880,transparent 100%),
+    radial-gradient(ellipse 18% 5% at 43% 14%,#ecf4fa60,transparent 100%),
+    radial-gradient(ellipse 17% 7% at 79% 29%,#fff4fa96,transparent 100%),
+    radial-gradient(ellipse 26% 8% at 91% 32%,#f5edf87d,transparent 100%),
+    radial-gradient(ellipse 28% 8% at 22% 54%,#fcf1f95e,transparent 100%),
+    radial-gradient(ellipse 31% 6% at 85% 59%,#f9eff957,transparent 100%),
+    linear-gradient(174deg,#83b6d6 0%,#a7c7dc 42%,#c6cbdc 72%,#d9cfcf 100%);
+}
+#diorama{position:relative;--dawn-sky:#101a35 url("assets/worlds/santa-dawn.svg") center/100% 100% no-repeat}
+#diorama[data-village]{isolation:isolate}
+#diorama[data-village] #world{position:relative;z-index:1;background:transparent}
+#diorama[data-village]::before{content:"";position:absolute;inset:0 0 2.6em;pointer-events:none;border-radius:16px;background:var(--dawn-sky)}
+.light-anchor{width:0;height:0;pointer-events:none;opacity:0;transition:opacity 180ms cubic-bezier(.23,1,.32,1)}
+.light-anchor[data-visible]{opacity:1}.light-anchor .halo{position:absolute;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,#fffceabf 0%,#ffe49a80 12%,#ffbd4947 28%,#ff9c1e18 48%,transparent 70%);animation:light-breathe 4.8s cubic-bezier(.77,0,.175,1) infinite;animation-delay:var(--delay);mix-blend-mode:screen}
+.light-anchor.window .halo,.light-anchor.lantern .halo{width:68px;height:68px;left:-34px;top:-34px}.light-anchor.star .halo{width:90px;height:90px;left:-45px;top:-45px}
+.light-anchor .spark{position:absolute;left:-7px;top:-7px;width:14px;height:14px;background:linear-gradient(transparent 40%,#fff9da 50%,transparent 60%),linear-gradient(90deg,transparent 40%,#fff9da 50%,transparent 60%);filter:drop-shadow(0 0 3px #ffc86b);opacity:.15;animation:light-sparkle 5.6s cubic-bezier(.77,0,.175,1) infinite;animation-delay:var(--delay)}
+@keyframes light-breathe{0%,100%{opacity:.58;transform:scale(.94)}50%{opacity:1;transform:scale(1.12)}}
+@keyframes light-sparkle{0%,36%,100%{opacity:.08;transform:scale(.95) rotate(0deg)}52%{opacity:.95;transform:scale(1.3) rotate(35deg)}70%{opacity:.08;transform:scale(.95) rotate(70deg)}}
+@media(prefers-reduced-motion:reduce){.light-anchor .halo{animation:none;opacity:.8}.light-anchor .spark{animation:none;opacity:.3}}
+.atmosphere-anchor{width:0;height:0;opacity:0;pointer-events:none;transition:opacity 180ms cubic-bezier(.23,1,.32,1)}
+.atmosphere-anchor[data-visible]{opacity:1}.puff{display:block;position:absolute;pointer-events:none;border-radius:50%;opacity:0;will-change:transform,opacity}
+.smoke .puff{top:-12px;width:22px;height:26px;background:radial-gradient(ellipse,#d8e3ef85 0%,#bbc8df40 35%,transparent 70%);animation:chimney-drift 7s linear infinite}
+@keyframes chimney-drift{0%{opacity:0;transform:translate(0,0) scale(.95)}15%{opacity:.6}50%{opacity:.38;transform:translate(9px,-35px) scale(1.65)}100%{opacity:0;transform:translate(25px,-85px) scale(2.5)}}
+@media(prefers-reduced-motion:reduce){.smoke .puff,.steam .puff{animation:none;opacity:.12;transform:translateY(-10px)}.puff:nth-child(n+3){display:none}}
+.village-snow{display:none;position:absolute;inset:0 0 2.6em;overflow:hidden;border-radius:16px;pointer-events:none;z-index:2}
+#diorama[data-snowy] .village-snow{display:block}
+.village-snow i{position:absolute;left:var(--x);top:-12px;width:var(--size);height:var(--size);border-radius:50%;background:#fff;opacity:.75;animation:village-snowfall var(--time) linear var(--delay) infinite}
+@keyframes village-snowfall{to{transform:translate(40px,75vh)}}
+#diorama[data-village] .smoke .puff{width:28px;height:32px;background:radial-gradient(ellipse,#e6edf4a8 0%,#c3cfdf67 38%,transparent 72%)}
+@media(prefers-reduced-motion:reduce){#diorama[data-snowy] .village-snow{display:none}}
+#world .elf-target{position:relative;width:32px;height:36px;padding:0;margin:0;border:0;border-radius:45%;background:transparent;cursor:pointer;pointer-events:auto;color:#30253c}
+#world .elf-target:focus-visible{outline:2px solid #ffda85}
+.elf-bubble:not(:empty){display:block;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding:5px 9px;border-radius:13px;background:#fff9ed;box-shadow:0 2px 8px #17203940;font:19px/1.2 system-ui;white-space:nowrap;pointer-events:none}
+.elf-bubble:not(:empty)::after{content:"";position:absolute;top:100%;left:calc(50% - 5px);border:5px solid transparent;border-top-color:#fff9ed}
+#world .moose-feed{display:grid;place-items:center;cursor:pointer;padding:0;margin:0;width:32px;height:32px;background:transparent;border:0;box-shadow:none;pointer-events:auto}
+.moose-feed svg{width:22px;height:22px;overflow:visible;filter:drop-shadow(0 1px 1px #28202b66)}
+.moose-feed .fed-icon,.moose-feed:disabled .carrot-icon{display:none}
+.moose-feed:disabled .fed-icon{display:block}
+.moose-feed:focus-visible{outline:2px solid #ffda85;outline-offset:1px;border-radius:50%}
+#world .moose-feed:disabled{cursor:default;opacity:1}
+#world .moose-feed,#world .mail-open{background:#fff8e8;color:#503e35;border:1px solid #bca993;border-radius:50%;box-shadow:0 2px 5px #33263938}
+#world .moose-feed::before,#world .moose-feed::after{content:"";position:absolute;background:#fff8e8;border:1px solid #bca993;border-radius:50%;pointer-events:none}
+#world .moose-feed::before{width:7px;height:7px;bottom:-7px;left:5px}#world .moose-feed::after{width:3px;height:3px;bottom:-12px;left:2px}
+#world .mail-open svg{display:block;width:100%}#world .mail-open{position:relative;top:-24px;width:36px;height:36px;padding:7px;cursor:pointer;font-size:23px;color:#56503d;background:#faf6e9;border-color:#c7bea3;box-shadow:0 0 20px #ffbc5266}#world .mail-open .badge{position:absolute;right:-2px;top:-3px;width:17px;height:17px;border-radius:50%;font:11px/17px system-ui;color:white;background:#59644c}#world .mail-open.read .badge{display:none}
+#village-letter #village-note{font:27px/1.65 'Bradley Hand','Segoe Print',cursive;color:#56503d}#village-letter h2{font:26px Georgia,serif}#village-letter .letter-heart{display:block;text-align:right;font-size:34px;color:#59644c}
+#village-letter{box-sizing:border-box;width:min(360px,90vw);padding:24px;border:1px solid #bea78e;border-radius:18px;background:#fff8ea;color:#503e35}#village-letter::backdrop{background:#21233570}#village-letter textarea{box-sizing:border-box;width:100%;min-height:110px;padding:10px;font:inherit}#village-letter p{white-space:pre-wrap;overflow-wrap:anywhere}#village-letter [hidden]{display:none}
+#gift-station{width:min(860px,94vw);max-height:88vh;overflow:auto;box-sizing:border-box;border:1px solid #60716f;border-radius:20px;color:#faf7ee;background:#192434;padding:14px}#gift-station::backdrop{background:#101728aa}#gift-station form{text-align:right}#gift-station .card{margin:8px 0 0}#gift-station model-viewer{height:clamp(170px,32vh,340px)}#world .gift-station-open{width:36px;height:36px;border-radius:50%;background:#fff7e3;color:#66513d;border:1px solid #c5af87;padding:7px;cursor:pointer}#world .gift-station-open svg{display:block;width:100%}
+#gift-station{width:min(380px,92vw)}#gift-station section{padding:0 12px 10px}#world .box-hit{position:relative;width:22px;min-width:0;height:22px;border:0;background:transparent;padding:0;cursor:pointer;box-shadow:none}#world .box-hit:focus-visible{outline:2px solid #fff5c9}#world .box-hit span{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);font:600 11px/1.4 system-ui;background:#fff8eb;color:#584234;padding:2px 6px;border-radius:8px;white-space:nowrap}#world .box-hit progress{display:block;width:48px;height:5px;accent-color:#487967}#world .box-hit [hidden]{display:none}
+#world .fishing-action{position:relative;display:grid;place-items:center;width:max-content;min-width:30px;height:26px;padding:0 7px;border-radius:14px;background:#fff9e9;color:#344d53;border:1px solid #98b3b3;cursor:pointer;font:600 11px system-ui}
+.fishing-action svg{width:19px;height:14px}
+#world .fishing-float{display:grid;place-items:center;width:24px;height:24px;min-width:0;padding:0;border:0;background:transparent;box-shadow:none;cursor:pointer}
+.fishing-float i{width:8px;height:12px;border-radius:50%;background:linear-gradient(#ac4445 50%,#fff5db 50%);box-shadow:0 1px 2px #3456}
+.fishing-float[data-phase="waiting"] i{animation:float-wait 1.5s ease-in-out infinite alternate}
+.fishing-float[data-phase="bite"] i{animation:float-dip .32s ease-in-out infinite alternate}
+.fishing-float svg{width:24px;height:18px;color:#427d80;animation:fish-rise .55s ease-out both}
+@keyframes float-wait{to{transform:translateY(-2px) rotate(9deg)}}@keyframes float-dip{to{transform:translateY(5px) rotate(27deg)}}@keyframes fish-rise{from{transform:translateY(3px) scale(.65)}to{transform:translateY(-10px) scale(1)}}
+@media(prefers-reduced-motion:reduce){#world .fishing-float *{animation:none}}
+#world [data-guide-hidden]{display:none!important}
+#world .box-hit[data-next]::before{content:"";display:block;width:15px;height:15px;margin:auto;background:#fff8e9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23654d37' stroke-width='1.8'%3E%3Cpath d='M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9C3 9 5 1 9 4l3 5 3-5c4-3 6 5-3 5Z'/%3E%3C/svg%3E") center/15px no-repeat;border:1px solid #baa47b;border-radius:50%;padding:4px;position:absolute;bottom:100%;left:50%;transform:translateX(-50%)}
+#world .box-hit[data-muted] span{display:none}
+#inspect-gift{width:min(520px,94vw);background:#fff8eb;border:0;border-radius:18px;color:#493833}#inspect-gift model-viewer{height:clamp(220px,46vh,420px);width:100%;background:#e5ebe7}#inspect-gift form{text-align:right}#gift-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:14px}
+#gift-presets button{display:grid;justify-items:center;margin:0;padding:4px 2px 6px;min-width:0;background:#fff4dc;color:#473b2c;border:1px solid #d7c49f;border-radius:10px;font-size:12px}
+#gift-presets model-viewer{display:block;width:100%;height:46px;pointer-events:none;background:transparent}
+#gift-station #box-generate{background:linear-gradient(#f6dc91,#dbb458);border:1px solid #bb933c;color:#34260c;font-weight:700}
+#gift-station #box-generate:hover{background:#f7df9b}
+#world .moose-feed[data-quiet]:not(:hover):not(:focus-visible):not(:disabled){opacity:.15}
+#pack-world[hidden],body.receiving #worlds,body.receiving details,body.receiving #replace-gift{display:none}
+#pack-world{margin-top:1rem}#packing,#arrival{width:min(440px,92vw);border:1px solid #bda58b;border-radius:18px;padding:24px;color:#44392e;background:#fff7e8}
+#arrival{text-align:center}#arrival::backdrop{background:#19243c}#packing::backdrop{background:#19182599}#packing h2,#arrival h2{font:32px Georgia,serif;margin:.3em 0 .8em}
+.parcel-close{float:right}#packing fieldset{border:0;padding:0;margin:1em 0}#packing legend{font-weight:650}#paper-options{display:flex;gap:8px;margin:.5em 0}#paper-options label{cursor:pointer;flex:1;font-size:13px}#paper-options i{display:block;height:38px;border-radius:6px;margin-bottom:4px}#receivers{display:grid;gap:6px;margin:.5em 0}#receivers input{width:100%;padding:10px;font:inherit}
+[data-paper="pine"]{--wrap:repeating-linear-gradient(55deg,#486853 0 9px,#628471 10px 13px)}[data-paper="berry"]{--wrap:repeating-linear-gradient(135deg,#a74655 0 12px,#efc7b9 12px 17px)}[data-paper="frost"]{--wrap:radial-gradient(ellipse at center,#f8efd5 0 1.5px,transparent 2px) 0 0/12px 12px,#849cac}
+#paper-options i,.outer-box i,.outer-box b,.outer-box em{background:var(--wrap)}.outer-box{position:relative;width:128px;height:110px;margin:45px auto 28px;perspective:350px}.outer-box>*{position:absolute;display:block;transition:transform .8s,opacity .8s}.outer-box i,.outer-box b{inset:13px 50% 0 0;border-right:5px solid #ebd398;transform-origin:left}.outer-box b{inset:13px 0 0 50%;border-right:0;border-left:5px solid #ebd398;transform-origin:right}.outer-box em{inset:0 -5px auto;height:22px;border-bottom:3px solid #e5c689}.unfolding i{transform:rotateY(-110deg);opacity:0}.unfolding b{transform:rotateY(110deg);opacity:0}.unfolding em{transform:translateY(-42px) rotate(-9deg);opacity:0}
+#world .fishing-action[data-quiet]:not(:hover):not(:focus-visible){opacity:.18}@media(prefers-reduced-motion:reduce){.outer-box>*{transition:none}}
+#island-loader{position:absolute;inset:0 0 auto;height:clamp(340px,62vh,680px);z-index:5;border-radius:16px;overflow:hidden;display:grid;place-content:center;justify-items:center;background:var(--dawn-sky);color:#fff3d9;pointer-events:auto}
+#island-loader[hidden]{display:none}#island-loader svg{width:min(260px,66vw);height:auto}#island-loader span{font:500 15px/1.5 system-ui}
+.sleigh-flight{transform-origin:center;animation:sleigh-flight 2.6s ease-in-out infinite alternate}.sleigh-stars{animation:sleigh-stars 2s ease-in-out infinite alternate}
+@keyframes sleigh-flight{from{transform:translate(-9px,3px) rotate(-2deg)}to{transform:translate(9px,-4px) rotate(2deg)}}@keyframes sleigh-stars{to{opacity:.42;transform:translateX(-9px)}}
+@media(prefers-reduced-motion:reduce){.sleigh-flight,.sleigh-stars{animation:none}}
+#preview-world{display:block;width:fit-content;margin-top:16px;color:#315e53;font-weight:650}#pack-hint{color:var(--muted);font-size:14px}
+#friend-world:not([hidden]){display:inline-block;margin:16px 0;padding:10px 18px;background:#f1ca78;color:#31283b;border-radius:24px;font-weight:650;text-decoration:none}
+.album-room [hidden]{display:none}
+.album-room{margin:1.5rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));align-items:center;gap:1.5rem;padding:clamp(16px,3vw,32px);border:1px solid #fff3;border-radius:20px;background:#182034}.album-room h2{font:30px Georgia,serif;margin:0}.album-room label{display:block}.album-room select{display:block;max-width:100%;padding:.6rem;margin:.4rem 0 .8rem}.album-room .note{font-size:.87rem;color:var(--muted)}
+.chime-track{margin:0}.chime-track audio{display:block;width:100%;margin:.4rem 0}.chime-track a{font-size:.9rem}
+
+:root{--glass-fill:#323b51c9;--glass-ink:#fffaf2;--glass-rim:#ffffff69;--glass-sheen:linear-gradient(155deg,#ffffff42,transparent 42%,#ffffff10 80%,#ffffff28)}
+dialog,#world{--glass-fill:#fffae9c4;--glass-ink:#352e3a;--glass-rim:#ffffffce}
+body button:not(:where(#world button)),#worlds button[aria-pressed],#friend-world:not([hidden]),#world :is(.moose-feed,.mail-open,.fishing-action),#world .box-hit span,#world .elf-bubble:not(:empty){
+ background:var(--glass-sheen),var(--glass-fill);color:var(--glass-ink);border:1px solid var(--glass-rim);
+ box-shadow:inset 0 1px 1px #ffffff94,inset 0 -1px 2px #ffffff31,0 2px 7px #11192d32;
+ -webkit-backdrop-filter:blur(14px) saturate(145%);backdrop-filter:blur(14px) saturate(145%);
+}
+
+#world .box-hit[data-next]::before{background-color:#fff6dfb8;backdrop-filter:blur(8px);box-shadow:inset 0 1px 2px white,0 2px 6px #15193240}
+body button:enabled:hover,#friend-world:hover{filter:brightness(1.1)}
+body button:enabled:active{filter:brightness(.93)}
+body :is(button,#friend-world):focus-visible{outline:2px solid #65cbe1;outline-offset:3px}
+@media(forced-colors:active){body button,#friend-world{border:1px solid ButtonText}}
+
+.album-room{--mint:#9de4ba;grid-template-columns:minmax(150px,224px) minmax(0,1fr);background:linear-gradient(135deg,#202b28,#141d1b);border-color:#43564d;color:var(--mint)}
+.album-room h2,.album-room a{color:var(--mint)}
+.receiving #album-heading{color:var(--ink)}
+.album-room select{background:#1b2721;color:#daefdf;border:1px solid #597362;border-radius:8px;font:inherit}
+.turntable{display:block;position:relative;aspect-ratio:1;border-radius:50%;cursor:pointer;background:#343b38;box-shadow:inset 0 0 0 3px #4c5651,0 10px 22px #0006}
+.vinyl{position:absolute;inset:8px;border-radius:50%;background:conic-gradient(from 22deg,transparent 6%,#fff2 15%,transparent 23% 52%,#fff1 65%,transparent 75%),repeating-radial-gradient(#151917 0 2px,#292d2b 3px,#1a1c1b 4px);animation:record-spin 3.6s linear infinite paused}
+.vinyl i{position:absolute;inset:30%;border-radius:50%;background:radial-gradient(circle,#cfd9d2 0 5%,#223a30 6% 8%,transparent 9%),linear-gradient(40deg,#30654e 30%,#83b99b 30% 58%,#46765c 58%)}
+.tonearm{position:absolute;right:11%;top:10%;width:6px;height:55%;border-radius:6px;background:linear-gradient(90deg,#848e88,#ebebe6,#929f98);transform-origin:50% 4px;transform:rotate(-4deg);transition:transform .6s}
+.tonearm:before,.tonearm:after{content:"";position:absolute;left:50%;transform:translateX(-50%)}
+.tonearm:before{top:-5px;width:16px;height:16px;border-radius:50%;background:#afbcb4;box-shadow:0 2px 4px #0008}
+.tonearm:after{bottom:-5px;width:12px;height:18px;border-radius:3px;background:#56665c}
+.album-room:has(.playing) .tonearm{transform:rotate(31deg)}
+.album-room:has(.playing) .vinyl{animation-play-state:running}
+#disc{position:absolute;inset:0;display:grid;place-items:center;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;cursor:pointer}
+#disc .disc-symbol{position:relative;display:block;width:clamp(44px,26%,60px);aspect-ratio:1;border-radius:50%;background:var(--mint);color:#102d1c;font-size:0;box-shadow:0 2px 5px #0005}
+.disc-symbol::before,.disc-symbol::after{content:"";position:absolute;inset:25%;background:currentColor;transition:clip-path .24s ease-in-out}
+.disc-symbol::before{clip-path:polygon(19% 5%,52% 24%,52% 76%,19% 95%)}
+.disc-symbol::after{clip-path:polygon(51% 23%,96% 50%,96% 50%,51% 77%)}
+.playing .disc-symbol::before{clip-path:polygon(14% 7%,41% 7%,41% 93%,14% 93%)}
+.playing .disc-symbol::after{clip-path:polygon(59% 7%,86% 7%,86% 93%,59% 93%)}
+#disc:focus-visible .disc-symbol{outline:3px solid #e5ffed;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.disc-symbol::before,.disc-symbol::after{transition:none}}
+#album-status{color:#b2d8bf}
+#album-player{grid-column:1/-1}@keyframes record-spin{to{transform:rotate(360deg)}}@media(max-width:560px){.album-room{grid-template-columns:1fr}.turntable{width:min(220px,100%);margin:auto}}@media(prefers-reduced-motion:reduce){.vinyl{animation:none}.tonearm{transition:none}}
+header{background:linear-gradient(115deg,rgba(157,38,54,.84),rgba(137,30,45,.76) 52%,rgba(102,23,39,.70));border:0;border-bottom:1px solid #fff1da36;box-shadow:inset 0 1px 0 #fff1da22;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+
+header .brand-logo{display:block;width:144px;max-width:32vw;height:auto}
+:root{--glass-fill:#d4e6db78;--glass-ink:#184d39;--glass-rim:#ffffffd1}
+
+.card textarea{background:#fffcf9;color:#283f33;border-color:#b9cabb}
+.card .badge{background:#fff9;color:#415e50;border-color:#c3d4c9}
+.card,.album-room{background:var(--glass-sheen),var(--panel-tint,#eff6f16b);border:1px solid #ffffffdb;box-shadow:inset 0 1px 1px #fffffff2,inset 0 -1px 2px #ffffff80,0 0 0 1px #77625524,0 8px 24px #56342012;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%)}
+.album-room{--panel-tint:rgba(146,105,76,.25);--glass-sheen:linear-gradient(155deg,#ffffff12,transparent 42%,#ffffff05 80%,#ffffff0b);border-color:#e8d3bd68;color:#f0dac7}
+#gift-station .card{--panel-tint:#273648ab}
+#disc .disc-symbol{background:var(--glass-sheen),#9de4bacc;border:1px solid #d5ffe7b8;box-shadow:inset 0 1px 1px #fffc,0 2px 5px #0005;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.album-room h2,.receiving #album-heading{color:#f0dac7}
+.album-room select{background:#fff9f3;color:#943930;border-color:#b99b88}
+#album-status,.album-room a{color:#ffc0af}
+
+.card{color:#fff6eb;--panel-tint:#28483ea1}
+#worlds{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
+#worlds button[aria-pressed]{
+ margin:0;min-height:44px;padding:0 19px;border-radius:999px;
+ font:750 15px/1.2 system-ui,sans-serif;letter-spacing:-.015em;
+ color:#f3f7f4;border:1px solid #d0d6d3;
+ background:linear-gradient(150deg,#66706bed,#39423ff2 52%,#454e49f2);
+ box-shadow:inset 0 1px 2px #ffffffe0,inset 0 -1px 3px #ffffff52,0 2px 5px #0003;
+}
+#worlds button[aria-pressed="true"]{
+ color:#302311;border-color:#fff1af;
+ background:linear-gradient(145deg,#f1e4ab,#d7bd64 55%,#e4cf82);
+ box-shadow:inset 0 1px 2px #fff2c9,inset 0 -1px 3px #fff2c780,0 2px 5px #0003;
+}
+#worlds button:focus-visible{outline:2px solid #fff4d8;outline-offset:3px}
+header #friend-world:not([hidden]){margin:0;--glass-fill:#dbc572f5;--glass-ink:#352917;--glass-rim:#fff1af}
+#pack-world{--glass-fill:#dbc572f5;--glass-ink:#352917;--glass-rim:#fff1af}
+.gift-link-row{display:flex;align-items:center;gap:8px;margin:14px 0;padding-left:12px;border:1px solid #a6aea4;border-radius:12px;background:#fffaf2}
+#gift-url{flex:1;min-width:0;color:#315e53;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#copy-parcel{flex:none;display:grid;place-items:center;width:44px;height:44px;margin:0;padding:0;color:#315e53}
+#world-gifts:not([hidden]){display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+#world-gifts[hidden]{display:none}
+
+#world[data-kind] .mail-open{-webkit-backdrop-filter:none;backdrop-filter:none;top:0;width:44px;height:44px;padding:0;border:0;background:transparent;box-shadow:none}
+#world[data-kind] .mail-open svg{display:none}
+#world .mail-open .badge{box-sizing:border-box;padding:0;margin:0;text-align:center;font-weight:700}
+#world[data-kind] .mail-open:not(.read) svg{display:block;position:absolute;left:50%;top:1px;transform:translate(-50%,-50%);box-sizing:border-box;width:24px;height:20px;padding:3px;color:#603e32;background:#fff7df;border:1px solid #ac8568;border-radius:6px;box-shadow:0 1px 4px #61362466}
+#world[data-kind] .mail-open .badge{top:-13px;left:calc(50% + 6px);right:auto;width:14px;height:14px;font:700 10px/12px system-ui;background:#a63245;color:white;border:1px solid white}
+
+.last-gift{display:inline-flex;gap:8px;align-items:center}
+body.receiving #quill{display:none}
+#quill{display:grid;place-items:center;width:44px;height:44px;padding:9px;border-radius:50%;color:#503318;background:#f2d799}
+#quill svg{width:23px;height:23px}
+#village-letter:has(#letter-form:not([hidden])) .letter-heart{display:none}
+</style>
+</head>
+<body><div class="aurora" aria-hidden="true"></div>
+<header><img class="brand-logo" src="assets/fuzzy-wordmark.png" width="320" height="106" alt="Fuzzy"><a id="friend-world" hidden target="_blank" rel="noopener">Create your own winter world</a></header>
+<main><h1>Christmas Special Edition</h1>
+<h2 id="world-heading">Choose your winter world</h2>
+<nav aria-labelledby="world-heading" id="worlds"><button aria-pressed="true" data-world="village">North Pole – Santa Village</button><button aria-pressed="false" data-world="academy">Wizardry Magic Christmas</button><button aria-pressed="false" data-world="candy">Funky Candy Land</button></nav>
+<figure id="diorama"><div id="island-loader" role="status"><svg viewBox="0 0 240 130" aria-hidden="true"><g class="sleigh-stars" fill="#ffe7b4"><path d="m34 48 2 5 5 2-5 2-2 5-2-5-5-2 5-2zm170-30 2 5 4 1-4 2-2 5-2-5-4-2 4-1z"/><circle cx="53" cy="84" r="2"/><circle cx="166" cy="34" r="2"/><circle cx="218" cy="76" r="1.8"/><circle cx="83" cy="26" r="1.4"/></g><g class="sleigh-flight" stroke-linecap="round" stroke-linejoin="round"><path d="M84 77q-14-20 4-31l3-5 6 3 6-2-2 7q19 13 16 29" fill="#698e82"/><path d="m87 49 14-1" stroke="#e6bd7c" stroke-width="3"/><path d="M107 76q-2-25 14-25 19 0 22 26" fill="#c85b5a"/><circle cx="124" cy="46" r="12" fill="#f3c39a"/><path d="M113 44q-1 17 14 20 8-4 10-13-6 3-10-2-3 5-10-4" fill="#fff4df"/><path d="M110 40q0-19-11-14 13-17 33 11" fill="#cd605d"/><path d="m111 40 22-2" stroke="#fff2de" stroke-width="6"/><circle cx="98" cy="28" r="4" fill="#fff2de"/><circle cx="131" cy="44" r="1.5" fill="#423630"/><path d="M73 62q8 11 17 11h54q8 0 14-13 8-8 11 0-4 1-5 9-2 21-20 22H99Q79 90 73 62" fill="#ae464e" stroke="#eac186" stroke-width="3"/><path d="m101 92-4 8m45-8-4 8m-58 0h71q14 0 18-10" fill="none" stroke="#eac186" stroke-width="4"/></g></svg><span>Loading your world…</span></div><model-viewer id="world" alt="North Pole" camera-controls disable-pan camera-orbit="30deg 65deg auto" min-camera-orbit="auto 65deg auto" max-camera-orbit="auto 65deg auto" shadow-intensity=".55" shadow-softness="1" environment-image="neutral" exposure=".95"></model-viewer><div class="village-snow" aria-hidden="true"></div><figcaption aria-live="polite" id="caption">Loading North Pole…</figcaption></figure><section id="world-gifts" hidden aria-label="Gift preparation"><button data-slot="0"></button><button data-slot="1"></button><span class="last-gift"><button data-slot="2"></button><button id="quill" type="button" aria-label="Write your letter" title="Write your letter"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21 16 8M7 16C5 11 10 3 21 2c0 4-1 7-4 10l-4 1 2 1c-2 2-5 3-8 2Z"/></svg></button></span><button id="world-note" hidden>Read letter</button></section>
+<section class="album-room" aria-labelledby="album-heading">
+<div class="turntable"><span class="vinyl" aria-hidden="true"><i></i></span><i class="tonearm" aria-hidden="true"></i><button id="disc" type="button" aria-label="Play record"><span class="disc-symbol" aria-hidden="true">▶</span></button></div>
+<div><h2 id="album-heading">Gift soundtrack</h2><select id="christmas-album" aria-label="Gift soundtrack"><option value="charlie" data-spotify="2XnNY3GEkbWHor5kyvXLu4">A Charlie Brown Christmas · Vince Guaraldi Trio</option><option value="buble" data-spotify="3CKVXhODttZebJAzjUs2un">Christmas · Michael Bublé</option><option value="mariah" data-spotify="0cS9prZ8u3fdbc7lmtCaMV">Merry Christmas · Mariah Carey</option><option value="festive-commotion" data-spotify="57inreLG2hAF7YYt1W9nnL">Festive Commotion · Howard Harper-Barnes</option><option value="toymakers-workshop" selected data-audio="assets/toymakers-workshop.mp3">Toymaker’s Workshop · David Celeste</option></select><p id="album-status" role="status">Tap the record to play.</p><a id="open-album" hidden target="_blank" rel="noopener">Open in Spotify</a></div><div id="album-player" hidden></div></section><button id="pack-world" hidden>Send Gift</button><span id="pack-hint" hidden> Available when all three gifts are ready.</span></main><dialog id="packing" aria-labelledby="packing-title"><form method="dialog"><button class="parcel-close" aria-label="Close wrapping options">×</button></form>
+<h2 id="packing-title">Wrap your world</h2><form id="delivery"><label>Your name <input id="sender-name" autocomplete="given-name" maxlength="60" placeholder="Name shown to the recipient"></label><fieldset><legend>Wrapping paper</legend><div id="paper-options"></div></fieldset>
+<fieldset><legend>Send to</legend><div id="receivers"></div><button type="button" id="add-receiver" aria-label="Add another receiver">+ Add receiver</button></fieldset>
+<button type="submit">Send by email</button> <div class="gift-link-row"><a id="gift-url" target="_blank" rel="noopener"></a><button type="button" id="copy-parcel" aria-label="Copy gift link" title="Copy gift link"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 5V4a1 1 0 0 0-1-1H5a2 2 0 0 0-2 2v10a1 1 0 0 0 1 1h1"/></svg></button></div><a id="preview-world" href="#" target="_blank" rel="noopener">Preview as receiver</a><p role="status" id="send-status"></p></form></dialog>
+<dialog id="arrival" aria-labelledby="arrival-title"><h2 id="arrival-title">A winter world for you</h2><div class="outer-box" aria-hidden="true"><i></i><b></b><em></em></div><button id="unfold">Open your world</button></dialog>
+<dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><div id="gift-presets" role="group" aria-label="Instant 3D gifts"></div><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button id="box-generate">Generate gift</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your letter to the recipient</label><textarea id="letter-input" placeholder="What would you like to tell them?" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
+<script>
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const hostedEditor="https://fuzzy-preview-git-feat-tripo-w-af628c-viviens-projects-842ec178.vercel.app";
+let giftEndpoint;
+async function resolveGiftEndpoint(){
+ if(location.origin!=="http://127.0.0.1:8463")return "/api/tripo";
+ for(const endpoint of ["/api/tripo",hostedEditor+"/api/tripo","http://127.0.0.1:8468/api/tripo"]){
+   try{
+     // A missing task ID checks routing without creating a task or spending credits.
+     const response=await fetch(endpoint,{cache:"no-store"});
+     if(response.status===400 && (await response.json()).error==="A valid taskId is required.")return endpoint;
+   }catch{}
+ }
+ throw new Error("This local preview cannot reach gift generation.");
+}
+async function fetchGiftAPI(query,options){
+ try{
+   giftEndpoint ||= resolveGiftEndpoint();
+   return await fetch(await giftEndpoint+query,options);
+ }catch(error){giftEndpoint=null;throw error;}
+}
+async function giftResponse(response){
+ if(!response.headers.get("Content-Type")?.includes("application/json")){
+   throw new Error("The gift generator is unavailable. Please try again in a moment.");
+ }
+ return response.json();
+}
+async function beginTask(operation,body){
+ const response=await fetchGiftAPI("",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({operation,...body})});
+ const data=await giftResponse(response);
+ if(!response.ok&&!data.taskId)throw new Error(data.error||"Could not start "+operation+".");
+ if(!data.taskId)throw new Error("Tripo did not return a task ID.");
+ return data.taskId;
+}
+async function waitTask(taskId,label,onProgress){
+ for(let i=0;i<180;i++){
+  await sleep(i<3?1600:3000);const response=await fetchGiftAPI("?taskId="+encodeURIComponent(taskId),{cache:"no-store"});const data=await giftResponse(response);
+  if(!response.ok)throw new Error(data.error||"Could not check task status.");
+  const progress=data.progress||4;if(onProgress(progress)===false)return;
+  if(data.status==="success")return data;
+  if(["failed","banned","cancelled","expired"].includes(data.status))throw Object.assign(new Error(data.error||label+" failed."),{terminal:true});
+ }
+ throw new Error(label+" is taking longer than expected. Refresh and retry this step.");
+}
+</script><script type="module">
+import {presets,giftURL,composeGiftBoxes} from "./assets/place-village-gift.mjs?v=gift-endpoint";
+import {stationEffects,stationWorld,owlMailPosition,cookiePosition} from "./assets/world-gift-stations.mjs?v=star-cotton-candy";
+const world = document.querySelector("#world");
+const caption = document.querySelector("#caption");
+function matte(viewer) {
+  for (const material of viewer.model.materials) {
+    if (viewer === world && world.dataset.kind === "candy" && material.name.endsWith(" jelly")) continue;
+    const surface = material.pbrMetallicRoughness;
+    surface.metallicRoughnessTexture?.setTexture(null);
+    surface.setMetallicFactor(0);
+    surface.setRoughnessFactor(1);
+    material.setClearcoatFactor?.(0);
+    material.setSpecularFactor?.(0.12);
+    if (material.name === "Midnight wool") continue;
+    const [r,g,b,a] = surface.baseColorFactor;
+    const gray = .3*r + .59*g + .11*b;
+    surface.setBaseColorFactor([r*.78+gray*.17+.05,g*.78+gray*.17+.045,b*.78+gray*.17+.04,a]);
+  }
+}
+for (const viewer of document.querySelectorAll("model-viewer")) {
+  viewer.addEventListener("load", () => {
+    try { if (viewer !== world || world.dataset.kind !== "village") matte(viewer); } catch (error) { console.warn("Material adjustment skipped", error); }
+    if (viewer === world) caption.textContent=world.alt;
+  });
+}
+const choices = document.querySelectorAll("#worlds button");
+const snow=document.querySelector(".village-snow");
+for(let i=0;i<55;i++){
+  const flake=document.createElement("i");
+  flake.style.cssText=`--x:${(i*37)%100}%;--size:${1+i%3}px;--time:${12+i%11}s;--delay:-${i*.91}s`;
+  snow.append(flake);
+}
+let villageModel;
+let effects=[];
+let walkingElfPosition,walkingElfCount;
+let elfFrame, owlFrame, bubbleTimer;
+const greetings=[["👋 🎄","🎁 ✨"],["☃️ ❄️","🧣 💙"],["🍪 🥛","🎅 ❤️"],["🚂 🔔","🦌 ✨"]];
+function clearElfInteraction(){
+  cancelAnimationFrame(elfFrame);
+  cancelAnimationFrame(owlFrame);
+  clearTimeout(bubbleTimer);
+}
+function showElfInteraction(){
+  if(world.dataset.kind!=="village" || !walkingElfPosition)return;
+  const buttons=Array.from({length:walkingElfCount},(_,i)=>{
+    const button=document.createElement("button"),bubble=document.createElement("span");
+    button.type="button";button.className="elf-target";button.slot="hotspot-elf-"+i;
+    button.setAttribute("aria-label","Greet walking elf "+(i+1));
+    bubble.className="elf-bubble";bubble.setAttribute("role","status");
+    button.append(bubble);
+    let visits=0;
+    button.onclick=e=>{
+      e.stopPropagation();
+      clearTimeout(bubbleTimer);
+      for(const target of buttons)target.firstChild.textContent="";
+      bubble.textContent=greetings[i][visits++%greetings[i].length];
+      bubbleTimer=setTimeout(()=>bubble.textContent="",3200);
+    };
+    world.append(button);return button;
+  });
+  let previous=-1;
+  function follow(){
+    const time=world.currentTime||0;
+    if(time!==previous){
+      buttons.forEach((b,i)=>{
+        const [x,y,z]=walkingElfPosition(i,time);
+        world.updateHotspot({name:b.slot,position:x+"m "+(y+.52)+"m "+z+"m"});
+      });
+      previous=time;
+    }
+    elfFrame=requestAnimationFrame(follow);
+  }
+  follow();
+}
+let wizardPaths;
+async function showWizardInteraction(turn){
+  if(world.dataset.kind!=="academy")return;
+  wizardPaths ||= fetch("assets/worlds/academy-wizard-paths.json").then(response=>{
+    if(!response.ok)throw new Error("Wizard paths unavailable");
+    return response.json();
+  }).catch(()=>{wizardPaths=null;return null;});
+  const paths=await wizardPaths;
+  if(!paths||turn!==request)return;
+  const spells=[
+    ["Sapphire mage","✨ Starlight!","🌟 Make a wish!"],
+    ["Bookbinder apprentice","📖 A page of magic!","🪄 Mischief managed!"],
+    ["Broom rider","🧹 Catch the breeze!","🌙 See you by moonrise!"]
+  ];
+  const targets=paths.map((path,i)=>{
+    const button=document.createElement("button"),bubble=document.createElement("span");
+    button.type="button";button.className="elf-target wizard-target";
+    button.slot="hotspot-wizard-"+i;button.setAttribute("aria-label","Greet the "+spells[i][0]);
+    bubble.className="elf-bubble";bubble.setAttribute("role","status");button.append(bubble);
+    let visits=0;
+    button.onclick=e=>{
+      e.stopPropagation();clearTimeout(bubbleTimer);
+      targets.forEach(target=>target.firstChild.textContent="");
+      bubble.textContent=spells[i][1+visits++%2];
+      bubbleTimer=setTimeout(()=>bubble.textContent="",2600);
+    };
+    world.append(button);return button;
+  });
+  function follow(){
+    const phase=(world.currentTime||0)%15/15;
+    paths.forEach((path,i)=>{
+      const sample=phase*(path.length-1),j=Math.floor(sample),mix=sample-j;
+      const pos=path[j].map((v,k)=>v+(path[j+1][k]-v)*mix);
+      pos[1]+=.5;
+      world.updateHotspot({name:targets[i].slot,position:pos.map(v=>v+"m").join(" ")});
+    });
+    elfFrame=requestAnimationFrame(follow);
+  }
+  follow();
+}
+const feedIcons=`<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <g class="carrot-icon">
+    <path d="m16 8 1-5m0 5 5-2m-5 2 4-5" stroke="#42634e" stroke-width="2.3"/>
+    <path d="M15.8 7.4c-1.7-1.2-3.8-.4-5 1.4L3.1 20c-.5.8.1 1.5 1 1.1l11.5-6.9c2.8-1.7 2.8-4.8.2-6.8Z" fill="#e5a161" stroke="#714930" stroke-width="1.4"/>
+    <path d="m9.9 10.4 2.1 1.6m-4.8 2.1 1.7 1.2" stroke="#a86843" stroke-width="1.3"/>
+  </g>
+  <path class="fed-icon" d="M12 20.3 4.4 13C-1 7.4 6.3 1.2 12 7.5c5.7-6.3 13-.1 7.6 5.5Z" fill="#e8bb71" stroke="#785537" stroke-width="1.5"/>
+</svg>`;
+const letter=document.querySelector("#village-letter"), note=document.querySelector("#village-note"), form=document.querySelector("#letter-form"), input=document.querySelector("#letter-input"), edit=document.querySelector("#edit-letter"), statusLine=document.querySelector("#letter-status");
+let villageNote="A little Christmas warmth from me to you. Wherever we are, you have a place in my world.";
+let authoredNote="";
+function savedMailNote(){
+  try{return readEditor().note||authoredNote;}catch{return authoredNote;}
+}
+function readEditor(){return JSON.parse(localStorage.getItem(editorKey)||"{}")||{};}
+function mailboxReadKey(){
+  return parcel ? "fuzzy-mail-read:"+location.hash : editorKey+":mail-read";
+}
+function readMailWorlds(){
+  try{return JSON.parse(localStorage.getItem(mailboxReadKey())||"{}")||{};}catch{return {};}
+}
+function markMailRead(){
+  try{localStorage.setItem(mailboxReadKey(),JSON.stringify({...readMailWorlds(),[world.dataset.kind]:true}));}catch{}
+}
+function displayLetter(){note.textContent=villageNote;note.hidden=false;edit.hidden=false;form.hidden=true;}
+function openLetter(){
+  if(!parcel&&!savedMailNote().trim()){composeMail();return;}
+  if(parcel){villageNote=parcel.note||villageNote;}else try{const state=readEditor();if(state.note?.trim())villageNote=state.note;localStorage.setItem(editorKey,JSON.stringify({...state,read:true}));}catch{}
+  markMailRead();
+  world.querySelector(".mail-open")?.classList.add("read");statusLine.textContent="";displayLetter();edit.hidden=!!parcel;syncGuide();letter.showModal();
+}
+function composeMail(){
+  if(parcel)return;
+  form.hidden=false;edit.hidden=true;note.hidden=true;
+  input.value=savedMailNote();input.setCustomValidity("");statusLine.textContent="";
+  if(!letter.open)letter.showModal();
+  input.focus();
+}
+edit.onclick=composeMail;
+const quill=document.querySelector("#quill");
+quill.onclick=composeMail;
+function updateQuillLabel(){
+  const hasLetter=!!savedMailNote().trim();
+  quill.title=hasLetter?"Edit your letter":"Write your letter";
+  quill.setAttribute("aria-label",quill.title);
+
+}
+input.oninput=()=>input.setCustomValidity("");
+form.onsubmit=e=>{
+  e.preventDefault();const value=input.value.trim();
+  if(!value){input.setCustomValidity("Write a note for the mailbox.");input.reportValidity();return;}
+  try{localStorage.removeItem(mailboxReadKey());}catch{}
+  authoredNote=value;villageNote=value;world.querySelector(".mail-open")?.classList.remove("read");
+  try{localStorage.setItem(editorKey,JSON.stringify({...readEditor(),note:value,read:false}));statusLine.textContent="Your letter is tucked into your gift.";}catch{statusLine.textContent="Saved for this visit only.";}
+  updateQuillLabel();displayLetter();syncGuide();edit.focus();
+};
+document.querySelector("#close-letter").onclick=()=>letter.close();
+const stationDialog=document.querySelector("#gift-station");
+const freshBoxes=()=>Array.from({length:3},()=>({phase:"empty"}));
+let boxes=freshBoxes();
+const papers={pine:"Pine sprigs",berry:"Cranberry stripes",frost:"Frost stars"};
+const packWorld=document.querySelector("#pack-world");
+if(location.hostname==="fuzzy-preview.vercel.app" && location.pathname==="/" && !location.hash){
+  history.replaceState(null,"",location.pathname+location.search+"#draft=fd96792f-599a-43fc-af98-0f8c90a18866");
+}
+const parcelParams=new URLSearchParams(location.hash.slice(1));
+let parcel=null;
+if(parcelParams.has("parcel")){
+  const gifts=parcelParams.getAll("gift"),paper=parcelParams.get("paper");
+  if(parcelParams.get("parcel")==="1"&&Object.hasOwn(papers,paper)&&gifts.length===3&&gifts.every(id=>presets.has(id)||/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))){
+    parcel={gifts,paper,note:(parcelParams.get("note")||"").slice(0,500)};
+    gifts.forEach((id,i)=>boxes[i]={id,phase:"ready"});
+  }else{document.querySelector("main").textContent="This gift link is incomplete. Ask the sender to share it again.";throw Error("Invalid gift link");}
+}
+const draftId=parcelParams.get("draft")||"";
+const draftSuffix=!parcel&&/^[0-9a-f-]{36}$/i.test(draftId)?":"+draftId:"";
+const editorKey="fuzzy-editor"+draftSuffix;
+const friendWorld=document.querySelector("#friend-world");
+if(parcel){
+  const draftURL=new URL(location.pathname,location.origin);
+  draftURL.hash=new URLSearchParams({draft:crypto.randomUUID()}).toString();
+  friendWorld.href=draftURL.href;
+}
+const key="fuzzy-received:"+location.hash;
+if(parcel&&!parcelParams.has("preview"))try{
+  const saved=JSON.parse(localStorage.getItem(key)||"null");
+  boxes.forEach((box,i)=>{
+    if(saved?.[i]?.id===box.id&&saved[i].phase==="open")box.phase="open";
+  });
+}catch{}
+const packing=document.querySelector("#packing"),arrival=document.querySelector("#arrival");
+const recipients=document.querySelector("#receivers"),sendStatus=document.querySelector("#send-status");
+function addReceiver(){
+  const field=document.createElement("input");
+  field.type="email";field.autocomplete="email";field.required=true;field.placeholder="name@example.com";
+  field.setAttribute("aria-label","Receiver "+(recipients.children.length+1));recipients.append(field);return field;
+}
+addReceiver();
+document.querySelector("#add-receiver").onclick=()=>addReceiver().focus();
+for(const [value,name] of Object.entries(papers)){
+  const label=document.createElement("label"),radio=document.createElement("input"),sample=document.createElement("i");
+  sample.dataset.paper=value;radio.type="radio";radio.name="paper";radio.value=value;radio.checked=value==="pine";
+  label.append(sample,radio,name);document.querySelector("#paper-options").append(label);
+}
+const previewWorld=document.querySelector("#preview-world");
+function refreshReceiverPreview(){
+  const url=new URL(parcelURL()),params=new URLSearchParams(url.hash.slice(1));
+  const giftLink=document.querySelector("#gift-url");
+  giftLink.href=url.href;giftLink.textContent=url.href;giftLink.title=url.href;
+  params.set("preview","1");url.hash=params.toString();previewWorld.href=url.href;
+}
+packWorld.onclick=()=>{sendStatus.textContent="";refreshReceiverPreview();packing.showModal();};
+document.querySelector("#paper-options").addEventListener("change",refreshReceiverPreview);
+document.querySelector("#sender-name").addEventListener("input",refreshReceiverPreview);
+function parcelURL(){
+  const params=new URLSearchParams({parcel:"1",paper:document.querySelector('input[name="paper"]:checked').value});
+  const sender=document.querySelector("#sender-name").value.trim();if(sender)params.set("sender",sender);
+  params.set("world",world.dataset.kind);
+  params.set("album",document.querySelector("#christmas-album").value);
+  for(const box of boxes)params.append("gift",box.id);
+  const message=savedMailNote();if(message)params.set("note",message.slice(0,500));
+  const url=new URL(location.href);url.hash=params.toString();return url.href;
+}
+document.querySelector("#delivery").onsubmit=e=>{
+  e.preventDefault();
+  const emails=[...new Set(Array.from(recipients.children,input=>input.value.trim()))];
+  const url=parcelURL();
+  location.href="mailto:?bcc="+encodeURIComponent(emails.join(","))+"&subject="+encodeURIComponent("A winter world for you")+"&body="+encodeURIComponent("I packed a winter world with three gifts for you. Open your world here:\n\n"+url);
+  sendStatus.textContent="Send the draft in your email app, then choose Preview as receiver to open your wrapped world.";
+};
+document.querySelector("#copy-parcel").onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector("#gift-url").href);sendStatus.textContent="Gift link copied.";}catch{const field=document.createElement("textarea");field.readOnly=true;field.value=parcelURL();sendStatus.replaceChildren(field);field.select();}};
+if(parcel){
+  document.body.classList.add("receiving");arrival.dataset.paper=parcel.paper;
+  arrival.addEventListener("close",()=>{friendWorld.hidden=false;},{once:true});
+  arrival.addEventListener("cancel",e=>e.preventDefault());arrival.showModal();
+  document.querySelector("#unfold").onclick=e=>{e.currentTarget.disabled=true;const sender=(parcelParams.get("sender")||"").trim().slice(0,60);document.querySelector("#album-heading").textContent=sender?"Music shared by "+sender:"Music shared with you";window.dispatchEvent(new Event("gift-soundtrack-start"));arrival.classList.add("unfolding");setTimeout(()=>arrival.close(),matchMedia("(prefers-reduced-motion: reduce)").matches?0:850);};
+}
+const noteKey="fuzzy-village-guided-note"+draftSuffix;
+let noteVisited=!!parcel;
+try{if(!parcel)noteVisited=localStorage.getItem(noteKey)==="1";}catch{}
+let mooseIndex=0;
+
+function guideStep(){
+  const prep=boxes.findIndex(b=>["empty","prepared","retry"].includes(b.phase));
+  if(prep>=0)return {kind:"prep",slot:prep};
+  if(!noteVisited)return {kind:"note"};
+  if(boxes.some(b=>b.phase==="building"||b.phase==="starting"))return {kind:"game"};
+  return {kind:"unwrap",slot:boxes.findIndex(b=>b.phase==="ready"||b.phase==="opening")};
+}
+function syncGuide(){
+  const village=world.dataset.kind==="village",step=guideStep(),gaming=village&&(step.kind==="game"||boxes.every(box=>box.phase==="open"));
+  packWorld.hidden=!!parcel;
+  packWorld.disabled=!boxes.every(b=>["ready","open"].includes(b.phase));
+  document.querySelector("#pack-hint").hidden=packWorld.hidden||!packWorld.disabled;
+  if(!village||!parcel){
+    document.querySelectorAll("#world-gifts [data-slot]").forEach((button,i)=>{
+      const b=boxes[i];
+      const action={ready:"Unwrap",open:"Rotate",retry:"Retry",starting:"Starting…",building:Math.round(b.progress||0)+"%",opening:"Opening…"}[b.phase]||"Make gift";
+      button.textContent=action+" · Box "+(i+1);
+      button.disabled=["starting","building","opening"].includes(b.phase);
+    });
+  }
+  world.querySelectorAll(".box-hit").forEach(button=>{
+    const slot=Number(button.dataset.box),b=boxes[slot];
+    button.toggleAttribute("data-next",["empty","prepared"].includes(b.phase));
+    button.toggleAttribute("data-muted",step.slot!==slot&&b.phase!=="building");
+    button.toggleAttribute("data-guide-hidden",!["empty","prepared","retry","building","open","ready"].includes(b.phase)&&step.slot!==slot&&!(step.kind==="unwrap"&&step.slot===-1));
+  });
+  world.querySelectorAll(".elf-target:not(.wizard-target,.cookie-target)").forEach(b=>b.toggleAttribute("data-guide-hidden",step.kind!=="unwrap"||step.slot!==-1));
+  world.querySelector(".fishing-action")?.toggleAttribute("data-quiet",fishPhase==="idle"&&!gaming);
+  
+  world.querySelectorAll(".moose-feed").forEach((b,i)=>{b.toggleAttribute("data-guide-hidden",i!==mooseIndex);b.toggleAttribute("data-quiet",!gaming);});
+
+}
+letter.addEventListener("close",()=>{
+  if(guideStep().kind==="note"){
+    noteVisited=true;try{localStorage.setItem(noteKey,"1");}catch{}
+    syncGuide();
+  }
+});
+let selectedBox=0,renderVersion=0,currentModel=null,pendingReveal=null;
+const persistBoxes=()=>{if(!parcel||parcelParams.has("preview"))return;try{localStorage.setItem(key,JSON.stringify(boxes.map(b=>b.phase==="opening"?{...b,phase:"ready"}:b.phase==="starting"?{phase:"prepared",prompt:b.prompt}:b)));}catch{}};
+function paintBox(slot){
+  syncGuide();
+  const b=boxes[slot],button=world.querySelector('[data-box="'+slot+'"]');if(!button)return;
+  const busy=["building","opening","starting"].includes(b.phase);
+  const label=b.phase==="ready"?"Unwrap":b.phase==="retry"?"Retry":b.phase==="opening"?"Opening…":busy?Math.round(b.progress||0)+"%":"";
+  button.title=(b.phase==="open"?"Rotate gift":label||"Make a gift")+" · Box "+(slot+1);
+  button.setAttribute("aria-label",button.title);button.setAttribute("aria-disabled",String(busy));
+  button.firstElementChild.hidden=!label;button.querySelector("b").textContent=label;
+  const bar=button.querySelector("progress");bar.hidden=!["building","starting"].includes(b.phase);bar.value=b.progress||0;
+}
+async function watchBox(slot){
+  const b=boxes[slot];b.phase="building";paintBox(slot);persistBoxes();
+  try{await waitTask(b.id,"Building gift",p=>{if(boxes[slot]!==b)return false;b.progress=Math.min(99,p);paintBox(slot);});if(boxes[slot]!==b)return;b.phase="ready";rememberBicycle(b);}
+  catch(error){b.phase=error.terminal?"empty":"retry";b.error=error.message;}
+  persistBoxes();paintBox(slot);
+}
+const boxStatus=document.querySelector("#box-status"),boxInput=document.querySelector("#box-prompt");
+const bikeKey="fuzzy-bicycle-preset";
+function rememberBicycle(b){
+  if(b.id && b.phase==="ready" && /\b(bicycle|bike|bycle)\b/i.test(b.prompt||"")){
+    try{localStorage.setItem(bikeKey,b.id);}catch{}
+  }
+}
+for(const b of boxes)if(b.phase==="open"||b.phase==="ready")rememberBicycle({...b,phase:"ready"});
+const inspector=document.querySelector("#inspect-gift"),inspectModel=document.querySelector("#inspect-model");
+let inspectedSlot=0;
+async function inspectGift(slot){
+  inspectedSlot=slot;
+  const box=boxes[slot];
+  const url=await giftURL(box.id);
+  if(boxes[slot]!==box)return;
+  inspectModel.src=url;inspector.showModal();
+}
+document.querySelector("#replace-gift").onclick=()=>{inspector.close();openGiftForm(inspectedSlot);};
+function openGiftForm(slot){
+  selectedBox=slot;boxInput.value=boxes[slot].prompt||"";boxStatus.textContent=boxes[slot].error||"";
+  document.querySelector("#box-title").textContent="Make a gift · Box "+(slot+1);
+  if(!presetGrid.childElementCount)showPresets();
+  stationDialog.showModal();boxInput.focus();
+}
+const presetGrid=document.querySelector("#gift-presets");
+function showPresets(){
+  for(const [id,label] of presets){
+    const button=document.createElement("button");
+    button.type="button";
+    const icon=document.createElement("model-viewer");
+    icon.setAttribute("aria-hidden","true");
+    icon.setAttribute("interaction-prompt","none");
+    icon.tabIndex=-1;
+    giftURL(id).then(url=>{icon.src=url;});
+    button.append(icon,document.createTextNode(label));
+    button.onclick=()=>{
+      const slot=selectedBox,replace=boxes[slot].phase==="open";
+      boxes[slot]={id,prompt:label,phase:"ready"};
+      persistBoxes();stationDialog.close();paintBox(slot);
+      if(replace)refreshBoxes().catch(()=>{});
+    };
+    presetGrid.append(button);
+  }
+}
+document.querySelector("#box-generate").onclick=async()=>{
+  const slot=selectedBox,previous=boxes[slot],prompt=boxInput.value.trim();
+  if(prompt.length<3){boxStatus.textContent="Describe your gift in at least three characters.";return;}
+  if(!["empty","prepared","open"].includes(previous.phase))return;
+  const b=boxes[slot]={phase:"starting",progress:0,prompt};
+  stationDialog.close();paintBox(slot);
+  try{
+    b.id=await beginTask("object",{prompt});
+    if(boxes[slot]!==b)return;
+    if(previous.phase==="open")refreshBoxes().catch(()=>{});
+    await watchBox(slot);
+  }catch(error){if(boxes[slot]!==b)return;boxes[slot]=previous;previous.error=error.message;previous.prompt=prompt;persistBoxes();paintBox(slot);caption.textContent=error.message;
+    if(location.origin==="http://127.0.0.1:8463"){
+      const link=document.createElement("a");
+      link.href=hostedEditor+"/#world="+world.dataset.kind;
+      link.target="_blank";link.rel="noopener";link.textContent="Open the hosted gift editor";
+      caption.append(" ",link);
+    }}
+};
+async function refreshBoxes(reveal=null){
+  const kind=world.dataset.kind;
+  const version=++renderVersion;
+  const gifts=boxes.flatMap((b,slot)=>["open","opening"].includes(b.phase)?[{slot,id:b.id}]:[]);
+  const base=await (kind==="village"?villageModel:stationWorld(kind));
+  const url=gifts.length?await composeGiftBoxes(base,gifts):base;
+  if(version!==renderVersion||world.dataset.kind!==kind){if(url!==base)URL.revokeObjectURL(url);return;}
+  const previous=currentModel;currentModel=url===base?null:url;
+  pendingReveal=reveal;world.src=url;
+  if(previous && previous!==url)URL.revokeObjectURL(previous);
+}
+async function activateBox(slot){
+  const b=boxes[slot];
+  if(b.phase==="retry"){watchBox(slot);return;}
+  if(b.phase==="ready"){
+    if(boxes.some(item=>item.phase==="opening"))return;
+    b.phase="opening";paintBox(slot);
+    try{await refreshBoxes(slot);b.phase="open";persistBoxes();}
+    catch(error){b.phase="ready";caption.textContent="Could not unwrap the gift. Tap the box to retry.";}
+    paintBox(slot);return;
+  }
+  if(b.phase==="open"){try{await inspectGift(slot);}catch{caption.textContent="Could not open this gift. Tap to try again.";}return;}
+  if(["empty","prepared"].includes(b.phase))openGiftForm(slot);
+}
+const fishIcon='<svg viewBox="0 0 28 18" aria-hidden="true"><path fill="currentColor" d="M2 9C7 1 15 1 21 7l5-4v12l-5-4C14 17 7 17 2 9Z"/><circle cx="8" cy="8" r="1.2" fill="#fff9e9"/></svg>';
+let fishingTimer,fishPhase="idle",catchCount=0;
+function resetFishing(){
+  clearTimeout(fishingTimer);fishPhase="idle";
+}
+function drawFishing(){
+  const action=world.querySelector(".fishing-action"),float=world.querySelector(".fishing-float");
+  if(!action||!float)return;
+  const labels={idle:"Tap to cast",waiting:"Wait for a bite…",bite:"Reel in!",caught:"Caught "+catchCount+" · Cast again",early:"Too soon · Cast again",missed:"It got away · Cast again"};
+  const label=labels[fishPhase];
+  action.innerHTML=fishPhase==="idle"?fishIcon:"";if(fishPhase!=="idle")action.textContent=label;
+  action.title=label;action.setAttribute("aria-label","Ice fishing: "+label);
+  float.setAttribute("aria-label",label);float.dataset.phase=fishPhase;
+  float.innerHTML=fishPhase==="caught"?fishIcon:"<i></i>";
+  caption.textContent="Ice fishing · "+label;
+}
+function fishTap(){
+  clearTimeout(fishingTimer);
+  if(fishPhase==="bite"){fishPhase="caught";catchCount++;}
+  else if(fishPhase==="waiting"){fishPhase="early";}
+  else{
+    fishPhase="waiting";
+    fishingTimer=setTimeout(()=>{
+      fishPhase="bite";drawFishing();
+      fishingTimer=setTimeout(()=>{fishPhase="missed";drawFishing();},2400);
+    },1600+Math.random()*2400);
+  }
+  drawFishing();syncGuide();
+}
+// Window centers in the academy model's coordinate system, facing out from each facade.
+const academyLights = [
+  [-.925,.786,-1.48],[.925,.786,-1.48],
+  [-4.416,.52,.48],[-3.384,.52,.48],
+  [3.427,.558,.87],[4.373,.558,.87],
+  [-3.68,.463,3.31],[-2.82,.463,3.31],
+  [-1.75,2.01,-2.32],[1.75,2.35,-2.32],
+].map(position=>({kind:"window",position,normal:[0,0,1]}));
+for(let face=0;face<6;face++){
+  const angle=face*Math.PI/3, x=Math.sin(angle), z=Math.cos(angle);
+  academyLights.push({kind:"lantern",position:[.69*x,4.46,-3.85+.69*z],normal:[x,0,z]});
+}
+academyLights.push({kind:"star",position:[0,2.98,.9],normal:[0,1,0]});
+function showWorldEffects(){
+  const kind=world.dataset.kind;
+  const worldEffects=kind==="village"?effects:[...(kind==="academy"?academyLights:[]),...stationEffects(kind)];
+  const walkers=[];
+  worldEffects.forEach(({kind,position,normal,name,action},i)=>{
+    if(kind==="cookie"){
+      const [label,clip,message]=action;
+      const button=document.createElement("button"),bubble=document.createElement("span");
+      walkers.push([button,name]);
+      button.type="button";button.className="elf-target cookie-target";button.slot="hotspot-cookie-"+i;
+      button.dataset.position=position.map(v=>v+"m").join(" ");button.setAttribute("aria-label",label);button.title=label;
+      bubble.className="elf-bubble";bubble.setAttribute("role","status");button.append(bubble);
+      button.onclick=e=>{
+        e.stopPropagation();
+        if(bubble.textContent)return;
+        bubble.textContent=message;
+        const animate=!matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if(animate)world.appendAnimation(clip,{repetitions:1,time:0});
+        setTimeout(()=>{
+          if(!button.isConnected)return;
+          if(animate)world.detachAnimation(clip);
+          bubble.textContent="";
+        },1900);
+      };
+      world.append(button);return;
+    }
+    if(kind==="gift-station"){
+      const slot=worldEffects[i].slot,button=document.createElement("button");
+      button.type="button";button.className="box-hit";button.slot="hotspot-gift-box-"+slot;button.dataset.box=slot;
+      button.dataset.position=position.map(v=>v+"m").join(" ");
+      button.innerHTML='<span hidden><b></b><progress max="100" aria-label="Gift generation progress"></progress></span>';
+      button.onclick=e=>{e.stopPropagation();activateBox(slot);};world.append(button);paintBox(slot);return;
+    }
+    if(kind==="fishing-elf"||kind==="fishing-float"){
+      const action=kind==="fishing-elf",button=document.createElement("button");
+      button.type="button";button.slot="hotspot-"+kind;
+      button.className=action?"fishing-action":"fishing-float";
+      button.dataset.position=position.map(v=>v+"m").join(" ");
+      button.title="Tap to cast";button.setAttribute("aria-label",action?"Ice fishing: Tap to cast":"Cast at the fishing hole");
+      button.innerHTML=action?fishIcon:"<i></i>";button.onclick=e=>{e.stopPropagation();fishTap();};
+      world.append(button);return;
+    }
+    if(kind==="mail"){
+      const button=document.createElement("button");
+      if(world.dataset.kind==="candy")walkers.push([button,"Gingerbread postman"]);
+      button.type="button";button.className="mail-open";button.slot="hotspot-mailbox";
+      button.dataset.position=position.map(v=>v+"m").join(" ");button.setAttribute("aria-label",world.dataset.kind==="candy"?"Read the gingerbread postman’s letter":world.dataset.kind==="academy"?"Read the snowy owl’s letter":"Open "+world.alt+" mailbox");
+      button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg><span class="badge" aria-hidden="true">1</span>';
+      try{button.classList.toggle("read",!!readMailWorlds()[world.dataset.kind]);}catch{}
+      button.onclick=e=>{e.stopPropagation();openLetter();};world.append(button);
+      if(world.dataset.kind==="academy"){
+        button.title="Read the snowy owl’s letter";
+        function followOwl(){
+          if(!button.isConnected)return;
+          const position=owlMailPosition(world.currentTime||0);
+          world.updateHotspot({name:button.slot,position:position.map(v=>v+"m").join(" ")});
+          owlFrame=requestAnimationFrame(followOwl);
+        }
+        followOwl();
+      }
+      return;
+    }
+    if(kind==="feed"){
+      const feed=document.createElement("button");
+      feed.type="button";feed.className="moose-feed";feed.slot="hotspot-feed-"+i;
+      feed.dataset.position=position.map(v=>v+"m").join(" ");
+      feed.setAttribute("aria-label","Feed "+name.toLowerCase()+" a carrot");
+      feed.title=feed.getAttribute("aria-label");feed.innerHTML=feedIcons;
+      feed.onclick=e=>{
+        e.stopPropagation();
+        if(feed.disabled)return;
+        const feeders=[...world.querySelectorAll(".moose-feed")];
+        for(const button of feeders){
+          button.disabled=true;
+          if(button!==feed)button.style.visibility="hidden";
+        }
+        const clip="Feed "+name,reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if(!reduced)world.appendAnimation(clip,{repetitions:1,time:0});
+        setTimeout(()=>{
+          if(!feed.isConnected)return;
+          if(!reduced)world.detachAnimation(clip);
+          for(const button of feeders){button.disabled=false;button.style.visibility="";}
+          mooseIndex=(mooseIndex+1)%feeders.length;syncGuide();
+        },3000);
+      };
+      world.append(feed);return;
+    }
+    const anchor=document.createElement("div");
+    anchor.slot="hotspot-"+world.dataset.kind+"-"+i;
+    anchor.className=kind==="smoke"?"atmosphere-anchor smoke":"light-anchor "+kind;
+    anchor.dataset.position=position.map(v=>v+"m").join(" ");
+    anchor.dataset.normal=(normal||[0,1,0]).join(" ");
+    anchor.dataset.visibilityAttribute="visible";
+    anchor.setAttribute("aria-hidden","true");
+    if(kind==="smoke"){
+      for(let j=0;j<6;j++){const puff=document.createElement("span");puff.className="puff";puff.style.left="-10px";puff.style.animationDelay=(-j*7/6-i*.8)+"s";anchor.append(puff);}
+    }else{
+      anchor.style.setProperty("--delay",(-i*.37)+"s");
+      anchor.innerHTML='<span class="halo"></span><span class="spark"></span>';
+    }
+    world.append(anchor);
+  });
+  if(walkers.length){
+    function followWalkers(){
+      for(const [button,name] of walkers){
+        const point=cookiePosition(name,world.currentTime||0);
+        world.updateHotspot({name:button.slot,position:point.map(v=>v+"m").join(" ")});
+      }
+      elfFrame=requestAnimationFrame(followWalkers);
+    }
+    followWalkers();
+  }
+}
+world.addEventListener("load",()=>{clearElfInteraction();world.replaceChildren();showWorldEffects();showElfInteraction();showWizardInteraction(request);syncGuide();if(fishPhase!=="idle")drawFishing();if(pendingReveal!==null && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    const clip="Unwrap box "+pendingReveal;
+    world.appendAnimation(clip,{repetitions:1,time:0});
+  }pendingReveal=null;});
+const islandLoader=document.querySelector("#island-loader");
+function finishIslandLoad(){
+  islandLoader.hidden=true;
+  world.removeAttribute("aria-busy");
+}
+world.addEventListener("load",finishIslandLoad);
+let request = 0;
+async function selectWorld(choice) {
+  if(choice.dataset.world===world.dataset.kind&&world.loaded&&islandLoader.hidden)return;
+  islandLoader.hidden=false;world.setAttribute("aria-busy","true");
+  if(!parcel&&choice.dataset.world!==world.dataset.kind)boxes=freshBoxes();
+  resetFishing();
+  for (const button of choices) button.setAttribute("aria-pressed", String(button === choice));
+  world.dataset.kind = choice.dataset.world;
+  world.exposure = ({ candy: 0.82, academy: 0.72 })[choice.dataset.world] ?? 0.95;
+  packWorld.hidden=true;document.querySelector("#pack-hint").hidden=true;
+  world.alt = choice.textContent;
+  caption.textContent=world.alt;
+  updateQuillLabel();
+  clearElfInteraction();world.replaceChildren();
+  const turn = ++request;
+  ++renderVersion;pendingReveal=null;
+  const village = choice.dataset.world === "village";
+  const academy = choice.dataset.world === "academy";
+  const allowTilt = village || academy || choice.dataset.world === "candy";
+  document.querySelector("#diorama").toggleAttribute("data-village",village);
+  document.querySelector("#diorama").toggleAttribute("data-snowy",village || academy || choice.dataset.world==="candy");
+  document.querySelector("#world-gifts").hidden=village&&!!parcel;
+  if(!parcel)window.dispatchEvent(new Event("gift-music-enter"));
+  world.setAttribute("min-camera-orbit", allowTilt ? "auto 44deg auto" : "auto 65deg auto");
+  world.setAttribute("max-camera-orbit", allowTilt ? "auto 85deg auto" : "auto 65deg auto");
+  // Narrow the opening field of view for a 1.2× larger projected island.
+  world.setAttribute("field-of-view", village ? "30deg" : "25.17deg");
+  world.setAttribute("camera-orbit", village ? "18deg 68deg 87%" : "30deg 68deg auto");
+  world.autoplay = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (village) world.setAttribute("animation-name", "Santa flight");
+  else if(academy)world.setAttribute("animation-name","Winter post");
+  else if(choice.dataset.world==="candy")world.setAttribute("animation-name","Candy village greetings");
+  else world.removeAttribute("animation-name");
+  if (village) {
+    world.removeAttribute("src");
+    try {
+      villageModel ||= Promise.all([import("./assets/santa-flight.mjs"), import("./assets/gingerbread-village.mjs")])
+        .then(async ([{animateVillage}, village]) => {
+          const source = URL.createObjectURL(new Blob([await village.villageGeometry(true)], {type:"model/gltf-binary"}));
+          try { const url=await animateVillage(source);effects=village.villageEffects;walkingElfPosition=village.walkingElfPosition;walkingElfCount=village.walkingElfCount;return url; }
+          finally { URL.revokeObjectURL(source); }
+        });
+      let url=await villageModel;
+      if(turn!==request)return;
+      if(boxes.some(b=>b.phase==="open"||b.phase==="opening")){
+        try{await refreshBoxes();}catch{if(turn===request){world.src=url;caption.textContent="Could not restore an opened gift.";}}
+      }else if(turn===request)world.src=url;
+    } catch (error) {
+      villageModel = null;
+      if (turn === request) {finishIslandLoad();caption.textContent = "Santa Village couldn’t load. Select it again to retry.";}
+    }
+    return;
+  }
+  try{
+    const base=await stationWorld(choice.dataset.world);
+    if(turn!==request)return;
+    try{await refreshBoxes();}
+    catch(error){if(turn===request){world.src=base;caption.textContent="Could not restore the opened gifts.";}}
+  }catch(error){if(turn===request){finishIslandLoad();caption.textContent=world.alt+" couldn’t load. Select it again to retry.";}}
+  syncGuide();
+}
+world.addEventListener("error", () => {finishIslandLoad();caption.textContent = world.alt + " couldn’t load. Select the world again to retry.";});
+let preferredWorld=parcelParams.get("world");
+if(draftSuffix)try{preferredWorld=localStorage.getItem("fuzzy-draft-world"+draftSuffix)||preferredWorld;}catch{}
+let selected=Array.from(choices).find(button=>button.dataset.world===preferredWorld)||choices[0];
+function pick(choice){
+  selected=choice;
+  if(draftSuffix)try{localStorage.setItem("fuzzy-draft-world"+draftSuffix,choice.dataset.world);}catch{}
+  for(const button of choices)button.setAttribute("aria-pressed",String(button===choice));
+  selectWorld(choice);
+}
+for(const choice of choices)choice.onclick=()=>pick(choice);
+document.querySelectorAll("#world-gifts [data-slot]").forEach(button=>button.onclick=()=>activateBox(Number(button.dataset.slot)));
+document.querySelector("#world-note").hidden=!parcel;
+document.querySelector("#world-note").onclick=openLetter;
+if(parcel)document.querySelector("#world-heading").textContent=selected.textContent;
+
+boxes.forEach((b,i)=>{if(b.phase==="building")watchBox(i);});
+pick(selected);
+</script><script src="assets/decorations.js?v=gift-icons"></script><script src="assets/village-record.js?v=arrival-music"></script></body></html>
