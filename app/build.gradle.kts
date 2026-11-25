@@ -12,8 +12,8 @@ android {
         applicationId = "com.fuzzy.christmas"
         minSdk = 35
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.3.3"
+        versionCode = 9
+        versionName = "0.3.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters.add("arm64-v8a") }
@@ -67,11 +67,11 @@ configurations.all {
     }
 }
 
-val nativeSceneAssets = layout.buildDirectory.dir("generated/fuzzySceneAssets")
+val nativeSceneAssets = layout.buildDirectory.dir("generated/fuzzyWorldAssets")
 val bakeNativeScenes by tasks.registering(Exec::class) {
     val exporter = rootProject.file("scripts/bake-native-scenes.mjs")
     val webAssets = rootProject.file("prototype/web/assets")
-    inputs.files(exporter, webAssets.resolve("world-gift-stations.mjs"),
+    inputs.files(exporter, rootProject.file("app/src/main/assets/village-effects.glb"), webAssets.resolve("decorations.js"), webAssets.resolve("presets/bicycle.glb"), webAssets.resolve("world-gift-stations.mjs"),
         webAssets.resolve("place-village-gift.mjs"), webAssets.resolve("worlds/funky-candy-land.gltf"),
         webAssets.resolve("worlds/owl-post-academy.gltf"), webAssets.resolve("gingerbread-village.mjs"),
         webAssets.resolve("north-pole-props.mjs"), webAssets.resolve("santa-flight.mjs"),
