@@ -4,6 +4,14 @@
 
 Messages don't disappear into a chat history. They become playful, persistent parts of a world you build together.
 
+## Fuzzy V3 — Christmas Worlds for PICO
+
+The version 0.3.0 APK opens in North Pole – Santa Village. Use the native world buttons to visit Wizardry Magic Christmas or Funky Candy Land. Each island is a 3D model in a volumetric PICO window. Turn the island, open its mailbox, edit a letter, or add up to three miniature decorations. Each world keeps its own letter and decorations on the device.
+
+The APK targets PICO OS 6, ARM64 and Android API 35 with PICO Spatial SDK 6.1.9. The native editor works offline. Online Tripo generation and sending gift links are available in the companion browser editor. Build the APK with Node.js 20 or newer on PATH, JDK 17 or 21, and Android SDK 35 using `./gradlew :app:assembleDebug :app:testDebugUnitTest`. The build exports the two additional scene models from the shared island assets and packages them with Santa Village.
+
+This is a developer-signed candidate for emulator and headset testing. Use a clean PICO emulator to preserve saved data on devices running an earlier build signed with another key.
+
 ## Start here
 
 - [V2 APK and submission materials](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.2)
@@ -13,7 +21,7 @@ Messages don't disappear into a chat history. They become playful, persistent pa
 - [V1 concept and longer-term AI vision](docs/V1-CONCEPT.md)
 - [Google Drive submission folder](https://drive.google.com/drive/folders/1CRVMRI06iP5BajKrthzkdanl4s72C9_m)
 
-## Current status — V2 candidate
+## Previous release — V2.2
 
 Native Android/Kotlin with PICO Spatial SDK 6.1.9, ARM64, Android API 35, PICO OS 6. The APK compiled, 14 flow/editor/effect tests passed, and the debug signature was verified. **Headset/emulator runtime testing remains pending.** This is not a confirmed build for PICO 4 or older firmware.
 

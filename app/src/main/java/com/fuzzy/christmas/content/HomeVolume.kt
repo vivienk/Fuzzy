@@ -23,6 +23,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pico.spatial.core.ecs.*
+import com.pico.spatial.core.ecs.animation.AnimationPlaybackController
 import com.pico.spatial.core.math.EulerAngles
 import com.pico.spatial.core.math.Vector3
 import com.pico.spatial.core.math.Color4
@@ -41,12 +42,33 @@ private val Cranberry = Color(0xFFAC5144)
 private data class NativeEffect(val entity: Entity, val kind: String, val position: Vector3, val phase: Float, val tree: Boolean, val size: Float, val opacity: OpacityControllerComponent)
 private fun Entity.transform() = components[TransformComponent::class.java]
 
+private enum class WinterWorld(val title: String, val asset: String, val mailbox: Vector3) {
+    Village("North Pole – Santa Village", "christmas-world.glb", Vector3(-.34f, .46f, .68f)),
+    Academy("Wizardry Magic Christmas", "academy.glb", Vector3(.74f, .30f, .17f)),
+    Candy("Funky Candy Land", "candy.glb", Vector3(-.71f, .24f, .62f))
+}
+
 @Composable
 fun HomeVolume() {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("fuzzy_keepsakes_v2", 0) }
+    val settings = remember { context.getSharedPreferences("fuzzy_worlds", 0) }
+    var selected by remember { mutableStateOf(WinterWorld.values().firstOrNull {
+        it.name == settings.getString("world", null)
+    } ?: WinterWorld.Village) }
+    key(selected) {
+        WorldVolume(selected) { next ->
+            settings.edit().putString("world", next.name).apply()
+            selected = next
+        }
+    }
+}
+
+@Composable
+private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences(if (island == WinterWorld.Village) "fuzzy_keepsakes_v2" else "fuzzy_keepsakes_${island.name}", 0) }
     val scope = rememberCoroutineScope()
-    var greeting by remember { mutableStateOf(GreetingState(kept = prefs.getBoolean("christmas_kept", false))) }
+    var greeting by remember { mutableStateOf(GreetingState(opened = true, lightsOn = prefs.getBoolean("tree_lit", false), kept = prefs.getBoolean("christmas_kept", false))) }
     var editor by remember { mutableStateOf(EditorState.restore(prefs.getString("message", null), prefs.getString("decorations", null), prefs.getBoolean("mail_read", false))) }
     var draft by remember { mutableStateOf(editor.note) }
     var selected by remember { mutableStateOf("reindeer") }
@@ -62,6 +84,10 @@ fun HomeVolume() {
     var treeLights by remember { mutableStateOf<Entity?>(null) }
     var effects by remember { mutableStateOf(emptyList<NativeEffect>()) }
     var variants by remember { mutableStateOf(emptyMap<Pair<Int, String>, Entity>()) }
+    var parcelParts by remember { mutableStateOf(emptyList<List<Entity>>()) }
+    var carrier by remember { mutableStateOf<Entity?>(null) }
+    var carrierOffset by remember { mutableStateOf<Vector3?>(null) }
+    var playback by remember { mutableStateOf<AnimationPlaybackController?>(null) }
     var attempt by remember { mutableIntStateOf(0) }
     var clock by remember { mutableFloatStateOf(0f) }
     val opened = greeting.opened
@@ -75,13 +101,20 @@ fun HomeVolume() {
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer) }
     }
+    LaunchedEffect(playback, opened, paused, active) {
+        playback?.let { if (opened && !paused && active) it.resume() else it.pause() }
+    }
     LaunchedEffect(opened, paused, loading, active) {
         if (opened && !paused && !loading && active) {
             var last = withFrameNanos { it }
             while (isActive) {
                 withFrameNanos { now ->
                     val delta = (now - last) / 1_000_000_000f
-                    if (delta >= 1f / 30f) { clock += delta.coerceAtMost(.1f); last = now }
+                    if (delta >= 1f / 30f) {
+                        if (island == WinterWorld.Village) clock += delta.coerceAtMost(.1f)
+                        else carrierOffset = carrier?.convertPositionTo(Vector3(0f), world)
+                        last = now
+                    }
                 }
             }
         }
@@ -107,6 +140,7 @@ fun HomeVolume() {
     key(attempt) {
         DisposableEffect(Unit) {
             onDispose {
+                playback?.stop(); playback = null; carrier = null; carrierOffset = null; parcelParts = emptyList()
                 listOf(world, gift, sky).forEach { it?.let { e -> if (e.valid) { e.removeFromParent(); e.destroy() } } }
                 world = null; gift = null; sky = null; treeLights = null; effects = emptyList(); variants = emptyMap()
             }
@@ -115,18 +149,39 @@ fun HomeVolume() {
             initial = { content, attachments ->
                 try {
                     val background = Entity.loadSuspend(uriString = "asset://night-sky.glb"); sky = background; content.addEntity(background)
-                    val scene = Entity.loadSuspend(uriString = "asset://christmas-world.glb"); world = scene
+                    val scene = Entity.loadSuspend(uriString = "asset://${island.asset}"); world = scene
                     scene.transform()?.setPosition(Vector3(-.60f, -.10f, 0f)); scene.enabled = false; content.addEntity(scene)
                     treeLights = scene.findEntity("TreeLights"); treeLights?.enabled = false
-                    val fx = Entity.loadSuspend(uriString = "asset://village-effects.glb"); scene.addChild(fx)
-                    val json = JSONArray(context.assets.open("village-effects.json").bufferedReader().use { it.readText() })
-                    effects = (0 until json.length()).mapNotNull { i ->
-                        val item = json.getJSONObject(i); val node = fx.findEntity(item.getString("name")) ?: return@mapNotNull null
-                        val p = item.getJSONArray("position"); val opacity = OpacityControllerComponent(.7f); node.components.set(opacity)
-                        NativeEffect(node, item.getString("kind"), Vector3(p.getDouble(0).toFloat(), p.getDouble(1).toFloat(), p.getDouble(2).toFloat()), item.getDouble("phase").toFloat(), item.getBoolean("tree"), item.getDouble("size").toFloat(), opacity)
+                    if (island == WinterWorld.Village) {
+                        val fx = Entity.loadSuspend(uriString = "asset://village-effects.glb"); scene.addChild(fx)
+                        val json = JSONArray(context.assets.open("village-effects.json").bufferedReader().use { it.readText() })
+                        effects = (0 until json.length()).mapNotNull { i ->
+                            val item = json.getJSONObject(i); val node = fx.findEntity(item.getString("name")) ?: return@mapNotNull null
+                            val p = item.getJSONArray("position"); val opacity = OpacityControllerComponent(.7f); node.components.set(opacity)
+                            NativeEffect(node, item.getString("kind"), Vector3(p.getDouble(0).toFloat(), p.getDouble(1).toFloat(), p.getDouble(2).toFloat()), item.getDouble("phase").toFloat(), item.getBoolean("tree"), item.getDouble("size").toFloat(), opacity)
+                        }
                     }
                     val miniatures = Entity.loadSuspend(uriString = "asset://village-decorations.glb"); scene.addChild(miniatures)
-                    variants = buildMap { for (slot in 0..2) for (kind in DECORATION_TYPES) miniatures.findEntity("Decor_${slot}_${kind}")?.let { it.enabled = false; put(slot to kind, it) } }
+                    val boxes = (0..2).map { scene.findEntity("Gift box $it") }
+                    parcelParts = boxes.mapIndexed { slot, box -> listOfNotNull(box, scene.findEntity("Gift lid $slot")) }
+                    variants = buildMap {
+                        for (slot in 0..2) for (kind in DECORATION_TYPES) {
+                            val item = miniatures.findEntity("Decor_${slot}_${kind}") ?: continue
+                            boxes[slot]?.let { box ->
+                                item.transform()?.setPosition(box.convertPositionTo(Vector3(0f), miniatures))
+                            }
+                            item.enabled = false
+                            put(slot to kind, item)
+                        }
+                    }
+                    if (island != WinterWorld.Village) {
+                        val academy = island == WinterWorld.Academy
+                        carrier = scene.findEntity(if (academy) "Letter delivery owl" else "Gingerbread postman")
+                        val name = if (academy) "Winter post" else "Candy village greetings"
+                        scene.getAnimationResources().firstOrNull { it.getName() == name }?.let {
+                            playback = scene.playAnimation(it.repeat(Int.MAX_VALUE))
+                        }
+                    }
                     // A few local lights add warmth without dozens of real-time light sources.
                     for (name in listOf("Lantern glass", "Lantern glass.001", "Lantern glass.002", "Lantern glass.003")) {
                         scene.findEntity(name)?.components?.set(PointLightComponent(Color4(1f, .67f, .30f, 1f), 8f, .40f))
@@ -149,6 +204,7 @@ fun HomeVolume() {
                 gift?.enabled = reveal < .95f
                 gift?.transform()?.apply { setScaleVector(Vector3(maxOf(.01f, 1f - reveal))); setEulerAngles(EulerAngles(0f, reveal * 120f, 0f)) }
                 treeLights?.enabled = lit
+                parcelParts.forEachIndexed { slot, parts -> parts.forEach { it.enabled = slot >= editor.decorations.size } }
                 for ((key, node) in variants) node.enabled = editor.decorations.getOrNull(key.first) == key.second
                 for (fx in effects) {
                     fx.entity.enabled = !fx.tree || lit
@@ -163,8 +219,12 @@ fun HomeVolume() {
                 // The alert follows the mailbox, while facing the reader for a reliable tap target.
                 attachments.entity("mailbox")?.let { alert ->
                     alert.enabled = opened && !loading && error == null && !showLetter
-                    val radians = angle * PI.toFloat() / 180f; val x = -.34f; val z = .68f
-                    alert.transform()?.setPosition(Vector3(-.60f + .72f * reveal * (x * cos(radians) + z * sin(radians)), -.10f + .72f * reveal * .46f, .72f * reveal * (-x * sin(radians) + z * cos(radians)) + .04f))
+                    val radians = angle * PI.toFloat() / 180f
+                    // Sample the animated messenger on the same clock as the native effects.
+                    val anchor = carrierOffset
+                    val x = anchor?.x ?: island.mailbox.x; val z = anchor?.z ?: island.mailbox.z
+                    val y = anchor?.let { it.y + .17f } ?: island.mailbox.y
+                    alert.transform()?.setPosition(Vector3(-.60f + .72f * reveal * (x * cos(radians) + z * sin(radians)), -.10f + .72f * reveal * y, .72f * reveal * (-x * sin(radians) + z * cos(radians)) + .04f))
                 }
                 attachments.entity("letter")?.enabled = showLetter && opened
             },
@@ -172,7 +232,7 @@ fun HomeVolume() {
                 AttachmentPanel(id = "title") {
                     Column(Modifier.width(850.dp).clip(RoundedCornerShape(28.dp)).background(Cream).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("fuzzy", color = Cocoa, fontWeight = FontWeight.Bold, fontSize = 38.sp)
-                        Text("Send your loved ones a 3D card", color = Cocoa, fontSize = 23.sp)
+                        Text(island.title, color = Cocoa, fontSize = 23.sp)
                     }
                 }
                 AttachmentPanel(id = "mailbox") {
@@ -192,6 +252,9 @@ fun HomeVolume() {
                 AttachmentPanel(id = "controls") {
                     Column(Modifier.width(700.dp).heightIn(max = 1180.dp).clip(RoundedCornerShape(32.dp)).background(Cream).padding(24.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(if (opened) "Make it yours." else "Someone is thinking of you.", color = Cocoa, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                        for (choice in WinterWorld.values()) {
+                            Action(choice.title, enabled = choice != island && !saving && !loading) { select(choice) }
+                        }
                         if (opened && error == null) {
                             Text("A note for someone you love", color = Cocoa, fontSize = 20.sp)
                             TextField(value = draft, onValueChange = { draft = it.take(500) }, modifier = Modifier.fillMaxWidth(), enabled = !saving,
@@ -211,7 +274,7 @@ fun HomeVolume() {
                             }
                             Text("${editor.decorations.size} / 3 spots filled · Small procedural shapes", color = Cocoa, fontSize = 15.sp)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Action(if (lit) "Lights off" else "Light the tree", !saving) { greeting = greeting.toggleLights() }
+                                if (island == WinterWorld.Village) Action(if (lit) "Lights off" else "Light the tree", !saving) { greeting = greeting.toggleLights() }
                                 Action(if (greeting.turned) "Front view" else "Turn island") { greeting = greeting.turn() }
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

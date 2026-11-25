@@ -12,8 +12,8 @@ android {
         applicationId = "com.fuzzy.christmas"
         minSdk = 35
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.2.2"
+        versionCode = 5
+        versionName = "0.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters.add("arm64-v8a") }
@@ -66,3 +66,16 @@ configurations.all {
         exclude("androidx.compose.foundation", "foundation")
     }
 }
+
+val nativeSceneAssets = layout.buildDirectory.dir("generated/fuzzySceneAssets")
+val bakeNativeScenes by tasks.registering(Exec::class) {
+    val exporter = rootProject.file("scripts/bake-native-scenes.mjs")
+    val webAssets = rootProject.file("prototype/web/assets")
+    inputs.files(exporter, webAssets.resolve("world-gift-stations.mjs"),
+        webAssets.resolve("place-village-gift.mjs"), webAssets.resolve("worlds/funky-candy-land.gltf"),
+        webAssets.resolve("worlds/owl-post-academy.gltf"))
+    outputs.dir(nativeSceneAssets)
+    commandLine("node", exporter.absolutePath, nativeSceneAssets.get().asFile.absolutePath)
+}
+android.sourceSets.getByName("main").assets.srcDir(nativeSceneAssets)
+tasks.named("preBuild").configure { dependsOn(bakeNativeScenes) }
