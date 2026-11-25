@@ -151,7 +151,26 @@ private fun WinterWorld.actions() = when (this) {
 private const val EDITOR_URL = "https://fuzzy-preview-git-fix-native-c-6233bc-viviens-projects-842ec178.vercel.app/receive"
 private val giftKinds = listOf("bicycle", "gift", "reindeer", "snowman", "lantern", "igloo", "candy-cane")
 private val spotifyAlbums = mapOf("charlie" to "2XnNY3GEkbWHor5kyvXLu4", "buble" to "3CKVXhODttZebJAzjUs2un", "mariah" to "0cS9prZ8u3fdbc7lmtCaMV", "festive-commotion" to "57inreLG2hAF7YYt1W9nnL")
-private val albumNames = linkedMapOf("toymakers-workshop" to "Toymaker’s Workshop", "charlie" to "A Charlie Brown Christmas", "buble" to "Christmas", "mariah" to "Merry Christmas", "festive-commotion" to "Festive Commotion")
+private val albumNames = linkedMapOf(
+    "charlie" to "A Charlie Brown Christmas · Vince Guaraldi Trio",
+    "buble" to "Christmas · Michael Bublé",
+    "mariah" to "Merry Christmas · Mariah Carey",
+    "festive-commotion" to "Festive Commotion · Howard Harper-Barnes",
+    "toymakers-workshop" to "Toymaker’s Workshop · David Celeste",
+)
+
+private val greetings = mapOf(
+    "Walking elf 1" to listOf("👋 🎄", "🎁 ✨"),
+    "Walking elf 2" to listOf("☃️ ❄️", "🧣 💙"),
+    "Walking elf 3" to listOf("🍪 🥛", "🎅 ❤️"),
+    "Walking elf 4" to listOf("🚂 🔔", "🦌 ✨"),
+    "Sapphire academy mage" to listOf("✨ Starlight!", "🌟 Make a wish!"),
+    "Bookbinder apprentice" to listOf("📖 A page of magic!", "🪄 Mischief managed!"),
+    "Owl post broom rider" to listOf("🧹 Catch the breeze!", "🌙 See you by moonrise!"),
+    "Cane shoulder" to listOf("One peppermint spin!"),
+    "Cookie waist" to listOf("A tip of my hat to you!"),
+    "Tossed parcel" to listOf("Special delivery!"),
+)
 
 private class WorldScene(
     val island: WinterWorld,
@@ -260,7 +279,8 @@ fun HomeVolume() {
     var selected by remember { mutableStateOf(WinterWorld.values().firstOrNull {
         it.name == settings.getString("world", null)
     } ?: WinterWorld.Village) }
-    WorldVolume(selected) { next ->
+    var session by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(java.util.UUID.randomUUID().toString()) }
+    WorldVolume(selected, session, newSession = { session = java.util.UUID.randomUUID().toString() }) { next ->
         settings.edit().putString("world", next.name).apply()
         selected = next
     }
@@ -384,19 +404,21 @@ private suspend fun loadWorldScene(context: Context, island: WinterWorld): World
 }
 
 @Composable
-private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
+private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> Unit, select: (WinterWorld) -> Unit) {
     val context = LocalContext.current
     val prefs = remember(island) { context.getSharedPreferences(if (island == WinterWorld.Village) "fuzzy_keepsakes_v2" else "fuzzy_keepsakes_${island.name}", 0) }
     val scope = rememberCoroutineScope()
     var greeting by remember(island) { mutableStateOf(GreetingState(opened = true, lightsOn = prefs.getBoolean("tree_lit", true), kept = prefs.getBoolean("christmas_kept", false))) }
     var editor by remember(island) { mutableStateOf(EditorState.restore(prefs.getString("message", null), prefs.getString("decorations", null), prefs.getBoolean("mail_read", false))) }
-    var draft by remember(island) { mutableStateOf(editor.note) }
+    var draft by remember(island) { mutableStateOf(prefs.getString("note_draft", editor.note) ?: editor.note) }
     val actions = remember(island) { island.actions() }
     var slots by remember(island) { mutableStateOf(
         prefs.getString("gift_slots", null)?.split("|")?.takeIf { it.size == 3 }
             ?: List(3) { editor.decorations.getOrNull(it).orEmpty() }
     ) }
-    var openedMask by remember(island) { mutableIntStateOf(prefs.getInt("unwrapped_slots", (1 shl editor.decorations.size) - 1)) }
+    var openedMask by remember(island, session) { mutableIntStateOf(
+        if (prefs.getString("reveal_session", null) == session) prefs.getInt("unwrapped_slots", 0) else 0
+    ) }
     var giftPrompt by remember(island) { mutableStateOf("") }
     var pendingIds by remember(island) { mutableStateOf(List(3) { prefs.getString("task_$it", "").orEmpty() }) }
 
@@ -406,6 +428,7 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
         pendingIds = pendingIds.toMutableList().also { it[slot] = id }
         prefs.edit().putString("task_$slot",id).apply()
     }
+    var entryError by remember(island) { mutableStateOf("") }
     var editingSlot by remember(island) { mutableIntStateOf(-1) }
     var inspectionAngle by remember(island) { mutableFloatStateOf(0f) }
     var inspecting by remember(island) { mutableIntStateOf(-1) }
@@ -417,8 +440,12 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
         if (fishing == "Waiting…") { delay(2400); fishing = "Reel in!" }
         else if (fishing == "Reel in!") { delay(2400); fishing = "Missed · cast again" }
     }
+    var bubble by remember(island) { mutableStateOf("") }
+    val visits = remember(island) { IntArray(actions.size) }
+    var recipient by androidx.compose.runtime.saveable.rememberSaveable(island.name) { mutableStateOf("") }
+    var chooseAlbum by remember { mutableStateOf(false) }
     var activityEpoch by remember(island) { mutableIntStateOf(0) }
-    var packing by remember(island) { mutableStateOf(false) }
+    var packing by androidx.compose.runtime.saveable.rememberSaveable(island.name) { mutableStateOf(false) }
     var sender by remember(island) { mutableStateOf(prefs.getString("sender", "").orEmpty()) }
     var paper by remember(island) { mutableStateOf(prefs.getString("paper", "pine") ?: "pine") }
     val musicPrefs = remember { context.getSharedPreferences("fuzzy_worlds", 0) }
@@ -429,10 +456,12 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
     val retries = remember(island) { mutableStateMapOf<Int,Int>() }
     fun persistGifts() {
         prefs.edit().putString("gift_slots", slots.joinToString("|"))
-            .putInt("unwrapped_slots", openedMask).apply()
+            .putString("reveal_session", session).putInt("unwrapped_slots", openedMask).apply()
     }
     var currentScene by remember { mutableStateOf<WorldScene?>(null) }
     fun activateSlot(slot: Int) {
+        if (startingTask || editingSlot >= 0) return
+        entryError = ""
         if (slot in failures) {
             failures.remove(slot)
             retries[slot] = (retries[slot] ?: 0) + 1
@@ -451,9 +480,19 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             revealing = -1
         }
     }
-    LaunchedEffect(activityEpoch) { if (reaction >= 0) { delay(2400); reaction = -1 } }
+    LaunchedEffect(island, activityEpoch) {
+        if (reaction >= 0) {
+            delay(when (island) {
+                WinterWorld.Village -> 3200L
+                WinterWorld.Academy -> 2600L
+                WinterWorld.Candy -> 1900L
+            })
+            reaction = -1
+            bubble = ""
+        }
+    }
     fun parcelUrl(preview: Boolean): String {
-        val fields = mutableListOf("parcel" to "1", "world" to island.name.lowercase(), "paper" to paper, "album" to album, "sender" to sender.trim(), "note" to editor.note)
+        val fields = mutableListOf("parcel" to "1", "world" to island.name.lowercase(), "paper" to paper, "album" to album, "sender" to sender.trim(), "note" to draft.trim())
         slots.forEach { fields.add("gift" to if (it in giftKinds) "preset:$it" else it) }
         if (preview) fields.add("preview" to "1")
         return EDITOR_URL + "#" + fields.joinToString("&") { (k,v) -> k + "=" + Uri.encode(v) }
@@ -480,7 +519,8 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             if (taskId.isEmpty()) return@LaunchedEffect
             try {
                 failures.remove(slot)
-                awaitGift(taskId) { progress[slot] = it }
+                progress.remove(slot)
+                awaitGift(taskId) { value -> if (value != null) progress[slot] = value }
                 giftFile(context,taskId)
                 if (pendingIds[slot] != taskId) return@LaunchedEffect
                 slots = slots.toMutableList().also { it[slot] = taskId }
@@ -609,6 +649,30 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             saving = false
         }
     }
+    fun openLink(url: String) {
+        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            .onFailure { status = "A browser is needed to open this link." }
+    }
+    val soundtrackPicker: @Composable () -> Unit = {
+        Text("Background music", color = Cocoa, fontSize = 20.sp)
+        Action("Choose album · ${albumNames[album]}") { chooseAlbum = !chooseAlbum }
+        if (chooseAlbum) for ((id,label) in albumNames) Action((if (album == id) "✓ " else "") + label) {
+            chooseAlbum = false
+            album = id
+            musicEnabled = true
+            musicPrefs.edit().putString("album", id).apply()
+        }
+        val spotifyId = spotifyAlbums[album]
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val label = if (spotifyId != null) "Open in Spotify" else if (playing) "Pause record" else "Play record"
+            val play = {
+                if (spotifyId != null) openLink("https://open.spotify.com/album/$spotifyId")
+                else musicEnabled = !playing
+            }
+            Box(Modifier.clickable(role = Role.Button, onClickLabel = label, onClick = play)) { Record(playing && !paused) }
+            Action(label, spotifyId != null || soundtrack != null, onClick = play)
+        }
+    }
     fun readMail() {
         showLetter = true
         if (!editor.read) save(editor.copy(read = true), "Your note is open.")
@@ -650,6 +714,15 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
                     sceneRoot.addChild(entity)
                 }
             }
+            for (id in listOf("giftEntry", "speech", "packing")) {
+                attachments.entity(id)?.let { entity ->
+                    attachmentEntities[id] = entity
+                    entity.enabled = false
+                    sceneRoot.addChild(entity)
+                }
+            }
+            attachmentEntities["giftEntry"]?.transform()?.setPosition(Vector3(-.28f, .22f, .29f))
+            attachmentEntities["packing"]?.transform()?.setPosition(Vector3(-.28f, .22f, .29f))
             attachments.entity("letter")?.let {
                 attachmentEntities["letter"] = it
                 it.enabled = false
@@ -743,7 +816,7 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             for (slot in 0..6) {
                 fun place(id: String, node: Entity?, lift: Float, cue: Float) {
                     attachmentEntities[id]?.let { target ->
-                        target.enabled = node != null && activeScene != null && opened && !loading && !showLetter
+                        target.enabled = node != null && activeScene != null && opened && !loading && !showLetter && editingSlot < 0 && !packing
                         if (target.enabled && node != null) {
                             val pos = node.convertPositionTo(Vector3(0f), sceneRoot)
                             target.transform()?.setPosition(Vector3(pos.x, pos.y + lift, pos.z + .032f))
@@ -757,11 +830,22 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             }
             attachmentEntities["mailbox"]?.let { target ->
                 val carrier = activeScene?.carrier
-                target.enabled = carrier != null && opened && !loading && !showLetter
+                target.enabled = carrier != null && opened && !loading && !showLetter && editingSlot < 0 && !packing
                 if (carrier != null && target.enabled) {
                     val position = carrier.convertPositionTo(Vector3(0f, .25f, 0f), sceneRoot)
                     target.transform()?.setPosition(Vector3(position.x, position.y, position.z + .035f))
                     cueLights["mailbox"]?.intensity = 3f * cueStrength(11, clock, paused)
+                }
+            }
+            attachmentEntities["giftEntry"]?.enabled = activeScene != null && editingSlot >= 0 && opened
+            attachmentEntities["controls"]?.enabled = editingSlot < 0 && !packing
+            attachmentEntities["packing"]?.enabled = activeScene != null && packing
+            attachmentEntities["speech"]?.let { target ->
+                val actor = activeScene?.actionNodes?.getOrNull(reaction)
+                target.enabled = actor != null && bubble.isNotEmpty() && opened && !showLetter && editingSlot < 0 && !packing
+                if (actor != null && target.enabled) {
+                    val anchor = actor.convertPositionTo(Vector3(0f), sceneRoot)
+                    target.transform()?.setPosition(Vector3(anchor.x, anchor.y + .085f, anchor.z + .038f))
                 }
             }
             attachmentEntities["letter"]?.enabled = activeScene != null && showLetter && opened
@@ -794,8 +878,95 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
                                 scene.actionPlayback?.stop()
                                 scene.actionPlayback = scene.world.playAnimation(clip)
                             }
+                            val lines = greetings[action.node]
+                            bubble = if (lines != null) lines[visits[slot]++ % lines.size]
+                                else if (action.node == "Ice fishing elf") fishing else ""
                             reaction = slot
                             activityEpoch++
+                        }
+                    }
+                }
+                AttachmentPanel(id = "packing") {
+                    if (packing) Column(Modifier.width(660.dp).heightIn(max = 1000.dp)
+                        .background(Cream, RoundedCornerShape(28.dp)).verticalScroll(rememberScrollState())
+                        .padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("Wrap their world", color = Cocoa, fontSize = 26.sp)
+                        TextField(value = sender, onValueChange = { sender = it.take(60); prefs.edit().putString("sender", sender).apply() })
+                        Text("From · ${sender.ifBlank { "Your name (optional)" }}", color = Cocoa)
+                        for ((id,label) in listOf("pine" to "Pine sprigs", "berry" to "Cranberry stripes", "frost" to "Frost stars")) {
+                            Action((if (paper == id) "✓ " else "") + label) { paper = id; prefs.edit().putString("paper", id).apply() }
+                        }
+                        soundtrackPicker()
+                        Action("Preview as recipient") { openLink(parcelUrl(true)) }
+                        Action("Copy gift link") {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Fuzzy winter world", parcelUrl(false)))
+                            status = "Gift link copied."
+                        }
+                        Text("Recipient email", color = Cocoa)
+                        TextField(value = recipient, onValueChange = { recipient = it.take(254) }, singleLine = true)
+                        Action("Send by email", android.util.Patterns.EMAIL_ADDRESS.matcher(recipient.trim()).matches()) {
+                            val url = parcelEmail(recipient.trim(), parcelUrl(false))
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                            }.onFailure { status = "Email is unavailable here. Use Copy gift link to send your parcel." }
+                        }
+                        Action("Start another wrapped world") {
+                            newSession()
+                            packing = false
+                            inspecting = -1
+                            revealing = -1
+                        }
+                        Action("Share wrapped world") {
+                            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT, "A winter world for you").putExtra(Intent.EXTRA_TEXT, parcelUrl(false))
+                            runCatching { context.startActivity(Intent.createChooser(send, "Share your world").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                                .onFailure { status = "Use Copy gift link to share your parcel." }
+                        }
+                        Text(status, color = Cocoa)
+                        Action("Back to island") { packing = false }
+                    }
+                }
+                AttachmentPanel(id = "speech") {
+                    if (bubble.isNotEmpty()) Text(bubble, color = Cocoa, fontSize = 20.sp,
+                        modifier = Modifier.background(Cream, RoundedCornerShape(16.dp)).padding(horizontal = 14.dp, vertical = 8.dp))
+                }
+                AttachmentPanel(id = "giftEntry") {
+                    if (editingSlot in slots.indices) {
+                        Column(Modifier.width(660.dp).heightIn(max = 900.dp).background(Cream, RoundedCornerShape(28.dp)).verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("Choose a gift for box ${editingSlot + 1}", color = Cocoa)
+                            TextField(value = giftPrompt, onValueChange = { giftPrompt = it.take(500) }, modifier = Modifier.fillMaxWidth())
+                            if (pendingIds[editingSlot].isEmpty()) {
+                                Action("Generate custom gift", !startingTask && giftPrompt.trim().length >= 3) {
+                                    if (startingTask) return@Action
+                                    val slot = editingSlot
+                                    val prompt = giftPrompt
+                                    startingTask = true
+                                    islandScope.launch {
+                                        try { pending(slot,startGift(prompt)); editingSlot = -1; giftPrompt = "" }
+                                        catch(e: CancellationException) { throw e }
+                                        catch(e: Exception) { entryError = e.message ?: "Could not start generation." }
+                                        finally { startingTask = false }
+                                    }
+                                }
+                            } else {
+                                Action("Check this gift again") { retries[editingSlot] = (retries[editingSlot] ?: 0) + 1 }
+                                Action("Discard pending gift") { pending(editingSlot,"") }
+                            }
+                            giftKinds.chunked(2).forEach { row ->
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    for (kind in row) Action(kind.replace('-', ' ').replaceFirstChar { it.uppercase() }, !startingTask) {
+                                        failures.remove(editingSlot)
+                                        pending(editingSlot,"")
+                                        slots = slots.toMutableList().also { it[editingSlot] = kind }
+                                        openedMask = openedMask and (1 shl editingSlot).inv()
+                                        persistGifts()
+                                        editingSlot = -1
+                                        inspecting = -1
+                                    }
+                                }
+                            }
+                            if (entryError.isNotEmpty()) Text(entryError, color = Cranberry)
+                            Action("Close gift choices", !startingTask) { editingSlot = -1 }
                         }
                     }
                 }
@@ -835,46 +1006,15 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
                             for (slot in slots.indices) {
                                 val name = when {
                                     slot in failures -> "Retry · ${failures[slot]}"
-                                    pendingIds[slot].isNotEmpty() -> "Generating ${progress[slot] ?: 0}%"
+                                    pendingIds[slot].isNotEmpty() -> progress[slot]?.let { "Generating $it%" } ?: "Generating…"
                                     slots[slot].isEmpty() -> "Choose gift"
                                     (openedMask and (1 shl slot)) == 0 -> "Unwrap"
                                     else -> "Inspect"
                                 }
                                 Action("Box ${slot + 1} · $name", revealing < 0) { activateSlot(slot) }
-                            }
-                            if (editingSlot >= 0) {
-                                Text("Choose a gift for box ${editingSlot + 1}", color = Cocoa)
-                                TextField(value = giftPrompt, onValueChange = { giftPrompt = it.take(500) }, modifier = Modifier.fillMaxWidth())
-                                if (pendingIds[editingSlot].isEmpty()) {
-                                    Action("Generate custom gift", !startingTask && giftPrompt.trim().length >= 3) {
-                                        val slot = editingSlot
-                                        val prompt = giftPrompt
-                                        startingTask = true
-                                        islandScope.launch {
-                                            try { pending(slot,startGift(prompt)); editingSlot = -1; giftPrompt = "" }
-                                            catch(e: CancellationException) { throw e }
-                                            catch(e: Exception) { status = e.message ?: "Could not start generation." }
-                                            finally { startingTask = false }
-                                        }
-                                    }
-                                } else {
-                                    Action("Check this gift again") { retries[editingSlot] = (retries[editingSlot] ?: 0) + 1 }
-                                    Action("Discard pending gift") { pending(editingSlot,"") }
+                                if (pendingIds[slot].isNotEmpty() && slot !in failures) {
+                                    GiftProgress(slot, progress[slot], clock, paused)
                                 }
-                                giftKinds.chunked(2).forEach { row ->
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        for (kind in row) Action(kind.replace('-', ' ').replaceFirstChar { it.uppercase() }, !startingTask) {
-                                            failures.remove(editingSlot)
-                                            pending(editingSlot,"")
-                                            slots = slots.toMutableList().also { it[editingSlot] = kind }
-                                            openedMask = openedMask and (1 shl editingSlot).inv()
-                                            persistGifts()
-                                            editingSlot = -1
-                                            inspecting = -1
-                                        }
-                                    }
-                                }
-                                Action("Close gift choices") { editingSlot = -1 }
                             }
                             if (inspecting >= 0) {
                                 Text("Box ${inspecting + 1} · ${slots[inspecting]}", color = Cocoa)
@@ -883,48 +1023,14 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
                                 Action("Done inspecting") { inspecting = -1 }
                             }
                             Text("A note for someone you love", color = Cocoa, fontSize = 20.sp)
-                            TextField(value = draft, onValueChange = { draft = it.take(500) }, modifier = Modifier.fillMaxWidth(), enabled = !saving,
+                            TextField(value = draft, onValueChange = { draft = it.take(500); prefs.edit().putString("note_draft", draft).apply() }, modifier = Modifier.fillMaxWidth(), enabled = !saving,
                                 singleLine = false, minLines = 3, maxLines = 5, textStyle = TextStyle(color = Cocoa, fontSize = 22.sp))
                             Text("${draft.length} / 500", color = Cocoa, fontSize = 15.sp)
                             Action("Add note to mailbox", !saving && draft.isNotBlank()) {
                                 editor.withNote(draft)?.let { save(it, "Your note is in the mailbox. Tap the letter carrier.") }
                             }
-                            fun openLink(url: String) {
-                                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
-                                    .onFailure { status = "A browser is needed to open this link." }
-                            }
-
                             if (slots.all { it.isNotEmpty() } && pendingIds.all { it.isEmpty() } && !startingTask && failures.isEmpty() && slots.indices.all { currentScene?.variants?.containsKey(it to slots[it]) == true }) Action("Wrap their world") { packing = !packing }
-                            if (packing && slots.all { it.isNotEmpty() } && pendingIds.all { it.isEmpty() }) {
-                                TextField(value = sender, onValueChange = { sender = it.take(60); prefs.edit().putString("sender", sender).apply() })
-                                Text("From · ${sender.ifBlank { "Your name (optional)" }}", color = Cocoa)
-                                for ((id,label) in listOf("pine" to "Pine sprigs", "berry" to "Cranberry stripes", "frost" to "Frost stars")) {
-                                    Action((if (paper == id) "✓ " else "") + label) { paper = id; prefs.edit().putString("paper", id).apply() }
-                                }
-                                Action("Preview as recipient") { openLink(parcelUrl(true)) }
-                                Action("Copy gift link") {
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Fuzzy winter world", parcelUrl(false)))
-                                    status = "Gift link copied."
-                                }
-                                Action("Share wrapped world") {
-                                    val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT, "A winter world for you").putExtra(Intent.EXTRA_TEXT, parcelUrl(false))
-                                    runCatching { context.startActivity(Intent.createChooser(send, "Share your world").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
-                                        .onFailure { status = "Use Copy gift link to share your parcel." }
-                                }
-                            }
-                            Text("Soundtrack", color = Cocoa, fontSize = 20.sp)
-                            for ((id,label) in albumNames) Action((if (album == id) "✓ " else "") + label) {
-                                album = id
-                                musicEnabled = true
-                                musicPrefs.edit().putString("album", id).apply()
-                            }
-                            val spotifyId = spotifyAlbums[album]
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Record(playing = playing && !paused)
-                                if (spotifyId != null) Action("Open ${albumNames[album]} in Spotify") { openLink("https://open.spotify.com/album/$spotifyId") }
-                                else Action(if (playing) "Pause music" else "Play music", soundtrack != null) { musicEnabled = !playing }
-                            }
+                            soundtrackPicker()
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 if (island == WinterWorld.Village) Action(if (lit) "Lights off" else "Light the tree", !saving) { greeting = greeting.toggleLights() }
                                 Action(if (greeting.turned) "Front view" else "Turn island") { greeting = greeting.turn() }
@@ -973,6 +1079,18 @@ private fun ObjectTarget(label: String, index: Int, clock: Float, paused: Boolea
             drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = alpha),
                 Color(0xFFFFDCA4).copy(alpha = alpha * .58f), Color.Transparent), radius = size.minDimension / 2))
         }
+    }
+}
+
+@Composable
+private fun GiftProgress(slot: Int, percent: Int?, clock: Float, paused: Boolean) {
+    Canvas(Modifier.fillMaxWidth().height(8.dp).semantics {
+        contentDescription = "Box ${slot + 1}: " + (percent?.let { "$it percent" } ?: "Preparing gift")
+    }) {
+        drawRect(Cocoa.copy(alpha = .18f))
+        val fraction = percent?.div(100f) ?: .22f
+        val offset = if (percent == null && !paused) (.5f - .5f * cos(clock * 2f)) * (1f - fraction) else 0f
+        drawRect(Cranberry, Offset(size.width * offset, 0f), androidx.compose.ui.geometry.Size(size.width * fraction, size.height))
     }
 }
 

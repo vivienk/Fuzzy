@@ -37,7 +37,7 @@ internal suspend fun startGift(prompt: String): String {
     return UUID.fromString(task("", JSONObject().put("operation","object").put("prompt",prompt.trim())).getString("taskId")).toString()
 }
 
-internal suspend fun awaitGift(id: String, progress: (Int) -> Unit) {
+internal suspend fun awaitGift(id: String, progress: (Int?) -> Unit) {
     val key = UUID.fromString(id).toString()
     repeat(180) {
         val result = task("?taskId=$key")
@@ -45,7 +45,7 @@ internal suspend fun awaitGift(id: String, progress: (Int) -> Unit) {
             "success" -> return
             "failed", "expired", "banned", "cancelled" -> error("Generation ended. Choose another gift or try again.")
         }
-        progress(result.optInt("progress",0).coerceIn(0,99))
+        progress(result.optInt("progress", -1).takeIf { it >= 0 }?.coerceAtMost(99))
         delay(3000)
     }
     error("Still generating. Retry to check the same gift.")
