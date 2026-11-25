@@ -12,6 +12,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.findRootCoordinates
 import com.pico.spatial.ui.foundation.layout.sizeIn3D
@@ -47,6 +48,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pico.spatial.core.ecs.*
 import com.pico.spatial.core.ecs.animation.AnimationPlaybackController
+import com.pico.spatial.core.ecs.resource.PhysicsMaterialResource
+import com.pico.spatial.core.ecs.resource.ShapeResource
+import com.pico.spatial.ui.foundation.gesture.TargetEntity
+import com.pico.spatial.ui.foundation.gesture.detectSpatialTapGesture
 import com.pico.spatial.core.math.EulerAngles
 import com.pico.spatial.core.math.Vector3
 import com.pico.spatial.core.math.Color4
@@ -367,7 +372,15 @@ private suspend fun loadWorldScene(context: Context, island: WinterWorld): World
             }
         }
         val sky = load(island.name.lowercase()+"-sky.glb")
-        val parcels = listOf("pine", "berry", "frost").associateWith { load("parcel-$it.glb").also { box -> box.enabled = false } }
+        val parcels = listOf("pine", "berry", "frost").associateWith { paper ->
+            load("parcel-$paper.glb").apply {
+                val bounds = getVisualBounds(this)
+                val shape = ShapeResource.createBox(bounds.size).offsetByTranslation(bounds.center)
+                components.set(CollisionComponent(collisionShape = listOf(shape), physicsMaterial = PhysicsMaterialResource()))
+                components.set(InteractableComponent())
+                enabled = false
+            }
+        }
 
         val retainedEntities = buildList {
             treeLights?.let(::add)
@@ -733,8 +746,17 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     }
     var volumePixels by remember { mutableStateOf(IntSize3D.Zero) }
     val cueLights = remember { mutableMapOf<String, PointLightComponent>() }
+    val wrappedParcel = currentScene?.takeIf {
+        it.island == island && intro == "wrapped" && !loading && !packing
+    }?.parcels?.get(paper)
     SpatialView(
-        modifier = Modifier.fillMaxSize().onGloballyPositioned {
+        modifier = Modifier.fillMaxSize().pointerInput(wrappedParcel) {
+            if (wrappedParcel != null) {
+                detectSpatialTapGesture(context, TargetEntity.hit(wrappedParcel)) {
+                    if (intro == "wrapped" && !packing) intro = "opening"
+                }
+            }
+        }.onGloballyPositioned {
             volumePixels = it.findRootCoordinates().sizeIn3D
         },
         initial = { content, attachments ->
@@ -756,7 +778,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 it.enabled = false
                 sceneRoot.addChild(it)
             }
-            for (id in listOf("mailAlert","thought0","thought1","thought6","outerBox") + (0..2).map { "hint$it" } + (0..2).map { "box$it" } + (0..6).map { "actor$it" }) {
+            for (id in listOf("mailAlert","thought0","thought1","thought6") + (0..2).map { "hint$it" } + (0..2).map { "box$it" } + (0..6).map { "actor$it" }) {
                 attachments.entity(id)?.let { entity ->
                     if (id.startsWith("actor") || id.startsWith("box")) addCue(id, entity)
                     attachmentEntities[id] = entity
@@ -804,16 +826,17 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             }
 
             val activeScene = scene?.takeIf { it.island == island }
+            val readingLetter = activeScene != null && (intro == "letter" || (opened && showLetter))
             val parcelScale = if (packing) 1f else 1f - ribbon
-            scene?.world?.enabled = activeScene != null && !packing && reveal > .001f
-            scene?.sky?.enabled = activeScene != null && opened
+            scene?.world?.enabled = activeScene != null && !packing && !readingLetter && reveal > .001f
+            scene?.sky?.enabled = activeScene != null && (opened || readingLetter)
             if (activeScene != null && fit > 0f && fit.isFinite()) {
                 activeScene.sky.transform()?.apply {
                     setPosition(Vector3(0f, 0f, -.64f * fit))
                     setScaleVector(Vector3(physical.x / 2.4f, physical.y / 1.24f, fit))
                 }
             }
-            scene?.parcels?.forEach { (id, box) -> box.enabled = activeScene != null && id == paper && parcelScale > .05f }
+            scene?.parcels?.forEach { (id, box) -> box.enabled = activeScene != null && !readingLetter && id == paper && parcelScale > .05f }
             activeScene?.let { activeWorld ->
                 activeWorld.world.transform()?.apply {
                     setPosition(island.position)
@@ -927,12 +950,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             above("mailAlert", activeScene?.carrier, if (composingGift) !editor.read else !deliveryRead)
             for (slot in listOf(0,1,6)) above("thought$slot", activeScene?.actionNodes?.getOrNull(slot),
                 island == WinterWorld.Village && reaction != slot)
-            attachmentEntities["outerBox"]?.let {
-                it.enabled = activeScene != null && intro == "wrapped" && !loading && !packing
-                if (it.enabled) activeScene?.parcels?.get(paper)?.getVisualBounds(sceneRoot)?.let { box ->
-                    coverBox(it, box.min.x, box.min.x + box.size.x, box.min.y, box.min.y + box.size.y, box.min.z + box.size.z)
-                }
-            }
             attachmentEntities["giftEntry"]?.enabled = activeScene != null && editingSlot >= 0 && opened
             attachmentEntities["controls"]?.enabled = editingSlot < 0 && !packing && !showLetter && intro != "opening" && intro != "letter"
             attachmentEntities["packing"]?.enabled = activeScene != null && packing
@@ -944,48 +961,20 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     target.transform()?.setPosition(Vector3(anchor.x, anchor.y + .012f - target.getVisualBounds(target).min.y, anchor.z))
                 }
             }
-            attachmentEntities["letter"]?.enabled = activeScene != null && ((showLetter && opened) || intro == "letter")
+            attachmentEntities["letter"]?.enabled = readingLetter
             if (fit > 0f && fit.isFinite()) {
                 val halfWidth = physical.x / (2f * fit)
                 val halfHeight = physical.y / (2f * fit)
                 val rightEdge = hull.maxOfOrNull { it.x } ?: .28f
                 val left = maxOf(.30f, rightEdge + .025f)
-                // The letter faces the reader and tracks the island, including after a turn or resize.
+                // Center the letter in the reading volume while the island is hidden.
                 attachmentEntities["letter"]?.takeIf { it.enabled }?.let { panel ->
                     val bounds = panel.getVisualBounds(panel)
-                    if (bounds.size.x > 0f && bounds.size.y > 0f && hull.isNotEmpty()) {
+                    if (bounds.size.x > 0f && bounds.size.y > 0f) {
                         val scale = minOf(1f, 1.9f * halfWidth / bounds.size.x, 1.9f * halfHeight / bounds.size.y)
-                        val limitX = halfWidth - bounds.size.x * scale / 2f
-                        val limitY = halfHeight - bounds.size.y * scale / 2f
-                        val x = ((hull.minOf { it.x } + rightEdge) / 2f).coerceIn(-limitX, limitX)
-                        val y = ((hull.minOf { it.y } + worldTop) / 2f).coerceIn(-limitY, limitY)
-                        val islandEntity = activeScene?.world ?: return@let
-                        val liveBounds = islandEntity.getVisualBounds(sceneRoot)
-                        val nearIsland = maxOf(hull.maxOf { it.z }, liveBounds.min.z + liveBounds.size.z)
-                        val farIsland = minOf(hull.minOf { it.z }, liveBounds.min.z)
-                        var paperBack = nearIsland + airGap
-                        if (physical.z > 0f) {
-                            val halfDepth = physical.z / (2f * fit)
-                            val inset = halfDepth * .025f
-                            val paperLimit = halfDepth - inset - bounds.size.z * scale
-                            val gap = minOf(airGap, halfDepth * .35f)
-                            paperBack = minOf(nearIsland + gap, paperLimit)
-                            val nearLimit = paperBack - gap
-                            if (opened && nearIsland > nearLimit) {
-                                val farLimit = -halfDepth + inset
-                                val available = (nearLimit - farLimit).coerceAtLeast(.001f)
-                                val shrink = minOf(1f, available / (nearIsland - farIsland).coerceAtLeast(.001f))
-                                val pivot = island.position
-                                islandEntity.transform()?.apply {
-                                    setScaleVector(Vector3(maxOf(.01f, reveal * island.scale) * shrink))
-                                    setPosition(Vector3(pivot.x, pivot.y, nearLimit - (nearIsland - pivot.z) * shrink))
-                                }
-                            }
-                        }
-                        val z = paperBack - bounds.min.z * scale
                         panel.transform()?.apply {
                             setScaleVector(Vector3(scale))
-                            setPosition(Vector3(x - bounds.center.x * scale, y - bounds.center.y * scale, z))
+                            setPosition(Vector3(-bounds.center.x * scale, -bounds.center.y * scale, -bounds.center.z * scale))
                         }
                     }
                 }
@@ -1009,9 +998,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             }
         },
         attachments = {
-                AttachmentPanel(id = "outerBox") {
-                    ObjectTarget("Unwrap your gifted world", 0, clock, paused, true) { intro = "opening" }
-                }
                 AttachmentPanel(id = "mailAlert") { Action("Unread letter") { readMail() } }
                 for (slot in listOf(0,1,6)) AttachmentPanel(id = "thought$slot") {
                     Text(if (slot == 6) fishing else "A carrot? 🥕", color = Cocoa, fontSize = 16.sp,
