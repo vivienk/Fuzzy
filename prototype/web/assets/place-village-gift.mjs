@@ -76,7 +76,11 @@ export async function composeGiftBoxes(villageUrl,opened) {
     const box=m.nodes.find(n=>n.name==="Gift box "+slot),lid=m.nodes.find(n=>n.name==="Gift lid "+slot);
     const [x,y,z]=box.translation;
     const closedScale=[...(box.scale||[1,1,1])];
-    const scale=1.5*.844*closedScale[0]/extent;
+    const boxBounds=giftBounds(m,[m.nodes.indexOf(box),m.nodes.indexOf(lid)]);
+    const size=boxBounds.max.map((value,axis)=>value-boxBounds.min[axis]);
+    const scale=Math.min(...size.map((value,axis)=>
+      max[axis]>min[axis] ? value/(max[axis]-min[axis]) : Infinity));
+    if (!(scale>0 && Number.isFinite(scale))) throw Error("Gift box has no visible geometry");
     const base={};for(const k of ["nodes","meshes","accessors","bufferViews","skins","textures","images","samplers","materials"])base[k]=(m[k]||=[]).length;
     const offset=append(gb);
     for(const v of g.bufferViews){v.byteOffset=(v.byteOffset||0)+offset;const ext=v.extensions?.EXT_meshopt_compression;if(ext)ext.byteOffset=(ext.byteOffset||0)+offset;}
@@ -93,7 +97,7 @@ export async function composeGiftBoxes(villageUrl,opened) {
     for(const k of ["extensionsUsed","extensionsRequired"])if(g[k])m[k]=[...new Set([...(m[k]||[]),...g[k]])];
     const gift=m.nodes.push({name:"Unwrapped gift "+slot,children:roots.map(i=>i+base.nodes),translation:[-scale*(min[0]+max[0])/2,-scale*min[1],-scale*(min[2]+max[2])/2],scale:[scale,scale,scale]})-1;
     const boxScale=box.scale?.[1]??1;
-    const final=[x,y,z],start=[x,y+.22*boxScale,z];
+    const final=[(boxBounds.min[0]+boxBounds.max[0])/2,boxBounds.min[1],(boxBounds.min[2]+boxBounds.max[2])/2],start=[final[0],final[1]+.22*boxScale,final[2]];
     const display=m.nodes.push({name:"Gift reveal "+slot,translation:final,children:[gift]})-1;
     m.scenes[m.scene||0].nodes.push(display);
     const closed=[...lid.translation],aside=[x,y+.18*boxScale,z-.56*boxScale],lidNode=m.nodes.indexOf(lid);
