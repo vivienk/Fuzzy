@@ -12,6 +12,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.findRootCoordinates
+import com.pico.spatial.ui.foundation.layout.sizeIn3D
+import com.pico.spatial.ui.foundation.layout.IntSize3D
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -30,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -47,8 +50,6 @@ import com.pico.spatial.core.ecs.animation.AnimationPlaybackController
 import com.pico.spatial.core.math.EulerAngles
 import com.pico.spatial.core.math.Vector3
 import com.pico.spatial.core.math.Color4
-import com.pico.spatial.ui.design.Button
-import com.pico.spatial.ui.design.ButtonDefaults
 import com.pico.spatial.ui.design.Text
 import com.pico.spatial.ui.design.TextField
 import com.pico.spatial.ui.foundation.content.SpatialView
@@ -147,7 +148,7 @@ private fun WinterWorld.actions() = when (this) {
         SceneAction("Owl post broom rider", "Broom ride"),
     )
 }
-private const val EDITOR_URL = "https://fuzzy-preview-git-feat-tripo-w-af628c-viviens-projects-842ec178.vercel.app/tripo-island.html"
+private const val EDITOR_URL = "https://fuzzy-preview-git-fix-native-c-6233bc-viviens-projects-842ec178.vercel.app/receive"
 private val giftKinds = listOf("bicycle", "gift", "reindeer", "snowman", "lantern", "igloo", "candy-cane")
 private val spotifyAlbums = mapOf("charlie" to "2XnNY3GEkbWHor5kyvXLu4", "buble" to "3CKVXhODttZebJAzjUs2un", "mariah" to "0cS9prZ8u3fdbc7lmtCaMV", "festive-commotion" to "57inreLG2hAF7YYt1W9nnL")
 private val albumNames = linkedMapOf("toymakers-workshop" to "Toymaker’s Workshop", "charlie" to "A Charlie Brown Christmas", "buble" to "Christmas", "mariah" to "Merry Christmas", "festive-commotion" to "Festive Commotion")
@@ -518,6 +519,14 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             playing = soundtrack.isPlaying
         }.onFailure { playing = false; android.util.Log.e(SOUNDTRACK_TAG, "Could not update soundtrack playback", it) }
     }
+    LaunchedEffect(soundtrack, active, musicEnabled, album) {
+        if (soundtrack != null && active && musicEnabled && album == "toymakers-workshop") {
+            while (isActive) {
+                playing = runCatching { soundtrack.isPlaying }.getOrDefault(false)
+                delay(200)
+            }
+        }
+    }
     DisposableEffect(sceneRoot) {
         onDispose {
             currentScene?.destroy()
@@ -585,39 +594,58 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
         showLetter = true
         if (!editor.read) save(editor.copy(read = true), "Your note is open.")
     }
+    var volumePixels by remember { mutableStateOf(IntSize3D.Zero) }
+    val cueLights = remember { mutableMapOf<String, PointLightComponent>() }
     SpatialView(
+        modifier = Modifier.fillMaxSize().onGloballyPositioned {
+            volumePixels = it.findRootCoordinates().sizeIn3D
+        },
         initial = { content, attachments ->
             content.addEntity(sceneRoot)
             attachments.entity("controls")?.let {
                 attachmentEntities["controls"] = it
-                it.transform()?.setPosition(Vector3(.68f, .18f, island.position.z))
-                content.addEntity(it)
+                it.transform()?.setPosition(Vector3(.68f, .18f, -.04f))
+                sceneRoot.addChild(it)
             }
             attachments.entity("title")?.let {
                 attachmentEntities["title"] = it
                 it.transform()?.setPosition(Vector3(-.45f, .82f, island.position.z))
-                content.addEntity(it)
+                sceneRoot.addChild(it)
+            }
+            fun addCue(id: String, target: Entity) {
+                val light = PointLightComponent(Color4(1f, .88f, .66f, 1f), 0f, .075f)
+                target.components.set(light)
+                cueLights[id] = light
             }
             attachments.entity("mailbox")?.let {
+                addCue("mailbox", it)
                 attachmentEntities["mailbox"] = it
                 it.enabled = false
-                content.addEntity(it)
+                sceneRoot.addChild(it)
             }
             for (id in (0..2).map { "box$it" } + (0..6).map { "actor$it" }) {
                 attachments.entity(id)?.let { entity ->
+                    addCue(id, entity)
                     attachmentEntities[id] = entity
                     entity.enabled = false
-                    content.addEntity(entity)
+                    sceneRoot.addChild(entity)
                 }
             }
             attachments.entity("letter")?.let {
                 attachmentEntities["letter"] = it
                 it.enabled = false
                 it.transform()?.setPosition(Vector3(-.40f, .22f, island.position.z + .06f))
-                content.addEntity(it)
+                sceneRoot.addChild(it)
             }
         },
-        update = { _, _ ->
+        update = { content, _ ->
+            val physical = content.convertSize(
+                Vector3(volumePixels.width.toFloat(), volumePixels.height.toFloat(), volumePixels.depth.toFloat()),
+                ViewCoordinateSpace.Local, content.localSpatialCoordinateSpace)
+            val fit = minOf(physical.x / 2.4f, physical.y / 1.95f,
+                if (physical.z > 0f) physical.z / 1.4f else Float.POSITIVE_INFINITY)
+            if (fit.isFinite() && fit > 0f) sceneRoot.transform()?.setScaleVector(Vector3(fit))
+
             var scene = currentScene
             pendingScene?.let { incoming ->
                 if (incoming.island == island) {
@@ -637,6 +665,12 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             val activeScene = scene?.takeIf { it.island == island }
             scene?.world?.enabled = activeScene != null && reveal > .15f
             scene?.sky?.enabled = activeScene != null
+            if (activeScene != null && fit > 0f && fit.isFinite()) {
+                activeScene.sky.transform()?.apply {
+                    setPosition(Vector3(0f, 0f, -.64f))
+                    setScaleVector(Vector3(physical.x / (2.4f * fit), physical.y / (1.24f * fit), 1f))
+                }
+            }
             scene?.gift?.enabled = activeScene != null && reveal < .95f
             activeScene?.let { activeWorld ->
                 activeWorld.world.transform()?.apply {
@@ -688,23 +722,27 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
             }
 
             for (slot in 0..6) {
-                fun place(id: String, node: Entity?, lift: Float) {
+                fun place(id: String, node: Entity?, lift: Float, cue: Float) {
                     attachmentEntities[id]?.let { target ->
                         target.enabled = node != null && activeScene != null && opened && !loading && !showLetter
                         if (target.enabled && node != null) {
                             val pos = node.convertPositionTo(Vector3(0f), sceneRoot)
-                            target.transform()?.setPosition(Vector3(pos.x, pos.y + lift, pos.z + .012f))
+                            target.transform()?.setPosition(Vector3(pos.x, pos.y + lift, pos.z + .032f))
+                            cueLights[id]?.intensity = cue * 3f
                         }
                     }
                 }
-                place("box$slot", activeScene?.parcelParts?.getOrNull(slot)?.firstOrNull(), .012f)
-                place("actor$slot", activeScene?.actionNodes?.getOrNull(slot), .007f)
+                val boxPulse = if ((openedMask and (1 shl slot)) == 0) cueStrength(slot, clock, paused) else 0f
+                place("box$slot", activeScene?.parcelParts?.getOrNull(slot)?.firstOrNull(), .012f, boxPulse)
+                place("actor$slot", activeScene?.actionNodes?.getOrNull(slot), .007f, if (reaction == slot) .8f else cueStrength(slot+3, clock, paused))
             }
             attachmentEntities["mailbox"]?.let { target ->
                 val carrier = activeScene?.carrier
                 target.enabled = carrier != null && opened && !loading && !showLetter
                 if (carrier != null && target.enabled) {
-                    target.transform()?.setPosition(carrier.convertPositionTo(Vector3(0f, .25f, 0f), sceneRoot))
+                    val position = carrier.convertPositionTo(Vector3(0f, .25f, 0f), sceneRoot)
+                    target.transform()?.setPosition(Vector3(position.x, position.y, position.z + .035f))
+                    cueLights["mailbox"]?.intensity = 3f * cueStrength(11, clock, paused)
                 }
             }
             attachmentEntities["letter"]?.enabled = activeScene != null && showLetter && opened
@@ -837,7 +875,7 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
                                     .onFailure { status = "A browser is needed to open this link." }
                             }
 
-                            if (slots.all { it.isNotEmpty() } && pendingIds.all { it.isEmpty() } && !startingTask) Action("Wrap their world") { packing = !packing }
+                            if (slots.all { it.isNotEmpty() } && pendingIds.all { it.isEmpty() } && !startingTask && failures.isEmpty() && slots.indices.all { currentScene?.variants?.containsKey(it to slots[it]) == true }) Action("Wrap their world") { packing = !packing }
                             if (packing && slots.all { it.isNotEmpty() } && pendingIds.all { it.isEmpty() }) {
                                 TextField(value = sender, onValueChange = { sender = it.take(60); prefs.edit().putString("sender", sender).apply() })
                                 Text("From · ${sender.ifBlank { "Your name (optional)" }}", color = Cocoa)
@@ -864,7 +902,7 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
                             }
                             val spotifyId = spotifyAlbums[album]
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Record(playing = playing)
+                                Record(playing = playing && !paused)
                                 if (spotifyId != null) Action("Open ${albumNames[album]} in Spotify") { openLink("https://open.spotify.com/album/$spotifyId") }
                                 else Action(if (playing) "Pause music" else "Play music", soundtrack != null) { musicEnabled = !playing }
                             }
@@ -895,16 +933,19 @@ private fun WorldVolume(island: WinterWorld, select: (WinterWorld) -> Unit) {
         )
 }
 
+private fun cueStrength(index: Int, clock: Float, paused: Boolean): Float {
+    if (paused) return .17f
+    val phase = (clock + index * 1.37f) % 5.6f
+    return if (phase < 1.7f) .38f * sin(PI.toFloat() * phase / 1.7f).pow(2) else 0f
+}
+
 @Composable
 private fun ObjectTarget(label: String, index: Int, clock: Float, paused: Boolean, enabled: Boolean,
                          cue: Boolean = true, responding: Boolean = false, onClick: () -> Unit) {
-    val phase = (clock + index * 1.37f) % 5.6f
     val alpha = when {
         responding -> .62f
         !cue -> 0f
-        paused -> .17f
-        phase < 1.7f -> .38f * sin(PI.toFloat() * phase / 1.7f).pow(2)
-        else -> 0f
+        else -> cueStrength(index, clock, paused)
     }
     Box(Modifier.size(92.dp).semantics { contentDescription = label }
         .clickable(enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick),

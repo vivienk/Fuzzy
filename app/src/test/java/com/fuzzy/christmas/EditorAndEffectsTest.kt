@@ -51,6 +51,15 @@ class EditorAndEffectsTest {
             }
         }
     }
+    @Test fun feedingShowsCarrotDuringTheHeadDipAndEndsAtRest() {
+        assertEquals(0f to 0f, com.fuzzy.christmas.model.mooseFeedFrame(0f))
+        val (head, carrot) = com.fuzzy.christmas.model.mooseFeedFrame(.85f)
+        assertTrue(head < -45f)
+        assertEquals(1f, carrot, .001f)
+        assertEquals(0f, com.fuzzy.christmas.model.mooseFeedFrame(2.1f).second, .001f)
+        assertEquals(0f to 0f, com.fuzzy.christmas.model.mooseFeedFrame(2.81f))
+    }
+
     @Test fun smokeAndSteamRiseAndFadeAtTheCycleBoundary() {
         assertEquals(0f, effectFrame("smoke", 0f, 0f, 1f).opacity)
         assertTrue(effectFrame("smoke", 3.5f, 0f, 1f).dy > 0f)
