@@ -450,7 +450,8 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     var pendingIds by remember(island) { mutableStateOf(List(3) { prefs.getString("task_$it", "").orEmpty() }) }
 
 
-    var startingTask by remember(island) { mutableStateOf(false) }
+    var startingSlot by remember(island) { mutableIntStateOf(-1) }
+    val startingTask = startingSlot >= 0
     fun pending(slot: Int, id: String) {
         pendingIds = pendingIds.toMutableList().also { it[slot] = id }
         prefs.edit().putString("task_$slot",id).apply()
@@ -896,7 +897,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                     }
                     attachmentEntities["hint$slot"]?.let { hint ->
                         hint.enabled = composingGift && opened && !loading && !showLetter && editingSlot < 0 && !packing &&
-                            activeScene != null && !prepared(slot) && pendingIds[slot].isEmpty() && slot !in failures
+                            activeScene != null && (!prepared(slot) || pendingIds[slot].isNotEmpty() || startingSlot == slot) && slot !in failures
                         if (hint.enabled && activeScene != null) {
                             val (lo, hi) = activeScene.boxBounds[slot]
                             val top = activeScene.world.convertPositionTo(Vector3((lo.x+hi.x)/2, hi.y, (lo.z+hi.z)/2), sceneRoot)
@@ -1018,7 +1019,9 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 }
                 for (slot in 0..6) {
                     if (slot < 3) AttachmentPanel(id = "hint$slot") {
-                        Action("Create gift") { activateSlot(slot) }
+                        if (startingSlot == slot || pendingIds[slot].isNotEmpty()) {
+                            GiftProgress(slot, progress[slot] ?: 0)
+                        } else Action("Create gift") { activateSlot(slot) }
                     }
                     if (slot < 3) AttachmentPanel(id = "box$slot") {
                         ObjectTarget("Box ${slot + 1}", slot, clock, paused, revealing < 0, cue = (displayedMask and (1 shl slot)) == 0) { activateSlot(slot) }
@@ -1123,7 +1126,10 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                                         if (startingTask) return@Action
                                         val slot = editingSlot
                                         val prompt = giftPrompt
-                                        startingTask = true
+                                        progress.remove(slot)
+                                        failures.remove(slot)
+                                        startingSlot = slot
+                                        editingSlot = -1
                                         islandScope.launch {
                                             try {
                                                 val task = startGift(prompt)
@@ -1134,8 +1140,11 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                                                 giftPrompt = ""
                                             }
                                             catch(e: CancellationException) { throw e }
-                                            catch(e: Exception) { entryError = e.message ?: "Could not start generation." }
-                                            finally { startingTask = false }
+                                            catch(e: Exception) {
+                                                entryError = e.message ?: "Could not start generation."
+                                                editingSlot = slot
+                                            }
+                                            finally { startingSlot = -1 }
                                         }
                                     }
                                 } else {
@@ -1216,9 +1225,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                                     else -> "Inspect"
                                 }
                                 Action("Box ${slot + 1} · $name", revealing < 0) { activateSlot(slot) }
-                                if (pendingIds[slot].isNotEmpty() && slot !in failures) {
-                                    GiftProgress(slot, progress[slot], clock, paused)
-                                }
                             }
                             if (inspecting >= 0) {
                                 Text("Box ${inspecting + 1} · ${slots[inspecting]}", color = Cocoa)
@@ -1317,14 +1323,16 @@ private fun PaperPreview(paper: String) {
 }
 
 @Composable
-private fun GiftProgress(slot: Int, percent: Int?, clock: Float, paused: Boolean) {
-    Canvas(Modifier.fillMaxWidth().height(8.dp).semantics {
-        contentDescription = "Box ${slot + 1}: " + (percent?.let { "$it percent" } ?: "Preparing gift")
-    }) {
-        drawRect(Cocoa.copy(alpha = .18f))
-        val fraction = percent?.div(100f) ?: .22f
-        val offset = if (percent == null && !paused) (.5f - .5f * cos(clock * 2f)) * (1f - fraction) else 0f
-        drawRect(Cranberry, Offset(size.width * offset, 0f), androidx.compose.ui.geometry.Size(size.width * fraction, size.height))
+private fun GiftProgress(slot: Int, reportedPercent: Int) {
+    val percent = reportedPercent.coerceIn(0, 99)
+    Column(Modifier.glassPanel(8).padding(horizontal = 6.dp, vertical = 2.dp)
+        .semantics(mergeDescendants = true) { contentDescription = "Box ${slot + 1}, generating gift, $percent percent" },
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("$percent%", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF352E3A))
+        Canvas(Modifier.size(48.dp, 5.dp).clip(RoundedCornerShape(3.dp))) {
+            drawRect(Color(0xFFD9DAD4))
+            drawRect(Color(0xFF487967), size = androidx.compose.ui.geometry.Size(size.width * percent / 100f, size.height))
+        }
     }
 }
 
