@@ -170,32 +170,51 @@ private class WorldScene(
     val carrots: List<Entity?>,
     @Suppress("unused") val retainedEntities: List<Entity>,
 ) {
-    private val generated = mutableMapOf<Int,Triple<String,Entity,Entity>>()
+    private data class MountedGift(val id: String, val anchor: Entity, val fit: Entity, val model: Entity)
+    private val generated = mutableMapOf<Int, MountedGift>()
+
     fun removeGenerated(slot: Int) {
-        generated.remove(slot)?.let { (id,holder,model) ->
-            variants.remove(slot to id)
-            model.removeFromParent(); model.destroy()
-            holder.removeFromParent(); holder.destroy()
+        val gift = generated.remove(slot) ?: return
+        variants.remove(slot to gift.id)
+        for (entity in listOf(gift.model, gift.fit, gift.anchor)) {
+            entity.removeFromParent()
+            entity.destroy()
         }
     }
-    fun hasGenerated(slot: Int, id: String) = generated[slot]?.first == id
+
+    fun hasGenerated(slot: Int, id: String) = generated[slot]?.id == id
+
     fun attachGenerated(slot: Int, id: String, model: Entity) {
-        val bounds = model.getVisualBounds(model)
-        val (low,high) = boxBounds[slot]
-        val b = bounds.size
-        fun ratio(size: Float, extent: Float) = if (extent > 0f) size / extent else Float.POSITIVE_INFINITY
-        val scale = minOf(ratio(high.x-low.x,b.x),ratio(high.y-low.y,b.y),ratio(high.z-low.z,b.z))
-        require(scale.isFinite() && scale>0f) { "Gift has no visible geometry." }
-        val holder = Entity()
-        holder.enabled = false
-        world.addChild(holder)
-        holder.addChild(model)
-        holder.transform()?.setPosition(Vector3((low.x+high.x)/2,low.y,(low.z+high.z)/2))
-        model.transform()?.setScaleVector(Vector3(scale))
-        model.transform()?.setPosition(Vector3(-scale*bounds.center.x,-scale*bounds.min.y,-scale*bounds.center.z))
-        removeGenerated(slot)
-        variants[slot to id] = holder
-        generated[slot] = Triple(id,holder,model)
+        val anchor = Entity()
+        val fit = Entity()
+        try {
+            anchor.enabled = false
+            world.addChild(anchor)
+            anchor.addChild(fit)
+            fit.addChild(model)
+            // Include the imported root's rotation, scale and origin in the measurement.
+            val bounds = model.getVisualBounds(fit)
+            val (low, high) = boxBounds[slot]
+            val extent = bounds.size
+            fun ratio(room: Float, dimension: Float) =
+                if (dimension > 0f) room / dimension else Float.POSITIVE_INFINITY
+            val scale = minOf(ratio(high.x - low.x, extent.x), ratio(high.y - low.y, extent.y),
+                ratio(high.z - low.z, extent.z))
+            require(scale.isFinite() && scale > 0f) { "Gift has no visible geometry." }
+            anchor.transform()?.setPosition(Vector3((low.x + high.x) / 2, low.y, (low.z + high.z) / 2))
+            fit.transform()?.setScaleVector(Vector3(scale))
+            fit.transform()?.setPosition(Vector3(-scale * bounds.center.x, -scale * bounds.min.y, -scale * bounds.center.z))
+            removeGenerated(slot)
+            generated[slot] = MountedGift(id, anchor, fit, model)
+            variants[slot to id] = anchor
+        } catch (e: Exception) {
+            model.removeFromParent()
+            fit.removeFromParent()
+            fit.destroy()
+            anchor.removeFromParent()
+            anchor.destroy()
+            throw e
+        }
     }
     var actionPlayback: AnimationPlaybackController? = null
     var playback: AnimationPlaybackController? = null
