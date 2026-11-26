@@ -514,6 +514,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             .putInt("prepared_slots", preparedMask).putString("reveal_session", session).putInt("unwrapped_slots", openedMask).apply()
     }
     var currentScene by remember { mutableStateOf<WorldScene?>(null) }
+    var status by remember(island) { mutableStateOf("A little Christmas warmth, waiting for you.") }
     fun activateSlot(slot: Int) {
         if (!composingGift) {
             if (currentScene?.variants?.containsKey(slot to displayedGifts[slot]) != true) {
@@ -579,7 +580,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     val soundtrack = remember(context) { createSoundtrack(context.applicationContext) }
     var loading by remember(island) { mutableStateOf(true) }
     var error by remember(island) { mutableStateOf<String?>(null) }
-    var status by remember(island) { mutableStateOf("A little Christmas warmth, waiting for you.") }
 
     var attempt by remember(island) { mutableIntStateOf(0) }
     var clock by remember(island) { mutableFloatStateOf(0f) }
