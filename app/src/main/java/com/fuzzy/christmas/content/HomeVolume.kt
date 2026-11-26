@@ -195,9 +195,16 @@ private class WorldScene(
     val carrots: List<Entity?>,
     @Suppress("unused") val retainedEntities: List<Entity>,
 ) {
-    val boxCorners = boxBounds.map { (lo, hi) ->
-        List(8) { i -> Vector3(if (i and 1 == 0) lo.x else hi.x,
-            if (i and 2 == 0) lo.y else hi.y, if (i and 4 == 0) lo.z else hi.z) }
+    // Slot targets stay in island space when wrapping disappears or a generated model arrives.
+    val boxTargets = boxBounds.map { (low, high) ->
+        Entity().apply {
+            transform()?.setPosition(Vector3((low.x + high.x) / 2, (low.y + high.y) / 2, (low.z + high.z) / 2))
+            val size = Vector3(high.x - low.x, high.y - low.y, high.z - low.z)
+            components.set(CollisionComponent(collisionShape = listOf(ShapeResource.createBox(size)), physicsMaterial = PhysicsMaterialResource()))
+            components.set(InteractableComponent())
+            enabled = false
+            world.addChild(this)
+        }
     }
     private data class MountedGift(val id: String, val anchor: Entity, val fit: Entity, val model: Entity)
     private val generated = mutableMapOf<Int, MountedGift>()
@@ -278,7 +285,7 @@ private class WorldScene(
         skyPlayback?.stop()
         playback?.stop()
         playback = null
-        (retainedEntities.asReversed() + listOfNotNull(effectsRoot)).forEach { entity ->
+        (boxTargets + retainedEntities.asReversed() + listOfNotNull(effectsRoot)).forEach { entity ->
             if (entity.valid) {
                 entity.removeFromParent()
                 entity.destroy()
@@ -457,7 +464,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
         if (prefs.getString("reveal_session", null) == session) prefs.getInt("prepared_slots", 0) else 0
     ) }
     fun prepared(slot: Int) = (preparedMask and (1 shl slot)) != 0
-    val displayedGifts = if (creating) slots else welcomeGifts
+    val displayedGifts = if (creating) slots else slots.mapIndexed { slot, id -> id.ifEmpty { welcomeGifts[slot] } }
     val displayedMask = if (composingGift) openedMask else receivedMask
     var giftPrompt by remember(island) { mutableStateOf("") }
     var pendingIds by remember(island) { mutableStateOf(List(3) { prefs.getString("task_$it", "").orEmpty() }) }
@@ -477,6 +484,13 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     var reaction by remember(island) { mutableIntStateOf(-1) }
     val feedStarts = remember(island) { mutableStateMapOf<Int, Float>() }
     var fishing by remember(island) { mutableStateOf("Cast line") }
+    fun fishTap() {
+        fishing = when (fishing) {
+            "Waiting…" -> "Too soon · cast again"
+            "Reel in!" -> "Caught one! · cast again"
+            else -> "Waiting…"
+        }
+    }
     LaunchedEffect(fishing) {
         if (fishing == "Waiting…") { delay(2400); fishing = "Reel in!" }
         else if (fishing == "Reel in!") { delay(2400); fishing = "Missed · cast again" }
@@ -503,7 +517,13 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     fun activateSlot(slot: Int) {
         if (!composingGift) {
             if (currentScene?.variants?.containsKey(slot to displayedGifts[slot]) != true) {
-                if (preview && slot in failures) retries[slot] = (retries[slot] ?: 0) + 1
+                if (displayedGifts[slot].isEmpty()) {
+                    status = "This box is empty."
+                    return
+                }
+                if (slot in failures) retries[slot] = (retries[slot] ?: 0) + 1
+                receivedMask = receivedMask or (1 shl slot)
+                status = "Loading gift in box ${slot + 1}…"
                 return
             }
             if ((receivedMask and (1 shl slot)) == 0) {
@@ -749,11 +769,22 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
     val wrappedParcel = currentScene?.takeIf {
         it.island == island && intro == "wrapped" && !loading && !packing
     }?.parcels?.get(paper)
+    val boxTargets = currentScene?.takeIf {
+        it.island == island && opened && !loading && !showLetter && editingSlot < 0 && !packing
+    }?.boxTargets.orEmpty()
+    val onBoxTap by rememberUpdatedState<(Int) -> Unit> { slot -> activateSlot(slot) }
     SpatialView(
         modifier = Modifier.fillMaxSize().pointerInput(wrappedParcel) {
             if (wrappedParcel != null) {
                 detectSpatialTapGesture(context, TargetEntity.hit(wrappedParcel)) {
                     if (intro == "wrapped" && !packing) intro = "opening"
+                }
+            }
+        }.pointerInput(boxTargets) {
+            if (boxTargets.isNotEmpty()) {
+                detectSpatialTapGesture(context, TargetEntity.any { it in boxTargets }) { tap ->
+                    val slot = boxTargets.indexOfFirst { it == tap.targetEntity }
+                    if (slot >= 0) onBoxTap(slot)
                 }
             }
         }.onGloballyPositioned {
@@ -778,9 +809,9 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                 it.enabled = false
                 sceneRoot.addChild(it)
             }
-            for (id in listOf("mailAlert","thought0","thought1","thought6") + (0..2).map { "hint$it" } + (0..2).map { "box$it" } + (0..6).map { "actor$it" }) {
+            for (id in listOf("mailAlert","thought0","thought1","thought6") + (0..2).map { "hint$it" } + (0..6).map { "actor$it" }) {
                 attachments.entity(id)?.let { entity ->
-                    if (id.startsWith("actor") || id.startsWith("box")) addCue(id, entity)
+                    if (id.startsWith("actor")) addCue(id, entity)
                     attachmentEntities[id] = entity
                     entity.enabled = false
                     sceneRoot.addChild(entity)
@@ -885,17 +916,6 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             val hull = activeScene?.let { visible -> visible.footprint.map { visible.world.convertPositionTo(it, sceneRoot) } }.orEmpty()
             val worldTop = hull.maxOfOrNull { it.y } ?: .4f
             val airGap = if (fit.isFinite() && fit > 0f) .0762f / fit else .0762f
-            fun coverBox(target: Entity, left: Float, right: Float, bottom: Float, top: Float, front: Float) {
-                val face = target.getVisualBounds(target)
-                if (face.size.x <= 0f || face.size.y <= 0f) return
-                val sx = (right - left + .006f) / face.size.x
-                val sy = (top - bottom + .006f) / face.size.y
-                target.transform()?.apply {
-                    setScaleVector(Vector3(sx, sy, 1f))
-                    setPosition(Vector3((left + right) / 2f - sx * face.center.x,
-                        (bottom + top) / 2f - sy * face.center.y, front + .003f - face.min.z))
-                }
-            }
             for (slot in 0..6) {
                 fun place(id: String, node: Entity?, lift: Float, cue: Float) {
                     attachmentEntities[id]?.let { target ->
@@ -907,17 +927,8 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                         }
                     }
                 }
-                val boxPulse = if ((displayedMask and (1 shl slot)) == 0) cueStrength(slot, clock, paused) else 0f
                 if (slot in slots.indices) {
-                    attachmentEntities["box$slot"]?.let { target ->
-                        target.enabled = activeScene != null && opened && !loading && !showLetter && editingSlot < 0 && !packing
-                        if (target.enabled && activeScene != null) {
-                            val corners = activeScene.boxCorners[slot].map { activeScene.world.convertPositionTo(it, sceneRoot) }
-                            coverBox(target, corners.minOf { it.x }, corners.maxOf { it.x }, corners.minOf { it.y },
-                                corners.maxOf { it.y }, corners.maxOf { it.z })
-                            cueLights["box$slot"]?.intensity = boxPulse * 3f
-                        }
-                    }
+                    activeScene?.boxTargets?.get(slot)?.enabled = boxTargets.isNotEmpty()
                     attachmentEntities["hint$slot"]?.let { hint ->
                         hint.enabled = composingGift && opened && !loading && !showLetter && editingSlot < 0 && !packing &&
                             activeScene != null && (!prepared(slot) || pendingIds[slot].isNotEmpty() || startingSlot == slot) && slot !in failures
@@ -949,7 +960,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
             }
             above("mailAlert", activeScene?.carrier, if (composingGift) !editor.read else !deliveryRead)
             for (slot in listOf(0,1,6)) above("thought$slot", activeScene?.actionNodes?.getOrNull(slot),
-                island == WinterWorld.Village && reaction != slot)
+                island == WinterWorld.Village && (slot == 6 || reaction != slot))
             attachmentEntities["giftEntry"]?.enabled = activeScene != null && editingSlot >= 0 && opened
             attachmentEntities["controls"]?.enabled = editingSlot < 0 && !packing && !showLetter && intro != "opening" && intro != "letter"
             attachmentEntities["packing"]?.enabled = activeScene != null && packing
@@ -1000,7 +1011,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
         attachments = {
                 AttachmentPanel(id = "mailAlert") { Action("Unread letter") { readMail() } }
                 for (slot in listOf(0,1,6)) AttachmentPanel(id = "thought$slot") {
-                    Text(if (slot == 6) fishing else "A carrot? 🥕", color = Cocoa, fontSize = 16.sp,
+                    if (slot == 6) FishingAction(fishing, ::fishTap) else Text("A carrot? 🥕", color = Cocoa, fontSize = 16.sp,
                         modifier = Modifier.glassPanel(14).padding(horizontal = 8.dp, vertical = 3.dp))
                 }
                 for (slot in 0..6) {
@@ -1009,17 +1020,10 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             GiftProgress(slot, progress[slot] ?: 0)
                         } else Action("Create gift") { activateSlot(slot) }
                     }
-                    if (slot < 3) AttachmentPanel(id = "box$slot") {
-                        ObjectTarget("Box ${slot + 1}", slot, clock, paused, revealing < 0, cue = (displayedMask and (1 shl slot)) == 0) { activateSlot(slot) }
-                    }
                     AttachmentPanel(id = "actor$slot") {
                         val action = actions.getOrNull(slot)
                         if (action != null) ObjectTarget(action.label, slot+3, clock, paused, true, responding = reaction == slot) {
-                            if (action.node == "Ice fishing elf") fishing = when (fishing) {
-                                "Waiting…" -> "Too soon · cast again"
-                                "Reel in!" -> "Caught one! · cast again"
-                                else -> "Waiting…"
-                            }
+                            if (action.node == "Ice fishing elf") fishTap()
                             val scene = currentScene
                             val clip = scene?.world?.getAnimationResources()?.firstOrNull { it.getName() == action.clip }
                             if (island == WinterWorld.Village && slot in 0..1) {
@@ -1037,7 +1041,7 @@ private fun WorldVolume(island: WinterWorld, session: String, newSession: () -> 
                             }
                             val lines = greetings[action.node]
                             bubble = if (lines != null) lines[visits[slot]++ % lines.size]
-                                else if (action.node == "Ice fishing elf") fishing else ""
+                                else ""
                             reaction = slot
                             activityEpoch++
                         }
@@ -1258,6 +1262,30 @@ private fun cueStrength(index: Int, clock: Float, paused: Boolean): Float {
     if (paused) return .17f
     val phase = (clock + index * 1.37f) % 5.6f
     return if (phase < 1.7f) .38f * sin(PI.toFloat() * phase / 1.7f).pow(2) else 0f
+}
+
+@Composable
+private fun FishingAction(label: String, onClick: () -> Unit) {
+    Row(Modifier.glassPanel(14).clickable(role = Role.Button, onClick = onClick)
+        .padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+        Canvas(Modifier.size(28.dp, 18.dp)) {
+            val w = size.width / 28f
+            val h = size.height / 18f
+            val fish = androidx.compose.ui.graphics.Path().apply {
+                moveTo(2*w, 9*h)
+                cubicTo(7*w, h, 15*w, h, 21*w, 7*h)
+                lineTo(26*w, 3*h)
+                lineTo(26*w, 15*h)
+                lineTo(21*w, 11*h)
+                cubicTo(14*w, 17*h, 7*w, 17*h, 2*w, 9*h)
+                close()
+            }
+            drawPath(fish, Cocoa)
+            drawCircle(Cream, 1.2f*w, Offset(8*w, 8*h))
+        }
+        Text(label, color = Cocoa, fontSize = 16.sp)
+    }
 }
 
 @Composable
