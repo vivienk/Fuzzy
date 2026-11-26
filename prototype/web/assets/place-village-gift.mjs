@@ -1,5 +1,5 @@
 export const presets=new Map([
-  ["preset:bicycle","Bicycle"],["preset:gift","Wrapped gift"],["preset:reindeer","Reindeer"],
+  ["preset:hot-cocoa","Hot cocoa"],["preset:bicycle","Bicycle"],["preset:gift","Wrapped gift"],["preset:reindeer","Reindeer"],
   ["preset:snowman","Snowman"],["preset:lantern","Lantern"],["preset:igloo","Igloo"],
   ["preset:candy-cane","Candy cane"]
 ]);

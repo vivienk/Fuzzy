@@ -94,7 +94,7 @@ button{border:0;border-radius:999px;padding:13px 19px;background:var(--gold);col
 #world .moose-feed[data-quiet]:not(:hover):not(:focus-visible):not(:disabled){opacity:.15}
 #pack-world[hidden],body.receiving #worlds,body.receiving details,body.receiving #replace-gift{display:none}
 #pack-world{margin-top:1rem}#packing,#arrival{width:min(440px,92vw);border:1px solid #bda58b;border-radius:18px;padding:24px;color:#44392e;background:#fff7e8}
-#arrival{text-align:center}#arrival::backdrop{background:#19243c}#packing::backdrop{background:#19182599}#packing h2,#arrival h2{font:32px Georgia,serif;margin:.3em 0 .8em}
+#arrival{text-align:center}#arrival .outer-box{display:block;border:0;padding:0;background:transparent;cursor:pointer}#arrival::backdrop{background:#19243c}#packing::backdrop{background:#19182599}#packing h2,#arrival h2{font:32px Georgia,serif;margin:.3em 0 .8em}
 .parcel-close{float:right}#packing fieldset{border:0;padding:0;margin:1em 0}#packing legend{font-weight:650}#paper-options{display:flex;gap:8px;margin:.5em 0}#paper-options label{cursor:pointer;flex:1;font-size:13px}#paper-options i{display:block;height:38px;border-radius:6px;margin-bottom:4px}#receivers{display:grid;gap:6px;margin:.5em 0}#receivers input{width:100%;padding:10px;font:inherit}
 [data-paper="pine"]{--wrap:repeating-linear-gradient(55deg,#486853 0 9px,#628471 10px 13px)}[data-paper="berry"]{--wrap:repeating-linear-gradient(135deg,#a74655 0 12px,#efc7b9 12px 17px)}[data-paper="frost"]{--wrap:radial-gradient(ellipse at center,#f8efd5 0 1.5px,transparent 2px) 0 0/12px 12px,#849cac}
 #paper-options i,.outer-box i,.outer-box b,.outer-box em{background:var(--wrap)}.outer-box{position:relative;width:128px;height:110px;margin:45px auto 28px;perspective:350px}.outer-box>*{position:absolute;display:block;transition:transform .8s,opacity .8s}.outer-box i,.outer-box b{inset:13px 50% 0 0;border-right:5px solid #ebd398;transform-origin:left}.outer-box b{inset:13px 0 0 50%;border-right:0;border-left:5px solid #ebd398;transform-origin:right}.outer-box em{inset:0 -5px auto;height:22px;border-bottom:3px solid #e5c689}.unfolding i{transform:rotateY(-110deg);opacity:0}.unfolding b{transform:rotateY(110deg);opacity:0}.unfolding em{transform:translateY(-42px) rotate(-9deg);opacity:0}
@@ -197,6 +197,10 @@ body.receiving #quill{display:none}
 #quill{display:grid;place-items:center;width:44px;height:44px;padding:9px;border-radius:50%;color:#503318;background:#f2d799}
 #quill svg{width:23px;height:23px}
 #village-letter:has(#letter-form:not([hidden])) .letter-heart{display:none}
+#village-letter[open]{position:fixed;inset:auto;margin:0;max-height:90vh;overflow:auto}
+body.receiving #world{transition:opacity 1.2s ease}
+body.receiving:not(.world-revealed) #world{opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){body.receiving #world{transition:none}}
 </style>
 </head>
 <body><div class="aurora" aria-hidden="true"></div>
@@ -211,7 +215,7 @@ body.receiving #quill{display:none}
 <h2 id="packing-title">Wrap your world</h2><form id="delivery"><label>Your name <input id="sender-name" autocomplete="given-name" maxlength="60" placeholder="Name shown to the recipient"></label><fieldset><legend>Wrapping paper</legend><div id="paper-options"></div></fieldset>
 <fieldset><legend>Send to</legend><div id="receivers"></div><button type="button" id="add-receiver" aria-label="Add another receiver">+ Add receiver</button></fieldset>
 <button type="submit">Send by email</button> <div class="gift-link-row"><a id="gift-url" target="_blank" rel="noopener"></a><button type="button" id="copy-parcel" aria-label="Copy gift link" title="Copy gift link"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 5V4a1 1 0 0 0-1-1H5a2 2 0 0 0-2 2v10a1 1 0 0 0 1 1h1"/></svg></button></div><a id="preview-world" href="#" target="_blank" rel="noopener">Preview as receiver</a><p role="status" id="send-status"></p></form></dialog>
-<dialog id="arrival" aria-labelledby="arrival-title"><h2 id="arrival-title">A winter world for you</h2><div class="outer-box" aria-hidden="true"><i></i><b></b><em></em></div><button id="unfold">Open your world</button></dialog>
+<dialog id="arrival" aria-labelledby="arrival-title"><h2 id="arrival-title">A winter world for you</h2><button type="button" class="outer-box" aria-label="Unwrap your gifted world"><i></i><b></b><em></em></button><button id="unfold">Open your world</button></dialog>
 <dialog id="gift-station" aria-labelledby="box-title"><form method="dialog"><button aria-label="Close gift station">Close</button></form><section><h2 id="box-title">Make a gift</h2><div id="gift-presets" role="group" aria-label="Instant 3D gifts"></div><label for="box-prompt">What gift would they love?</label><textarea id="box-prompt" maxlength="500" placeholder="A tiny cedar guitar with a cranberry ribbon"></textarea><button id="box-generate">Generate gift</button><p id="box-status" role="status"></p></section></dialog><dialog id="inspect-gift"><form method="dialog"><button>Close</button></form><h2>Your gift</h2><model-viewer id="inspect-model" alt="Unwrapped gift, drag to rotate and pinch to zoom" camera-controls disable-pan environment-image="neutral" exposure=".95"></model-viewer><p>Drag to rotate · Pinch or scroll to zoom</p><button id="replace-gift">Make another gift</button></dialog><dialog id="village-letter" aria-labelledby="letter-title"><small>A little letter, just for you</small><h2 id="letter-title">From my world to yours</h2><p id="village-note"></p><span class="letter-heart" aria-hidden="true">♡</span><form id="letter-form" hidden><label for="letter-input">Your letter to the recipient</label><textarea id="letter-input" placeholder="What would you like to tell them?" maxlength="500" required></textarea><button>Save note</button></form><p id="letter-status" role="status"></p><button type="button" id="edit-letter">Edit note</button> <button type="button" id="close-letter">Close</button></dialog>
 <script>
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -397,17 +401,32 @@ function markMailRead(){
   try{localStorage.setItem(mailboxReadKey(),JSON.stringify({...readMailWorlds(),[world.dataset.kind]:true}));}catch{}
 }
 function displayLetter(){note.textContent=villageNote;note.hidden=false;edit.hidden=false;form.hidden=true;}
+function positionLetter(){
+  if(!letter.open)return;
+  const island=world.getBoundingClientRect(),card=letter.getBoundingClientRect();
+  const inset=(center,size,viewport)=>Math.max(0,Math.min(viewport-size,center-size/2));
+  letter.style.left=inset(island.left+island.width/2,card.width,innerWidth)+"px";
+  letter.style.top=inset(island.top+island.height/2,card.height,innerHeight)+"px";
+}
+new ResizeObserver(positionLetter).observe(letter);
+window.addEventListener("resize",positionLetter);
+window.addEventListener("scroll",positionLetter,{passive:true});
+function parcelLetter(){
+  const sender=(parcelParams.get("sender")||"").trim().slice(0,60);
+  displayLetter();note.textContent=(parcel.note||villageNote)+(sender?"\n\n"+sender:"");edit.hidden=true;
+}
+function showMailCard(){if(!letter.open)letter.showModal();positionLetter();}
 function openLetter(){
   if(!parcel&&!savedMailNote().trim()){composeMail();return;}
   if(parcel){villageNote=parcel.note||villageNote;}else try{const state=readEditor();if(state.note?.trim())villageNote=state.note;localStorage.setItem(editorKey,JSON.stringify({...state,read:true}));}catch{}
   markMailRead();
-  world.querySelector(".mail-open")?.classList.add("read");statusLine.textContent="";displayLetter();edit.hidden=!!parcel;syncGuide();letter.showModal();
+  world.querySelector(".mail-open")?.classList.add("read");statusLine.textContent="";displayLetter();if(parcel)parcelLetter();syncGuide();showMailCard();
 }
 function composeMail(){
   if(parcel)return;
   form.hidden=false;edit.hidden=true;note.hidden=true;
   input.value=savedMailNote();input.setCustomValidity("");statusLine.textContent="";
-  if(!letter.open)letter.showModal();
+  showMailCard();
   input.focus();
 }
 edit.onclick=composeMail;
@@ -505,8 +524,12 @@ document.querySelector("#delivery").onsubmit=e=>{
 document.querySelector("#copy-parcel").onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector("#gift-url").href);sendStatus.textContent="Gift link copied.";}catch{const field=document.createElement("textarea");field.readOnly=true;field.value=parcelURL();sendStatus.replaceChildren(field);field.select();}};
 if(parcel){
   document.body.classList.add("receiving");arrival.dataset.paper=parcel.paper;
-  arrival.addEventListener("close",()=>{friendWorld.hidden=false;},{once:true});
+  arrival.addEventListener("close",()=>{
+    parcelLetter();showMailCard();
+    letter.addEventListener("close",()=>{document.body.classList.add("world-revealed");friendWorld.hidden=false;},{once:true});
+  },{once:true});
   arrival.addEventListener("cancel",e=>e.preventDefault());arrival.showModal();
+  arrival.querySelector(".outer-box").onclick=()=>document.querySelector("#unfold").click();
   document.querySelector("#unfold").onclick=e=>{e.currentTarget.disabled=true;const sender=(parcelParams.get("sender")||"").trim().slice(0,60);document.querySelector("#album-heading").textContent=sender?"Music shared by "+sender:"Music shared with you";window.dispatchEvent(new Event("gift-soundtrack-start"));arrival.classList.add("unfolding");setTimeout(()=>arrival.close(),matchMedia("(prefers-reduced-motion: reduce)").matches?0:850);};
 }
 const noteKey="fuzzy-village-guided-note"+draftSuffix;

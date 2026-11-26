@@ -4,22 +4,29 @@
 
 Messages don't disappear into a chat history. They become playful, persistent parts of a world you build together.
 
-## Fuzzy V3 — Christmas Worlds for PICO
-
-The version 0.3.0 APK opens in North Pole – Santa Village. Use the native world buttons to visit Wizardry Magic Christmas or Funky Candy Land. Each island is a 3D model in a volumetric PICO window. Turn the island, open its mailbox, edit a letter, or add up to three miniature decorations. Each world keeps its own letter and decorations on the device.
-
-The APK targets PICO OS 6, ARM64 and Android API 35 with PICO Spatial SDK 6.1.9. The native editor works offline. Online Tripo generation and sending gift links are available in the companion browser editor. Build the APK with Node.js 20 or newer on PATH, JDK 17 or 21, and Android SDK 35 using `./gradlew :app:assembleDebug :app:testDebugUnitTest`. The build exports the two additional scene models from the shared island assets and packages them with Santa Village.
-
-This is a developer-signed candidate for emulator and headset testing. Use a clean PICO emulator to preserve saved data on devices running an earlier build signed with another key.
-
 ## Start here
 
-- [V2 APK and submission materials](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.2)
-- [V2 design and scope](docs/V2-DESIGN.md)
-- [Build and install instructions](docs/android-build.md)
-- [Test checklist](TESTING.md) and [verified build results](BUILD-VERIFICATION.md)
-- [V1 concept and longer-term AI vision](docs/V1-CONCEPT.md)
-- [Google Drive submission folder](https://drive.google.com/drive/folders/1CRVMRI06iP5BajKrthzkdanl4s72C9_m)
+**Fuzzy V3 · Christmas Worlds for PICO · build 19 (0.3.14)**
+
+Unwrap a Christmas island from someone you love, read their letter, and open the little presents they left for you. Then choose an island, write a note, and fill up to three boxes to make a world for someone else.
+
+1. **Download build 19.** Sign in to GitHub, download the ZIP, and extract `Fuzzy-V3-Christmas-Worlds.apk`. [Download APK ZIP](https://github.com/vivienk/Fuzzy/actions/runs/45727514769/artifacts/15074803372) · [Build and unit-test results](https://github.com/vivienk/Fuzzy/actions/runs/45727514769)
+2. **Open it on PICO.** Start the PICO OS 6 ARM64 emulator and wait for its home screen. With one emulator connected and Android platform-tools on your PATH, run the following from the extracted APK folder.
+
+   ```sh
+   adb devices -l
+   adb -e install -r Fuzzy-V3-Christmas-Worlds.apk
+   adb -e shell dumpsys package com.fuzzy.christmas | grep versionCode
+   adb -e shell am start -W -n com.fuzzy.christmas/.platform.LaunchActivity
+   ```
+
+   Look for `versionCode=19` and `Status: ok`. If an earlier APK was signed with your own debug key, sign this APK with that same key before updating to preserve your saved world.
+3. **Try Santa Village.** Click the large wrapped present, read the letter, then select **Close note**. Click a small box on the island to reveal its gift. At the fishing elf, click the fish icon to cast and click again when **Reel in!** appears. *Toymaker’s Workshop* plays when the village opens.
+4. **Preview your own gift.** Choose **Create a world for someone you love**, add a note and a preset or generated gift, then wrap the world. Select **Preview as recipient** and open the corresponding box. Custom generation needs an internet connection.
+
+Build 19 passed the Android build and unit tests and launched on the PICO emulator. Hands-on checks for gift reveals, fishing, and scene clipping when resizing or switching islands remain open.
+
+[Build 19 source snapshot](https://github.com/vivienk/Fuzzy/tree/6e1efca531130516ea2aaef3a9f1334cb1d87903) · [Android build setup](docs/android-build.md) · [V2 submission archive](https://github.com/vivienk/Fuzzy/releases/tag/v0.2.2) · [V2 design](docs/V2-DESIGN.md) · [V1 concept](docs/V1-CONCEPT.md) · [Submission folder](https://drive.google.com/drive/folders/1CRVMRI06iP5BajKrthzkdanl4s72C9_m)
 
 ## Previous release — V2.2
 
@@ -41,9 +48,9 @@ The Christmas recipient flow includes unwrap, message reveal, tree lights, islan
 | `prototype/web/` | Interactive preview using the current village GLBs |
 | `tools/` | Model generator and archived concept scripts; see tools/README.md |
 
-## Downloadable artifacts
+## Archived V2.2 artifacts
 
-The latest release contains the updated APK, source ZIP, model preview, and browser preview. Version 0.2.2 removes the capybara and expands the island into a Christmas village with three cottages, a pond and bridge, sleigh, mailbox, lanterns, and a decorated tree.
+The V2.2 release contains the updated APK, source ZIP, model preview, and browser preview. Version 0.2.2 removes the capybara and expands the island into a Christmas village with three cottages, a pond and bridge, sleigh, mailbox, lanterns, and a decorated tree.
 
 Version 0.2.2 brings the recent preview features into the native APK: a bounded starry night backdrop, 56 glowing/sparkling light sources, drifting chimney smoke, hot-spring mist, pause/resume, a right-side note editor using PICO text input, a mailbox alert opening a handwritten-style letter, and three miniature slots for gifts, reindeer, or snowmen. Notes and miniature selections save on the device. This is native Spatial SDK code, not a WebView wrapper.
 
@@ -55,7 +62,7 @@ The old v0.2.0 concept PDFs and videos are superseded and retained only as histo
 
 ## Build and test
 
-Install JDK 21 and Android SDK platform 35 / build-tools 35.0.0. Configure your own `local.properties` with `sdk.dir` (not committed), then run:
+Install Node.js 20 or newer, JDK 17 or 21, and Android SDK platform 35 / build-tools 35.0.0. Configure your own `local.properties` with `sdk.dir` (not committed), then run:
 
 ```sh
 ./gradlew :app:assembleDebug :app:testDebugUnitTest

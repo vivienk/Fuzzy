@@ -51,7 +51,33 @@ window.FuzzyDecorations=(()=>{
   const colors=presetPaint?toy:palette;
   const {red,gold}=colors;
   const white=presetPaint&&kind==='igloo'?toy.ice:presetPaint&&kind==='snowman'?toy.snow:colors.white;
-  if(kind==='reindeer'){
+  if(kind==='hot-cocoa'){
+   // Revolve the outer wall, lip and inner rim. Finish the surface with cocoa and marshmallows.
+   const ring=(r,y,i)=>[r*Math.cos(i*Math.PI/12),y,r*Math.sin(i*Math.PI/12)];
+   const bands=[[.001,.002],[.047,.002],[.059,.014],[.067,.104],[.066,.111],[.058,.111],[.056,.099]];
+   for(let j=1;j<bands.length;j++){
+    const vertices=[];
+    for(let i=0;i<24;i++){
+     const a=ring(...bands[j-1],i),b=ring(...bands[j],i),c=ring(...bands[j],i+1),d=ring(...bands[j-1],i+1);
+     vertices.push(a,b,c,a,c,d);
+    }
+    add(vertices,j>=4?white:red);
+   }
+   const drink=[];
+   for(let i=0;i<24;i++)drink.push([0,.100,0],ring(.058,.100,i+1),ring(.058,.100,i));
+   add(drink,paint('673923'));
+   // Tubular half-loop joins the mug just below the lip and above the foot.
+   const point=(i,j)=>{
+    const a=(i/16-.5)*Math.PI,b=j*Math.PI/4;
+    return [.055+(.042+.008*Math.cos(b))*Math.cos(a),.059+(.036+.008*Math.cos(b))*Math.sin(a),.008*Math.sin(b)];
+   };
+   const handle=[];
+   for(let i=0;i<16;i++)for(let j=0;j<8;j++)handle.push(point(i,j),point(i+1,j),point(i+1,j+1),point(i,j),point(i+1,j+1),point(i,j+1));
+   add(handle,red);
+   for(const [x,z] of [[-.021,.006],[.010,.020],[.014,-.017]])box(x,.098,z,.018,.012,.015,white);
+   ball(0,.064,.061,.009,gold);
+  }
+  else if(kind==='reindeer'){
    const {fur,antler}=colors,cream=white,hoof=presetPaint?toy.hoof:[.17,.10,.08,1];
    box(0,.052,0,.066,.052,.10,fur);
    for(const x of [-.022,.022])for(const z of [-.032,.032]){box(x,0,z,.012,.058,.012,fur);box(x,0,z,.015,.013,.017,hoof)}
